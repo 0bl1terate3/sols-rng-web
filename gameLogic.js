@@ -7707,11 +7707,18 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
     gameState.inventory.auras[aura.name].lastWasBreakthrough = !!aura.breakthrough;
     
     // Auto-submit collected stats when a new unique aura is collected
-    if (isNewAura && typeof window.globalLeaderboard !== 'undefined') {
+    if (isNewAura && typeof window.globalLeaderboard !== 'undefined' && 
+        typeof window.globalLeaderboard.submitCollectedStats === 'function') {
         // Debounce to avoid spamming the database
         clearTimeout(window.collectedStatsSubmitTimeout);
         window.collectedStatsSubmitTimeout = setTimeout(() => {
-            window.globalLeaderboard.submitCollectedStats(gameState);
+            // Calculate total score and unique auras count
+            const totalScore = Object.values(gameState.inventory.auras)
+                .filter(data => data.count > 0)
+                .reduce((sum, data) => sum + (data.rarity || 0), 0);
+            const uniqueAuras = Object.values(gameState.inventory.auras)
+                .filter(data => data.count > 0).length;
+            window.globalLeaderboard.submitCollectedStats(totalScore, uniqueAuras);
         }, 2000); // Wait 2 seconds after collecting to batch multiple new auras
     }
     
@@ -7764,7 +7771,9 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
     }
 
     // Submit to global leaderboard if this is a global aura
-    if (typeof window.globalLeaderboard !== 'undefined' && window.globalLeaderboard.isGlobalAura(aura)) {
+    if (typeof window.globalLeaderboard !== 'undefined' && 
+        typeof window.globalLeaderboard.isGlobalAura === 'function' &&
+        window.globalLeaderboard.isGlobalAura(aura)) {
         try {
             window.globalLeaderboard.submitGlobalAura(aura, gameState.totalRolls || 0);
             
