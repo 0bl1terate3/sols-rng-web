@@ -325,6 +325,83 @@ class GlobalLeaderboard {
         }
     }
 
+    // Calculate Collected Stats (sum of unique aura rarities)
+    calculateCollectedStats(gameState) {
+        if (!gameState || !gameState.inventory || !gameState.inventory.auras) {
+            return { totalScore: 0, uniqueAuras: 0, aurasList: [] };
+        }
+
+        const AURAS_ARRAY = typeof AURAS !== 'undefined' ? AURAS : [];
+        let totalScore = 0;
+        let uniqueAuras = 0;
+        const aurasList = [];
+
+        // For each unique aura in inventory, add its rarity to total
+        for (const auraName in gameState.inventory.auras) {
+            const baseAura = AURAS_ARRAY.find(a => a.name === auraName);
+            if (baseAura) {
+                totalScore += baseAura.rarity;
+                uniqueAuras++;
+                aurasList.push({
+                    name: auraName,
+                    rarity: baseAura.rarity,
+                    tier: baseAura.tier
+                });
+            }
+        }
+
+        return { totalScore, uniqueAuras, aurasList };
+    }
+
+    // Submit or update Collected Stats to leaderboard
+    async submitCollectedStats(gameState) {
+        if (this.LEADERBOARD_DISABLED) {
+            console.log('🔴 Leaderboard disabled - stats submission skipped');
+            return;
+        }
+
+        if (!this.firebaseInitialized) {
+            console.log('Collected Stats submission skipped (backend not initialized)');
+            return;
+        }
+
+        try {
+            const playerName = this.getPlayerName();
+            const stats = this.calculateCollectedStats(gameState);
+
+            if (stats.uniqueAuras === 0) {
+                return; // No auras collected yet
+            }
+
+            // Submit to local backend (collectedStats leaderboard)
+            const response = await fetch(`${this.backendUrl}/leaderboard/collectedStats`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    playerId: this.playerId,
+                    playerName: playerName,
+                    totalScore: stats.totalScore,
+                    uniqueAuras: stats.uniqueAuras,
+                    timestamp: new Date().toISOString(),
+                    lastUpdated: Date.now()
+                })
+            });
+
+            if (response.ok) {
+                console.log('✅ Collected Stats submitted to leaderboard');
+                this.collectedStatsCache = [];
+                this.lastCollectedStatsUpdate = 0;
+            } else {
+                console.error('❌ Failed to submit collected stats:', await response.text());
+            }
+
+        } catch (error) {
+            console.error('❌ Error submitting collected stats:', error);
+        }
+    }
+
     // Send Discord webhook (keep for compatibility)
     sendLeaderboardWebhook(aura, playerName) {
         // Keep this method if you have Discord webhooks configured
