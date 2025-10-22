@@ -1257,6 +1257,124 @@ function applyBiomeStaticEffects(biomeName) {
                 animation: hallowGlow 3s ease-in-out infinite alternate;
             "></div>`;
             body.style.filter = 'brightness(1.15) saturate(1.4) contrast(1.1)';
+        },
+        JUNGLE: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(180deg, rgba(34, 197, 94, 0.1) 0%, transparent 50%);
+            "></div>`;
+            body.style.filter = 'brightness(1.05) saturate(1.3) hue-rotate(5deg)';
+        },
+        AMAZON: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(ellipse at 20% 40%, rgba(5, 150, 105, 0.15) 0%, transparent 30%),
+                    radial-gradient(ellipse at 80% 70%, rgba(4, 120, 87, 0.15) 0%, transparent 30%);
+                animation: jungleMist 5s ease-in-out infinite alternate;
+            "></div>`;
+            body.style.filter = 'brightness(0.95) saturate(1.4) contrast(1.1)';
+        },
+        CRIMSON: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(ellipse at 50% 50%, rgba(220, 20, 60, 0.2) 0%, transparent 60%);
+                animation: crimsonPulse 2.5s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(0.95) saturate(1.5) hue-rotate(-5deg)';
+        },
+        METEOR_SHOWER: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    linear-gradient(135deg, transparent 0%, rgba(245, 158, 11, 0.3) 45%, transparent 50%),
+                    linear-gradient(120deg, transparent 70%, rgba(234, 88, 12, 0.3) 90%, transparent 95%);
+                animation: meteorStreak 4s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(1.1) saturate(1.3) contrast(1.1)';
+        },
+        TORNADO: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.2), transparent);
+                animation: tornadoSpin 2s linear infinite;
+            "></div>`;
+            body.style.filter = 'brightness(0.9) saturate(0.8) blur(0.3px)';
+        },
+        DUNES: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 20px,
+                    rgba(245, 158, 11, 0.05) 20px,
+                    rgba(245, 158, 11, 0.05) 40px
+                );
+                animation: duneShift 8s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'sepia(0.2) brightness(1.1)';
+        },
+        SKY: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(circle at 60% 30%, rgba(135, 206, 235, 0.15) 0%, transparent 40%),
+                    linear-gradient(180deg, rgba(79, 195, 247, 0.1) 0%, transparent 60%);
+            "></div>`;
+            body.style.filter = 'brightness(1.15) saturate(1.2)';
+        },
+        ANCIENT: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    repeating-linear-gradient(
+                        0deg,
+                        transparent,
+                        transparent 100px,
+                        rgba(194, 178, 128, 0.03) 100px,
+                        rgba(194, 178, 128, 0.03) 101px
+                    );
+            "></div>`;
+            body.style.filter = 'sepia(0.4) brightness(1.05) contrast(1.1)';
+        },
+        NULL: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 50% 50%, transparent 20%, rgba(0, 0, 0, 0.8) 100%);
+                animation: nullVoid 3s ease-in-out infinite alternate;
+            "></div>`;
+            body.style.filter = 'brightness(0.5) contrast(1.3) grayscale(0.8)';
+        },
+        DREAMSPACE: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(ellipse at 40% 40%, rgba(236, 72, 153, 0.15) 0%, transparent 40%),
+                    radial-gradient(ellipse at 60% 60%, rgba(168, 85, 247, 0.15) 0%, transparent 40%);
+                animation: dreamFloat 6s ease-in-out infinite alternate;
+            "></div>`;
+            body.style.filter = 'brightness(1.1) saturate(1.4) blur(0.3px)';
         }
     };
     
@@ -1286,6 +1404,13 @@ function applyBiomeStaticEffects(biomeName) {
             @keyframes bloodFall { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
             @keyframes lightning { 0%, 90%, 100% { opacity: 0.3; } 95% { opacity: 1; } }
             @keyframes hallowGlow { 0% { opacity: 0.7; transform: scale(1); } 100% { opacity: 1; transform: scale(1.05); } }
+            @keyframes jungleMist { 0% { opacity: 0.7; } 100% { opacity: 1; } }
+            @keyframes crimsonPulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+            @keyframes meteorStreak { 0% { transform: translate(-100%, -100%); opacity: 0; } 50% { opacity: 1; } 100% { transform: translate(100%, 100%); opacity: 0; } }
+            @keyframes tornadoSpin { 0% { transform: translateX(-50%) rotate(0deg); } 100% { transform: translateX(50%) rotate(360deg); } }
+            @keyframes duneShift { 0%, 100% { transform: translateX(-10px); } 50% { transform: translateX(10px); } }
+            @keyframes nullVoid { 0% { opacity: 0.8; } 100% { opacity: 1; } }
+            @keyframes dreamFloat { 0% { opacity: 0.6; transform: translateY(0px); } 100% { opacity: 1; transform: translateY(-10px); } }
         `;
         document.head.appendChild(style);
     }
