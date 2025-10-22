@@ -51,7 +51,7 @@ class GlobalLeaderboard {
         const playerName = window.playerName || 'Anonymous';
         
         try {
-            const response = await fetch(`${this.backendUrl}/leaderboard/submitGlobal`, {
+            const response = await fetch(`${this.backendUrl}/leaderboard/globals`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -103,7 +103,7 @@ class GlobalLeaderboard {
         const playerName = window.playerName || 'Anonymous';
         
         try {
-            const response = await fetch(`${this.backendUrl}/leaderboard/submitCollectedStats`, {
+            const response = await fetch(`${this.backendUrl}/leaderboard/collectedStats`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,7 +111,7 @@ class GlobalLeaderboard {
                 },
                 body: JSON.stringify({
                     playerName,
-                    totalScore,
+                    score: totalScore,
                     uniqueAuras
                 })
             });
