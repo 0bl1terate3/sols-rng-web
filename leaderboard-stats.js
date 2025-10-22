@@ -783,7 +783,13 @@ class LeaderboardStats {
             const playerName = window.globalLeaderboard.getPlayerName();
             const db = window.globalLeaderboard.db;
 
-            // Submit to comprehensive stats collection
+            // Check if using local backend (no Firebase db)
+            if (!db || !db.collection) {
+                console.log('📊 Using local backend - stats tracked locally only');
+                return;
+            }
+
+            // Submit to comprehensive stats collection (Firebase only)
             await db.collection('playerStats').doc(playerId).set({
                 playerName: playerName,
                 playerId: playerId,
