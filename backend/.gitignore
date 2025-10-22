@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Data file (optional - remove this line if you want to commit leaderboard data)
+leaderboards.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db

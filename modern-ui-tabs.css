@@ -372,7 +372,8 @@
 }
 
 .modal-large {
-    max-width: 900px;
+    max-width: 1200px;
+    width: 95%;
 }
 
 .modal-header {

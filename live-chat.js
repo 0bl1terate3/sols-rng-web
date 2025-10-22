@@ -1,349 +1,250 @@
 // =================================================================
-// Live Chat System
+// Live Chat System - Local Backend Integration
 // =================================================================
-// Real-time chat using Firebase Realtime Database
 
 const liveChat = {
-    db: null,
-    messagesRef: null,
+    backendUrl: window.BACKEND_URL || 'http://localhost:8090',
     username: null,
-    maxMessages: 100,
+    maxMessages: 50,
     isInitialized: false,
     chatOpen: false,
-    unsubscribe: null,
+    pollInterval: null,
+    lastMessageId: 0,
     
     // Initialize chat system
     initialize() {
         if (this.isInitialized) return;
         
-        // Wait for Firebase to be ready
-        if (typeof firebase === 'undefined' || !firebase.apps.length) {
-            console.log('⏳ Waiting for Firebase...');
-            setTimeout(() => this.initialize(), 1000);
+        // Get player name from localStorage or gameState
+        const playerName = localStorage.getItem('playerName') || 
+                          (typeof gameState !== 'undefined' ? gameState.playerName : null);
+        
+        // Wait for player name to be set
+        if (!playerName || playerName === 'Anonymous') {
+            console.log('⏳ Waiting for player name...');
+            setTimeout(() => this.initialize(), 500);
             return;
         }
         
         try {
-            this.db = firebase.database();
-            this.messagesRef = this.db.ref('chat/messages');
-            
-            // Set up username
-            this.setupUsername();
+            // Get username from player name
+            this.username = playerName;
             
             // Create chat UI
             this.createChatUI();
             
-            // Listen for messages
-            this.listenForMessages();
-            
-            // Clean old messages periodically
-            this.setupMessageCleanup();
-            
             this.isInitialized = true;
-            console.log('✅ Live Chat initialized');
+            console.log('✅ Live Chat initialized for:', this.username);
             
         } catch (error) {
             console.error('❌ Error initializing chat:', error);
         }
     },
     
-    // Set up username from save data or generate new one
-    setupUsername() {
-        // Try to get username from game state
-        if (typeof gameState !== 'undefined' && gameState.playerName) {
-            this.username = gameState.playerName;
-        } else {
-            // Generate random username
-            const adjectives = ['Swift', 'Mystic', 'Shadow', 'Cosmic', 'Divine', 'Ancient', 'Crystal', 'Void', 'Storm', 'Flame'];
-            const nouns = ['Hunter', 'Seeker', 'Warrior', 'Mage', 'Keeper', 'Wanderer', 'Sage', 'Knight', 'Ranger', 'Oracle'];
-            this.username = `${adjectives[Math.floor(Math.random() * adjectives.length)]}${nouns[Math.floor(Math.random() * nouns.length)]}`;
-        }
-    },
-    
     // Create chat UI
     createChatUI() {
-        const chatContainer = document.createElement('div');
-        chatContainer.id = 'liveChatContainer';
-        chatContainer.className = 'live-chat-container';
-        chatContainer.innerHTML = `
-            <div class="chat-header">
-                <h3>💬 Live Chat</h3>
-                <div class="chat-controls">
-                    <button id="chatSettingsBtn" class="chat-btn" title="Chat Settings">⚙️</button>
-                    <button id="toggleChatBtn" class="chat-btn" title="Minimize">−</button>
+        const chatHTML = `
+            <div id="liveChatContainer" class="live-chat-container">
+                <div class="live-chat-toggle" onclick="liveChat.toggleChat()">
+                    <span class="chat-icon">💬</span>
+                    <span class="chat-label">Chat</span>
+                    <span class="unread-badge" id="unreadBadge" style="display: none;">0</span>
                 </div>
-            </div>
-            <div class="chat-body">
-                <div id="chatMessages" class="chat-messages"></div>
-                <div class="chat-input-container">
-                    <input 
-                        type="text" 
-                        id="chatInput" 
-                        class="chat-input" 
-                        placeholder="Type a message... (Enter to send)"
-                        maxlength="200"
-                    />
-                    <button id="sendChatBtn" class="send-chat-btn">Send</button>
+                <div class="live-chat-window" id="liveChatWindow">
+                    <div class="chat-header">
+                        <h3>💬 Live Chat</h3>
+                        <button class="chat-close" onclick="liveChat.toggleChat()">✕</button>
+                    </div>
+                    <div class="chat-messages" id="chatMessages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" 
+                               id="chatInput" 
+                               class="chat-input" 
+                               placeholder="Type a message..." 
+                               maxlength="200"
+                               onkeypress="if(event.key==='Enter')liveChat.sendMessage()">
+                        <button class="chat-send-btn" onclick="liveChat.sendMessage()">Send</button>
+                    </div>
                 </div>
-            </div>
-            <div class="chat-status">
-                <span id="chatUsername" class="chat-username">You: ${this.username}</span>
-                <span id="chatOnlineCount" class="chat-online">👥 ...</span>
             </div>
         `;
         
-        document.body.appendChild(chatContainer);
-        
-        // Set up event listeners
-        this.setupEventListeners();
-        
-        // Track online users
-        this.trackOnlineUsers();
+        document.body.insertAdjacentHTML('beforeend', chatHTML);
     },
     
-    // Set up event listeners
-    setupEventListeners() {
-        const input = document.getElementById('chatInput');
-        const sendBtn = document.getElementById('sendChatBtn');
-        const toggleBtn = document.getElementById('toggleChatBtn');
-        const settingsBtn = document.getElementById('chatSettingsBtn');
+    // Toggle chat window
+    toggleChat() {
+        this.chatOpen = !this.chatOpen;
+        const chatWindow = document.getElementById('liveChatWindow');
+        const unreadBadge = document.getElementById('unreadBadge');
         
-        // Send message on Enter or button click
-        input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.sendMessage();
-            }
-        });
-        
-        sendBtn.addEventListener('click', () => this.sendMessage());
-        
-        // Toggle chat visibility
-        toggleBtn.addEventListener('click', () => this.toggleChat());
-        
-        // Settings button
-        settingsBtn.addEventListener('click', () => this.openSettings());
-        
-        // Load saved chat state
-        const savedState = localStorage.getItem('chatOpen');
-        if (savedState === 'false') {
-            this.toggleChat();
+        if (this.chatOpen) {
+            // Update username when opening chat (in case it changed)
+            this.username = localStorage.getItem('playerName') || 
+                           (typeof gameState !== 'undefined' ? gameState.playerName : 'Anonymous');
+            
+            chatWindow.style.display = 'flex';
+            unreadBadge.style.display = 'none';
+            unreadBadge.textContent = '0';
+            
+            // Start polling for messages
+            this.startPolling();
+            
+            // Load initial messages
+            this.loadMessages();
+            
+            // Scroll to bottom
+            setTimeout(() => this.scrollToBottom(), 100);
+        } else {
+            chatWindow.style.display = 'none';
+            
+            // Stop polling
+            this.stopPolling();
         }
     },
     
-    // Send message
-    sendMessage() {
+    // Start polling for new messages
+    startPolling() {
+        if (this.pollInterval) return;
+        
+        this.pollInterval = setInterval(() => {
+            this.loadMessages(true);
+        }, 2000); // Poll every 2 seconds
+    },
+    
+    // Stop polling
+    stopPolling() {
+        if (this.pollInterval) {
+            clearInterval(this.pollInterval);
+            this.pollInterval = null;
+        }
+    },
+    
+    // Load messages from backend
+    async loadMessages(isUpdate = false) {
+        try {
+            const response = await fetch(`${this.backendUrl}/chat/messages?limit=${this.maxMessages}`, {
+                headers: { 'ngrok-skip-browser-warning': 'true' }
+            });
+            
+            if (!response.ok) return;
+            
+            const data = await response.json();
+            const messages = data.messages || [];
+            
+            if (messages.length === 0) return;
+            
+            const messagesContainer = document.getElementById('chatMessages');
+            if (!messagesContainer) return;
+            
+            // Check for new messages
+            const latestId = messages[messages.length - 1]?.id || 0;
+            const hasNewMessages = latestId > this.lastMessageId;
+            
+            if (isUpdate && hasNewMessages && !this.chatOpen) {
+                // Show unread badge
+                const unreadBadge = document.getElementById('unreadBadge');
+                const currentUnread = parseInt(unreadBadge.textContent) || 0;
+                const newCount = messages.filter(m => m.id > this.lastMessageId).length;
+                unreadBadge.textContent = currentUnread + newCount;
+                unreadBadge.style.display = 'flex';
+            }
+            
+            this.lastMessageId = latestId;
+            
+            // Render messages
+            messagesContainer.innerHTML = messages.map(msg => this.renderMessage(msg)).join('');
+            
+            // Scroll to bottom if chat is open
+            if (this.chatOpen && hasNewMessages) {
+                this.scrollToBottom();
+            }
+            
+        } catch (error) {
+            console.error('❌ Error loading messages:', error);
+        }
+    },
+    
+    // Render a single message
+    renderMessage(msg) {
+        const isOwn = msg.username === this.username;
+        const time = new Date(msg.timestamp).toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        return `
+            <div class="chat-message ${isOwn ? 'own-message' : ''}">
+                <div class="message-header">
+                    <span class="message-username">${this.escapeHtml(msg.username)}</span>
+                    <span class="message-time">${time}</span>
+                </div>
+                <div class="message-content">${this.escapeHtml(msg.message)}</div>
+            </div>
+        `;
+    },
+    
+    // Send a message
+    async sendMessage() {
         const input = document.getElementById('chatInput');
         const message = input.value.trim();
         
         if (!message) return;
         
-        // Check for spam (max 1 message per 2 seconds)
-        const lastMessageTime = this.lastMessageTime || 0;
-        const now = Date.now();
-        if (now - lastMessageTime < 2000) {
-            this.showNotification('⏰ Please wait before sending another message', 'warning');
-            return;
-        }
+        // Update username before sending
+        this.username = localStorage.getItem('playerName') || 
+                       (typeof gameState !== 'undefined' ? gameState.playerName : 'Anonymous');
         
-        this.lastMessageTime = now;
-        
-        // Create message object
-        const messageData = {
-            username: this.username,
-            text: message,
-            timestamp: firebase.database.ServerValue.TIMESTAMP,
-            uid: this.getUserId()
-        };
-        
-        // Send to Firebase
-        this.messagesRef.push(messageData)
-            .then(() => {
-                input.value = '';
-                console.log('✅ Message sent');
-            })
-            .catch((error) => {
-                console.error('❌ Error sending message:', error);
-                this.showNotification('Failed to send message', 'error');
+        try {
+            const response = await fetch(`${this.backendUrl}/chat/message`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                },
+                body: JSON.stringify({
+                    username: this.username,
+                    message: message
+                })
             });
-    },
-    
-    // Listen for new messages
-    listenForMessages() {
-        // Limit to last 50 messages
-        const query = this.messagesRef.limitToLast(50);
-        
-        query.on('child_added', (snapshot) => {
-            const message = snapshot.val();
-            this.displayMessage(message);
-        });
-        
-        // Handle message removal
-        query.on('child_removed', (snapshot) => {
-            const messageId = snapshot.key;
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            if (messageElement) {
-                messageElement.remove();
-            }
-        });
-    },
-    
-    // Display message in chat
-    displayMessage(message) {
-        const messagesContainer = document.getElementById('chatMessages');
-        const messageElement = document.createElement('div');
-        messageElement.className = 'chat-message';
-        
-        const isOwnMessage = message.username === this.username;
-        if (isOwnMessage) {
-            messageElement.classList.add('own-message');
-        }
-        
-        // Format timestamp
-        const time = new Date(message.timestamp).toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-        });
-        
-        // Sanitize message text
-        const sanitizedText = this.sanitizeHTML(message.text);
-        
-        messageElement.innerHTML = `
-            <div class="message-header">
-                <span class="message-username">${this.sanitizeHTML(message.username)}</span>
-                <span class="message-time">${time}</span>
-            </div>
-            <div class="message-text">${sanitizedText}</div>
-        `;
-        
-        messagesContainer.appendChild(messageElement);
-        
-        // Auto-scroll to bottom
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        
-        // Limit displayed messages
-        const messages = messagesContainer.querySelectorAll('.chat-message');
-        if (messages.length > this.maxMessages) {
-            messages[0].remove();
-        }
-    },
-    
-    // Track online users
-    trackOnlineUsers() {
-        const onlineRef = this.db.ref('chat/online');
-        const userRef = onlineRef.push();
-        const userId = this.getUserId();
-        
-        // Set user as online
-        userRef.set({
-            username: this.username,
-            uid: userId,
-            timestamp: firebase.database.ServerValue.TIMESTAMP
-        });
-        
-        // Remove on disconnect
-        userRef.onDisconnect().remove();
-        
-        // Listen for online count
-        onlineRef.on('value', (snapshot) => {
-            const count = snapshot.numChildren();
-            const onlineElement = document.getElementById('chatOnlineCount');
-            if (onlineElement) {
-                onlineElement.textContent = `👥 ${count} online`;
-            }
-        });
-    },
-    
-    // Set up automatic message cleanup
-    setupMessageCleanup() {
-        // Clean messages older than 24 hours every 5 minutes
-        setInterval(() => {
-            const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
             
-            this.messagesRef.orderByChild('timestamp')
-                .endAt(oneDayAgo)
-                .once('value', (snapshot) => {
-                    const updates = {};
-                    snapshot.forEach((child) => {
-                        updates[child.key] = null;
-                    });
-                    
-                    if (Object.keys(updates).length > 0) {
-                        this.messagesRef.update(updates);
-                        console.log(`🗑️ Cleaned ${Object.keys(updates).length} old messages`);
-                    }
-                });
-        }, 5 * 60 * 1000); // Every 5 minutes
-    },
-    
-    // Toggle chat visibility
-    toggleChat() {
-        const container = document.getElementById('liveChatContainer');
-        const toggleBtn = document.getElementById('toggleChatBtn');
-        
-        this.chatOpen = !this.chatOpen;
-        
-        if (this.chatOpen) {
-            container.classList.remove('minimized');
-            toggleBtn.textContent = '−';
-            toggleBtn.title = 'Minimize';
-        } else {
-            container.classList.add('minimized');
-            toggleBtn.textContent = '+';
-            toggleBtn.title = 'Maximize';
-        }
-        
-        // Save state
-        localStorage.setItem('chatOpen', this.chatOpen);
-    },
-    
-    // Open chat settings
-    openSettings() {
-        const currentUsername = prompt('Enter your username:', this.username);
-        if (currentUsername && currentUsername.trim()) {
-            this.username = currentUsername.trim().substring(0, 20);
-            document.getElementById('chatUsername').textContent = `You: ${this.username}`;
-            localStorage.setItem('chatUsername', this.username);
-            this.showNotification('✅ Username updated!', 'success');
+            if (response.ok) {
+                input.value = '';
+                // Immediately load messages to show sent message
+                await this.loadMessages();
+            } else {
+                const errorText = await response.text();
+                console.error('❌ Failed to send message:', response.status, errorText);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error sending message:', error);
         }
     },
     
-    // Get unique user ID
-    getUserId() {
-        let uid = localStorage.getItem('chatUserId');
-        if (!uid) {
-            uid = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('chatUserId', uid);
+    // Scroll to bottom of messages
+    scrollToBottom() {
+        const messagesContainer = document.getElementById('chatMessages');
+        if (messagesContainer) {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
-        return uid;
     },
     
-    // Sanitize HTML to prevent XSS
-    sanitizeHTML(text) {
+    // Escape HTML to prevent XSS
+    escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
-    },
-    
-    // Show notification
-    showNotification(message, type = 'info') {
-        if (typeof showNotification === 'function') {
-            showNotification(message, type);
-        } else {
-            console.log(message);
-        }
     }
 };
 
-// Auto-initialize when DOM is ready
+// Auto-initialize
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => liveChat.initialize(), 2000);
+        setTimeout(() => liveChat.initialize(), 1000);
     });
 } else {
-    setTimeout(() => liveChat.initialize(), 2000);
+    setTimeout(() => liveChat.initialize(), 1000);
 }
 
-// Export for use in other modules
-if (typeof window !== 'undefined') {
-    window.liveChat = liveChat;
-}
+console.log('✅ Live Chat System loaded');
