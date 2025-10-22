@@ -1,0 +1,258 @@
+/* =================================================================
+   Admin Panel Styles
+   ================================================================= */
+
+.admin-panel {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
+    z-index: 100000;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.3s ease;
+}
+
+.admin-panel-content {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 2px solid #00d4ff;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 50px rgba(0, 212, 255, 0.3);
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #00d4ff;
+    padding-bottom: 15px;
+}
+
+.admin-header h2 {
+    color: #00d4ff;
+    margin: 0;
+    font-size: 24px;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.admin-close-btn {
+    background: #ff4444;
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.admin-close-btn:hover {
+    background: #ff0000;
+    transform: rotate(90deg);
+}
+
+.admin-auth {
+    text-align: center;
+}
+
+.admin-auth h3 {
+    color: #00d4ff;
+    margin-bottom: 20px;
+}
+
+.admin-auth input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid #00d4ff;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+}
+
+.admin-auth button {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.admin-auth button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 212, 255, 0.5);
+}
+
+.admin-hint {
+    color: #888;
+    font-size: 12px;
+    margin-top: 15px;
+}
+
+.admin-controls h3 {
+    color: #4CAF50;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.admin-section {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.admin-section h4 {
+    color: #00d4ff;
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.admin-section p {
+    color: #ccc;
+    font-size: 14px;
+    margin: 10px 0;
+}
+
+.admin-section input[type="text"],
+.admin-section input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #00d4ff;
+    border-radius: 5px;
+    color: white;
+    font-size: 14px;
+}
+
+.admin-section label {
+    display: block;
+    color: #ccc;
+    margin: 10px 0;
+    font-size: 14px;
+}
+
+.admin-section input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.admin-btn {
+    padding: 12px 20px;
+    margin: 5px;
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.admin-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 212, 255, 0.5);
+}
+
+.admin-btn:active {
+    transform: translateY(0);
+}
+
+.admin-btn-small {
+    width: 100%;
+    padding: 10px;
+    font-size: 13px;
+    font-weight: bold;
+    background: linear-gradient(135deg, #00d4ff, #0099cc);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.admin-btn-small:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 212, 255, 0.5);
+}
+
+.admin-btn-small:active {
+    transform: translateY(0);
+}
+
+.admin-btn-small.danger {
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+}
+
+.admin-btn-small.danger:hover {
+    box-shadow: 0 5px 20px rgba(255, 68, 68, 0.5);
+}
+
+.admin-btn.danger {
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+}
+
+.admin-btn.danger:hover {
+    box-shadow: 0 5px 20px rgba(255, 68, 68, 0.5);
+}
+
+.admin-btn.warning {
+    background: linear-gradient(135deg, #ffaa00, #cc8800);
+}
+
+.admin-btn.warning:hover {
+    box-shadow: 0 5px 20px rgba(255, 170, 0, 0.5);
+}
+
+.admin-note {
+    color: #ffaa00;
+    font-size: 12px;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+#adminStats {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 5px;
+    margin: 10px 0;
+}
+
+#adminStats p {
+    margin: 8px 0;
+    color: #fff;
+}
+
+#adminStats strong {
+    color: #00d4ff;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

@@ -1,0 +1,118 @@
+/* =================================================================
+   Gift System Styles
+   ================================================================= */
+
+.gift-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100001;
+    animation: giftPopIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.gift-popup-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 3px solid #ffd700;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 50px rgba(255, 215, 0, 0.3);
+    min-width: 300px;
+    max-width: 500px;
+}
+
+.gift-icon {
+    font-size: 80px;
+    animation: giftBounce 1s infinite;
+    margin-bottom: 20px;
+}
+
+.gift-popup h2 {
+    color: #ffd700;
+    margin: 0 0 20px 0;
+    font-size: 28px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.gift-details {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.gift-aura {
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 10px 0;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.gift-message {
+    color: #ffd700;
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.gift-close-btn {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.gift-close-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.5);
+    background: linear-gradient(135deg, #ffed4e, #ffd700);
+}
+
+/* Animations */
+@keyframes giftPopIn {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes giftBounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+    .gift-popup-content {
+        padding: 30px 20px;
+        min-width: 280px;
+    }
+
+    .gift-icon {
+        font-size: 60px;
+    }
+
+    .gift-popup h2 {
+        font-size: 22px;
+    }
+
+    .gift-aura {
+        font-size: 20px;
+    }
+}

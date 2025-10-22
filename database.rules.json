@@ -1,0 +1,48 @@
+{
+  "rules": {
+    "chat": {
+      "messages": {
+        ".read": true,
+        ".write": true,
+        ".indexOn": ["timestamp"],
+        "$messageId": {
+          ".validate": "newData.hasChildren(['username', 'text', 'timestamp', 'uid'])",
+          "username": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20"
+          },
+          "text": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 200"
+          },
+          "timestamp": {
+            ".validate": "newData.val() === now"
+          },
+          "uid": {
+            ".validate": "newData.isString()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "online": {
+        ".read": true,
+        ".write": true,
+        "$userId": {
+          ".validate": "newData.hasChildren(['username', 'uid', 'timestamp'])",
+          "username": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20"
+          },
+          "uid": {
+            ".validate": "newData.isString()"
+          },
+          "timestamp": {
+            ".validate": "newData.val() === now"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      }
+    }
+  }
+}

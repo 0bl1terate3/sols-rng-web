@@ -1,0 +1,69 @@
+═══════════════════════════════════════════════════════
+  How to Run Sol's RNG on Chromebook (Offline Method)
+═══════════════════════════════════════════════════════
+
+⚠️ IMPORTANT: This is a workaround. For best experience, 
+   ask the developer for the online version URL.
+
+────────────────────────────────────────────────────────
+
+📦 STEP 1: Extract the Game
+
+1. Locate the ZIP file you received
+2. Right-click → "Extract all" (or use Files app)
+3. Extract to a folder (remember location)
+
+────────────────────────────────────────────────────────
+
+🌐 STEP 2: Run Local Web Server
+
+Chromebook needs to run the game through a web server.
+
+Option A - Python Method (if available):
+1. Open Terminal (Search → "Terminal" or "Linux")
+2. Navigate to game folder:
+   cd /path/to/game/folder
+3. Run server:
+   python3 -m http.server 8000
+4. Open Chrome, visit: http://localhost:8000
+
+Option B - Chrome Extension:
+1. Install "Web Server for Chrome" extension
+2. Choose game folder
+3. Click web server URL to play
+
+────────────────────────────────────────────────────────
+
+🎮 STEP 3: Play the Game
+
+Open Chrome and visit the local server URL.
+Your game will load!
+
+⚠️ Keep the Terminal/Server running while playing.
+
+────────────────────────────────────────────────────────
+
+❓ TROUBLESHOOTING
+
+Problem: "Can't find Terminal"
+→ Enable Linux: Settings → Developers → Linux (Beta)
+
+Problem: "Python not found"  
+→ Use Chrome extension method instead
+
+Problem: Game won't load
+→ Make sure you extracted ALL files
+→ Check you're in the correct folder
+
+────────────────────────────────────────────────────────
+
+💡 BETTER OPTION
+
+Ask the developer to host the game online!
+Then you can:
+✓ Install with one click
+✓ Play without Terminal/server
+✓ Get automatic updates
+✓ No technical setup needed
+
+────────────────────────────────────────────────────────

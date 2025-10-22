@@ -1,0 +1,130 @@
+// =================== ROLLING SPECIALIST - 100 ACHIEVEMENTS 🎲 ===================
+// Add these before the closing }; in achievementsData.js
+
+    // Milestone Roll Numbers
+    'roll_number_69': { name: '😏 Roll #69', description: 'Complete exactly roll number 69', requirement: 69, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 6900, potions: { 'Lucky Potion': 6 } } },
+    'roll_number_420': { name: '🌿 Roll #420', description: 'Complete exactly roll number 420', requirement: 420, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 42000, items: { 'Void Coin': 4 } } },
+    'roll_number_666': { name: '👿 Roll #666', description: 'Complete exactly roll number 666', requirement: 666, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 66600, items: { 'Void Coin': 6 } } },
+    'roll_number_777': { name: '🎰 Roll #777', description: 'Complete exactly roll number 777', requirement: 777, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 77700, items: { 'Void Coin': 7 } } },
+    'roll_number_1337': { name: '🕹️ Roll #1337', description: 'Complete exactly roll number 1337', requirement: 1337, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 133700, items: { 'Void Coin': 13 } } },
+    'roll_number_9999': { name: '🔢 Roll #9999', description: 'Complete exactly roll number 9999', requirement: 9999, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 99990, items: { 'Void Coin': 99 } } },
+    'roll_number_12345': { name: '🔢 Sequential Roll', description: 'Complete exactly roll number 12345', requirement: 12345, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 123450, items: { 'Void Coin': 12 } } },
+    'roll_number_42069': { name: '🤪 The Meme Roll', description: 'Complete exactly roll number 42069', requirement: 42069, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 420690, items: { 'Void Coin': 420 } } },
+    'roll_number_100k': { name: '💯 Hundred K', description: 'Complete exactly roll number 100000', requirement: 100000, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 1000000, items: { 'Void Coin': 100 } } },
+    'roll_number_123456': { name: '🔢 Perfect Sequence', description: 'Complete exactly roll number 123456', requirement: 123456, type: 'exact_roll_number', category: 'ROLLING_SPEC', reward: { money: 1234560, items: { 'Void Coin': 123 } } },
+
+    // Perfect Timing Rolls
+    'roll_at_1am': { name: '🌙 1 AM Roller', description: 'Roll exactly at 1:00 AM', requirement: 1, type: 'roll_at_1am', category: 'ROLLING_SPEC', reward: { money: 10000, potions: { 'Lucky Potion L': 10 } } },
+    'roll_at_3am': { name: '👻 3 AM Challenge', description: 'Roll exactly at 3:00 AM (witching hour)', requirement: 1, type: 'roll_at_3am', category: 'ROLLING_SPEC', reward: { money: 33000, potions: { 'Lucky Potion L': 33 } } },
+    'roll_on_birthday': { name: '🎂 Birthday Roll', description: 'Roll on your account creation anniversary', requirement: 1, type: 'birthday_roll', category: 'ROLLING_SPEC', reward: { money: 100000, items: { 'Void Coin': 50 } } },
+    'new_year_roll': { name: '🎆 New Year Roll', description: 'Roll at exactly midnight on New Year', requirement: 1, type: 'new_year_roll', category: 'ROLLING_SPEC', reward: { money: 202500, items: { 'Void Coin': 25 } } },
+    'halloween_midnight': { name: '🎃 Halloween Midnight', description: 'Roll at midnight on Halloween', requirement: 1, type: 'halloween_midnight_roll', category: 'ROLLING_SPEC', reward: { currency: { halloweenMedals: 5000 }, money: 100000 } },
+
+    // Roll Patterns
+    'alternating_tier_10': { name: '🔄 Alternating Tiers', description: 'Roll alternating tier levels 10 times (common-rare-common-rare)', requirement: 10, type: 'alternating_tiers', category: 'ROLLING_SPEC', reward: { money: 25000, items: { 'Void Coin': 10 } } },
+    'ascending_tier_5': { name: '📈 Ascending Tiers', description: 'Roll 5 auras with each tier higher than the last', requirement: 5, type: 'ascending_tiers', category: 'ROLLING_SPEC', reward: { money: 50000, items: { 'Void Coin': 25 } } },
+    'descending_tier_5': { name: '📉 Descending Tiers', description: 'Roll 5 auras with each tier lower than the last', requirement: 5, type: 'descending_tiers', category: 'ROLLING_SPEC', reward: { money: 30000, potions: { 'Lucky Potion L': 30 } } },
+    'all_different_tiers_9': { name: '🌈 Tier Rainbow', description: 'Roll 9 different tier levels in a row (no repeats)', requirement: 9, type: 'tier_rainbow', category: 'ROLLING_SPEC', reward: { money: 100000, items: { 'Void Coin': 50 } } },
+    'palindrome_tiers': { name: '🔁 Palindrome Tiers', description: 'Roll tiers in palindrome pattern (e.g., 1-2-3-2-1)', requirement: 5, type: 'palindrome_tiers', category: 'ROLLING_SPEC', reward: { money: 40000, items: { 'Void Coin': 20 } } },
+
+    // Speed-Based Rolling
+    'supersonic_100': { name: '⚡ Supersonic Century', description: 'Roll 100 times with 500%+ speed active', requirement: 100, type: 'speed_500_rolls', category: 'ROLLING_SPEC', reward: { money: 50000, potions: { 'Haste Potion III': 25 } } },
+    'turtle_mode': { name: '🐢 Turtle Mode', description: 'Roll 100 times with less than 50% speed', requirement: 100, type: 'slow_rolls_50', category: 'ROLLING_SPEC', reward: { money: 25000, potions: { 'Speed Potion': 100 } } },
+    'speed_variance': { name: '🎢 Speed Demon Variance', description: 'Roll with 1000%+ speed then 0% speed within 10 rolls', requirement: 1, type: 'speed_variance', category: 'ROLLING_SPEC', reward: { money: 75000, items: { 'Void Coin': 30 } } },
+    'instant_100': { name: '⚡ Instant 100', description: 'Roll 100 times in under 60 seconds', requirement: 100, type: 'instant_100_rolls', category: 'ROLLING_SPEC', reward: { money: 100000, potions: { 'Warp Potion': 5 } } },
+
+    // Combo Rolling
+    'triple_same_tier': { name: '3️⃣ Triple Tier', description: 'Roll 3 auras of the exact same tier in a row', requirement: 3, type: 'triple_same_tier', category: 'ROLLING_SPEC', reward: { money: 15000, potions: { 'Lucky Potion L': 15 } } },
+    'five_same_tier': { name: '5️⃣ Quintuple Tier', description: 'Roll 5 auras of the exact same tier in a row', requirement: 5, type: 'five_same_tier', category: 'ROLLING_SPEC', reward: { money: 35000, items: { 'Void Coin': 15 } } },
+    'ten_same_tier': { name: '🔟 Tier Dedication', description: 'Roll 10 auras of the exact same tier in a row', requirement: 10, type: 'ten_same_tier', category: 'ROLLING_SPEC', reward: { money: 75000, items: { 'Void Coin': 35 } } },
+
+    // Breakthrough Specific
+    'breakthrough_only_10': { name: '💥 Breakthrough Only', description: 'Roll 10 breakthrough auras in a row', requirement: 10, type: 'breakthrough_only', category: 'ROLLING_SPEC', reward: { money: 100000, items: { 'Void Coin': 50 } } },
+    'no_breakthrough_1000': { name: '🚫 No Breakthroughs Allowed', description: 'Roll 1,000 times without a single breakthrough', requirement: 1000, type: 'no_breakthrough_1000', category: 'ROLLING_SPEC', reward: { money: 50000, potions: { 'Lucky Potion L': 50 } } },
+    'breakthrough_sandwich': { name: '🥪 Breakthrough Sandwich', description: 'Roll breakthrough-normal-breakthrough pattern', requirement: 1, type: 'breakthrough_sandwich', category: 'ROLLING_SPEC', reward: { money: 25000, items: { 'Void Coin': 10 } } },
+
+    // Pity Counter Achievements
+    'pity_rare_500': { name: '😢 Rare Pity', description: 'Go 500 rolls without a rare+ aura', requirement: 500, type: 'pity_rare', category: 'ROLLING_SPEC', reward: { money: 50000, potions: { 'Oblivion Potion': 10 } } },
+    'pity_epic_1000': { name: '😭 Epic Pity', description: 'Go 1,000 rolls without an epic+ aura', requirement: 1000, type: 'pity_epic', category: 'ROLLING_SPEC', reward: { money: 100000, potions: { 'Oblivion Potion': 25 } } },
+    'pity_legendary_5000': { name: '💔 Legendary Pity', description: 'Go 5,000 rolls without a legendary+ aura', requirement: 5000, type: 'pity_legendary', category: 'ROLLING_SPEC', reward: { money: 250000, items: { 'Void Coin': 100 } } },
+    'no_pity_lucky': { name: '🍀 Never Unlucky', description: 'Never go more than 50 rolls without a rare+', requirement: 10000, type: 'no_pity_10k', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+
+    // Session-Based
+    'session_1_roll': { name: '👆 One and Done', description: 'Roll exactly 1 time in a session then leave', requirement: 1, type: 'one_roll_session', category: 'ROLLING_SPEC', reward: { money: 5000, potions: { 'Lucky Potion': 10 } } },
+    'session_perfect_100': { name: '💯 Perfect Session', description: 'Roll exactly 100 times in one session (no more, no less)', requirement: 100, type: 'exact_100_session', category: 'ROLLING_SPEC', reward: { money: 25000, items: { 'Void Coin': 10 } } },
+    'marathon_session_50k': { name: '🏃 Ultra Marathon', description: 'Roll 50,000 times in a single session', requirement: 50000, type: 'ultra_marathon_session', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+    'micro_sessions': { name: '⏱️ Micro Sessions', description: 'Complete 100 sessions with less than 10 rolls each', requirement: 100, type: 'micro_sessions', category: 'ROLLING_SPEC', reward: { money: 50000, items: { 'Void Coin': 25 } } },
+
+    // Daily Rolling
+    'daily_100_streak': { name: '📅 Daily Century Streak', description: 'Roll 100+ times every day for 30 days', requirement: 30, type: 'daily_100_streak', category: 'ROLLING_SPEC', reward: { money: 300000, items: { 'Void Coin': 150 } } },
+    'daily_1k_week': { name: '📆 Weekly Grind', description: 'Roll 1,000+ times every day for 7 days straight', requirement: 7, type: 'daily_1k_week', category: 'ROLLING_SPEC', reward: { money: 200000, items: { 'Void Coin': 100 } } },
+    'perfect_month': { name: '📅 Perfect Month', description: 'Roll at least once every single day for 30 days', requirement: 30, type: 'daily_perfect_month', category: 'ROLLING_SPEC', reward: { money: 150000, items: { 'Void Coin': 75 } } },
+
+    // Biome Rolling
+    'null_biome_1000': { name: '⚫ NULL Grinder', description: 'Roll 1,000 times during NULL biome', requirement: 1000, type: 'null_biome_rolls', category: 'ROLLING_SPEC', reward: { money: 100000, items: { 'Void Coin': 50 } } },
+    'glitch_biome_500': { name: '✨ Glitch Grinder', description: 'Roll 500 times during GLITCHED biome', requirement: 500, type: 'glitch_biome_rolls', category: 'ROLLING_SPEC', reward: { money: 75000, items: { 'Void Coin': 35 } } },
+    'dreamspace_100': { name: '🌸 Dreamspace Grinder', description: 'Roll 100 times during DREAMSPACE biome', requirement: 100, type: 'dreamspace_rolls', category: 'ROLLING_SPEC', reward: { money: 200000, items: { 'Void Coin': 100 } } },
+    'biome_hopper': { name: '🌍 Biome Hopper', description: 'Roll in 5 different biomes within 1 hour', requirement: 5, type: 'biome_hopper_hour', category: 'ROLLING_SPEC', reward: { money: 50000, items: { 'Void Coin': 25 } } },
+    'single_biome_10k': { name: '🏔️ Biome Dedication', description: 'Roll 10,000 times without the biome changing', requirement: 10000, type: 'single_biome_10k', category: 'ROLLING_SPEC', reward: { money: 250000, items: { 'Void Coin': 125 } } },
+
+    // Mutation Rolling
+    'mutation_streak_20': { name: '🧬 Mutation Streak', description: 'Roll 20 mutated auras in a row', requirement: 20, type: 'mutation_streak', category: 'ROLLING_SPEC', reward: { money: 150000, items: { 'Void Coin': 75 } } },
+    'no_mutations_5000': { name: '🚫 Pure Genes', description: 'Roll 5,000 times without a single mutation', requirement: 5000, type: 'no_mutations_5000', category: 'ROLLING_SPEC', reward: { money: 100000, potions: { 'Oblivion Potion': 50 } } },
+    'mutation_only_100': { name: '🧬 Mutations Only', description: 'Roll 100 mutations in a row', requirement: 100, type: 'mutation_only_100', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+
+    // Weekend/Time-Based
+    'weekend_50k': { name: '🎮 Weekend Warrior Pro', description: 'Roll 50,000 times on a single weekend', requirement: 50000, type: 'weekend_50k', category: 'ROLLING_SPEC', reward: { money: 250000, items: { 'Void Coin': 125 } } },
+    'weekday_grind': { name: '💼 Weekday Grinder', description: 'Roll 10,000 times on a Monday', requirement: 10000, type: 'monday_10k', category: 'ROLLING_SPEC', reward: { money: 100000, items: { 'Void Coin': 50 } } },
+    'friday_night': { name: '🎉 Friday Night Fever', description: 'Roll 5,000 times on a Friday evening (6-10PM)', requirement: 5000, type: 'friday_night', category: 'ROLLING_SPEC', reward: { money: 75000, items: { 'Void Coin': 35 } } },
+
+    // Auto-Roll vs Manual
+    'manual_only_50k': { name: '👆 Manual Master Pro', description: 'Roll 50,000 times manually (no auto-roll)', requirement: 50000, type: 'manual_50k', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+    'auto_only_100k': { name: '🤖 Full Automation Pro', description: 'Roll 100,000 times with only auto-roll', requirement: 100000, type: 'auto_100k', category: 'ROLLING_SPEC', reward: { money: 250000, potions: { 'Haste Potion III': 100 } } },
+    'manual_auto_switch': { name: '🔄 Mode Switcher', description: 'Switch between manual and auto-roll 100 times', requirement: 100, type: 'mode_switches', category: 'ROLLING_SPEC', reward: { money: 50000, items: { 'Void Coin': 25 } } },
+
+    // Luck-Based Rolling
+    'max_luck_1000_rolls': { name: '🍀 Always Lucky', description: 'Roll 1,000 times with 1000%+ luck active', requirement: 1000, type: 'luck_1000_rolls', category: 'ROLLING_SPEC', reward: { money: 200000, items: { 'Void Coin': 100 } } },
+    'base_luck_10k': { name: '💯 Base Luck Grinder', description: 'Roll 10,000 times with exactly 100% luck (no buffs)', requirement: 10000, type: 'base_luck_10k', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+    'luck_roller_coaster': { name: '🎢 Luck Roller Coaster', description: 'Roll with 10000%+ luck then 100% luck within 10 rolls', requirement: 1, type: 'luck_coaster', category: 'ROLLING_SPEC', reward: { money: 100000, items: { 'Void Coin': 50 } } },
+
+    // Aura Name Patterns
+    'all_same_letter': { name: '🔤 Alphabetical', description: 'Roll 5 auras starting with the same letter in a row', requirement: 5, type: 'same_letter_5', category: 'ROLLING_SPEC', reward: { money: 25000, items: { 'Void Coin': 10 } } },
+    'alphabetical_order': { name: '🔤 A to Z', description: 'Roll 5 auras in alphabetical order', requirement: 5, type: 'alphabetical_5', category: 'ROLLING_SPEC', reward: { money: 50000, items: { 'Void Coin': 25 } } },
+
+    // Special Combos
+    'triple_digit_luck': { name: '🔢 Triple Digits', description: 'Roll a rare+ aura with exactly 100% luck', requirement: 1, type: 'triple_digit_luck', category: 'ROLLING_SPEC', reward: { money: 10000, potions: { 'Lucky Potion L': 10 } } },
+    'quadruple_digit_luck': { name: '🔢 Quad Digits', description: 'Roll a legendary+ with exactly 1000% luck', requirement: 1, type: 'quad_digit_luck', category: 'ROLLING_SPEC', reward: { money: 50000, items: { 'Void Coin': 25 } } },
+
+    // Roll Intervals
+    'hourly_roller': { name: '⏰ Hourly Roller', description: 'Roll at least once every hour for 48 hours', requirement: 48, type: 'hourly_48', category: 'ROLLING_SPEC', reward: { money: 100000, items: { 'Void Coin': 50 } } },
+    'every_15_min': { name: '⏱️ Quarter Hour', description: 'Roll every 15 minutes for 12 hours', requirement: 48, type: 'every_15_min', category: 'ROLLING_SPEC', reward: { money: 150000, items: { 'Void Coin': 75 } } },
+
+    // Potion Rolling
+    'oblivion_only_1000': { name: '🌑 Oblivion Only', description: 'Roll 1,000 times with only Oblivion Potion active', requirement: 1000, type: 'oblivion_only_1000', category: 'ROLLING_SPEC', reward: { money: 100000, potions: { 'Oblivion Potion': 50 } } },
+    'voidheart_100': { name: '💜 Voidheart Hundred', description: 'Use Voidheart potion 100 times', requirement: 100, type: 'voidheart_100_uses', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+    'no_potions_50k': { name: '🚫 Pure Natural 50K', description: 'Roll 50,000 times without using a single potion', requirement: 50000, type: 'no_potions_50k', category: 'ROLLING_SPEC', reward: { money: 1000000, items: { 'Void Coin': 500 } } },
+
+    // Gear Rolling
+    'no_gear_20k': { name: '🧍 Naked 20K', description: 'Roll 20,000 times with no gear equipped', requirement: 20000, type: 'no_gear_20k', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+    'tier10_only_10k': { name: '⚙️ Tier 10 Only', description: 'Roll 10,000 times with only Tier 10 gears equipped', requirement: 10000, type: 'tier10_only_10k', category: 'ROLLING_SPEC', reward: { money: 250000, items: { 'Void Coin': 125 } } },
+
+    // Rune Rolling
+    'rune_stack_5': { name: '📿 Rune Stacker Pro', description: 'Roll with 5 different rune effects active', requirement: 5, type: 'rune_stack_5', category: 'ROLLING_SPEC', reward: { money: 100000, items: { 'Random Rune Chest': 50 } } },
+    'no_runes_10k': { name: '🚫 No Runes', description: 'Roll 10,000 times without using a single rune', requirement: 10000, type: 'no_runes_10k', category: 'ROLLING_SPEC', reward: { money: 200000, items: { 'Void Coin': 100 } } },
+
+    // Crazy Specific
+    'same_aura_1000': { name: '🔁 Thousand Times', description: 'Roll the exact same aura 1,000 times (lifetime)', requirement: 1000, type: 'same_aura_1000', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+    'different_every_roll': { name: '🌈 Variety King', description: 'Roll 50 different auras in a row (no duplicates)', requirement: 50, type: 'different_50', category: 'ROLLING_SPEC', reward: { money: 250000, items: { 'Void Coin': 125 } } },
+    'unlucky_then_lucky': { name: '🍀 From Zero to Hero', description: 'Roll a divine+ right after 100 commons in a row', requirement: 100, type: 'unlucky_to_lucky', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+
+    // Money-Based Rolling
+    'broke_roller': { name: '💸 Broke Roller', description: 'Roll 1,000 times with $0 money', requirement: 1000, type: 'broke_rolls_1000', category: 'ROLLING_SPEC', reward: { money: 1000000 } },
+    'millionaire_roller': { name: '💰 Millionaire Roller', description: 'Roll 10,000 times while having 1M+ money', requirement: 10000, type: 'millionaire_rolls', category: 'ROLLING_SPEC', reward: { money: 500000, items: { 'Void Coin': 250 } } },
+
+    // Final Master Achievement
+    'rolling_specialist_master': { name: '🎲 Rolling Specialist Master', description: 'Complete all Rolling Specialist achievements', requirement: 'all_rolling_spec', type: 'rolling_spec_master', category: 'ROLLING_SPEC', reward: { money: 10000000, items: { 'Void Coin': 5000 }, potions: { 'Oblivion Potion': 1000 }, buff: 'ROLLING MASTER!' } }
+
+// Total: 100 Rolling Specialist Achievements
+// These should be added to achievementsData.js before the closing };
+// Then update the UI in gameLogic.js to include 'ROLLING_SPEC' category
+// Category Info: { icon: '🎲', name: 'Rolling Specialist' }

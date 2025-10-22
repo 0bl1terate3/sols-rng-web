@@ -1,0 +1,56 @@
+═══════════════════════════════════════════════════════
+     HOW TO PLAY SOL'S RNG ON CHROMEBOOK
+═══════════════════════════════════════════════════════
+
+📦 STEP 1: EXTRACT THE ZIP
+
+1. Locate the ZIP file you received
+2. Right-click → "Extract all"
+3. Remember where you extracted it
+
+
+🌐 STEP 2: OPEN THE GAME
+
+METHOD A - Simple (Just Play):
+────────────────────────────────────────────────────────
+1. Open the extracted folder
+2. Find "index.html"
+3. Right-click → "Open with" → Chrome
+4. Game will load and work!
+
+⚠️ Note: This won't "install" as an app, but game works fine.
+
+
+METHOD B - Run as Local Server (Better):
+────────────────────────────────────────────────────────
+Only if you have Linux (Beta) enabled on your Chromebook:
+
+1. Open Files app
+2. Right-click on the game folder
+3. Select "Share with Linux"
+4. Open Terminal app
+5. Type: cd ~/LinuxFiles/[foldername]
+6. Type: python3 -m http.server 8000
+7. Open Chrome, visit: http://localhost:8000
+8. Game runs like a real website!
+
+
+METHOD C - Chrome Extension (Advanced):
+────────────────────────────────────────────────────────
+For app-like experience:
+
+1. Open Chrome
+2. Go to: chrome://extensions/
+3. Enable "Developer mode" (top right)
+4. Click "Load unpacked"
+5. Select the game folder
+6. Game appears in app launcher!
+
+
+🎮 THAT'S IT!
+
+If Method A doesn't work, try Method B or C.
+Most people just use Method A - it's easiest!
+
+
+═══════════════════════════════════════════════════════

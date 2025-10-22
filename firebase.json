@@ -1,0 +1,86 @@
+{
+  "hosting": {
+    "public": ".",
+    "cleanupOutdatedVersions": true,
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "dist/**",
+      "vite.config.js",
+      "package.json",
+      "package-lock.json",
+      "**/*.bat",
+      "**/*.exe",
+      "**/*.md",
+      "electron-main.js",
+      "package.json",
+      "package-lock.json",
+      "netlify.toml",
+      ".netlifyignore",
+      "BUILD-INSTALLER.md",
+      "CHROMEBOOK-GUIDE.md",
+      "CREATE-ICONS.md",
+      "CHROMEBOOK-OFFLINE-INSTRUCTIONS.txt",
+      "HOW-TO-PLAY-ON-CHROMEBOOK.txt",
+      "QUICK-START.txt",
+      "PLAY-GAME.html"
+    ],
+    "headers": [
+      {
+        "source": "**/*.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "**/*.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "**/*.css",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "**/*.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "**/*.{jpg,png,gif,svg,webp,ico,woff2,ttf}",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=0, no-cache, no-store, must-revalidate"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,127 @@
+/* =================================================================
+   Global Roll Notifications Styles
+   ================================================================= */
+
+.global-notification-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100000;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    pointer-events: none;
+}
+
+.global-notification-popup.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.global-notification-content {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 3px solid #ffd700;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(255, 215, 0, 0.3);
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.global-notification-icon {
+    font-size: 48px;
+    animation: globalPulse 2s infinite;
+}
+
+.global-notification-text {
+    flex: 1;
+}
+
+.global-notification-title {
+    color: #ffd700;
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    letter-spacing: 2px;
+}
+
+.global-notification-player {
+    color: #fff;
+    font-size: 14px;
+    margin: 5px 0;
+    font-weight: bold;
+}
+
+.global-notification-aura {
+    color: #4dffff;
+    font-size: 18px;
+    font-weight: bold;
+    margin: 5px 0;
+    text-shadow: 0 0 10px rgba(77, 255, 255, 0.6);
+}
+
+.global-notification-rarity {
+    color: #ffeb3b;
+    font-size: 13px;
+    margin: 5px 0 0 0;
+    font-weight: bold;
+}
+
+/* Animations */
+@keyframes globalPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+/* Stack multiple notifications */
+.global-notification-popup:nth-child(n+2) {
+    top: calc(20px + (120px * var(--notification-index, 0)));
+}
+
+/* Mobile responsive */
+@media (max-width: 600px) {
+    .global-notification-popup {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        transform: translateY(-200px);
+    }
+
+    .global-notification-popup.show {
+        transform: translateY(0);
+    }
+
+    .global-notification-content {
+        min-width: auto;
+        padding: 15px;
+    }
+
+    .global-notification-icon {
+        font-size: 36px;
+    }
+
+    .global-notification-title {
+        font-size: 14px;
+    }
+
+    .global-notification-player {
+        font-size: 12px;
+    }
+
+    .global-notification-aura {
+        font-size: 16px;
+    }
+
+    .global-notification-rarity {
+        font-size: 11px;
+    }
+}

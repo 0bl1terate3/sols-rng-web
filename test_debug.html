@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Menu Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+    </style>
+</head>
+<body>
+    <h1>Debug Menu Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Test Results</h2>
+        <div id="testResults"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Manual Test</h2>
+        <p>1. Open the game in another tab</p>
+        <p>2. Press "/" to open debug menu</p>
+        <p>3. Look for "Next Roll" section</p>
+        <p>4. Select an aura from dropdown</p>
+        <p>5. Click "Set Next Roll Aura"</p>
+        <p>6. Roll and verify you get the selected aura</p>
+    </div>
+
+    <script>
+        // Test if our functions are properly defined
+        const results = document.getElementById('testResults');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+        
+        // Check if required files are loaded
+        if (typeof AURAS !== 'undefined') {
+            addResult(`✓ AURAS array loaded with ${AURAS.length} auras`, 'success');
+        } else {
+            addResult('✗ AURAS array not found - check if auraData.js is loaded', 'error');
+        }
+        
+        if (typeof populateNextAuraDropdown === 'function') {
+            addResult('✓ populateNextAuraDropdown function is defined', 'success');
+        } else {
+            addResult('✗ populateNextAuraDropdown function not found - check debug.js', 'error');
+        }
+        
+        if (typeof setNextAura === 'function') {
+            addResult('✓ setNextAura function is defined', 'success');
+        } else {
+            addResult('✗ setNextAura function not found - check debug.js', 'error');
+        }
+        
+        if (typeof getActualRolledAura === 'function') {
+            addResult('✓ getActualRolledAura function is defined', 'success');
+        } else {
+            addResult('✗ getActualRolledAura function not found - check gameLogic.js', 'error');
+        }
+        
+        // Test dropdown population
+        try {
+            const mockSelect = document.createElement('select');
+            mockSelect.id = 'nextAuraSelect';
+            document.body.appendChild(mockSelect);
+            
+            if (typeof AURAS !== 'undefined') {
+                // Simulate the function
+                AURAS.forEach(aura => {
+                    const option = document.createElement('option');
+                    option.value = aura.name;
+                    option.textContent = `${aura.name} (${aura.tier})`;
+                    mockSelect.appendChild(option);
+                });
+                
+                addResult(`✓ Dropdown population test: ${mockSelect.options.length} options added`, 'success');
+            }
+            
+            document.body.removeChild(mockSelect);
+        } catch (e) {
+            addResult(`✗ Dropdown population error: ${e.message}`, 'error');
+        }
+        
+        addResult('Test completed. Check the main game to verify functionality.', 'info');
+    </script>
+</body>
+</html>

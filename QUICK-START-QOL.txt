@@ -1,0 +1,98 @@
+╔═══════════════════════════════════════════════════════════════╗
+║           SOL'S RNG - QUALITY OF LIFE QUICK START            ║
+╚═══════════════════════════════════════════════════════════════╝
+
+🎮 ESSENTIAL SHORTCUTS (Press H for full list)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+R           - Roll for aura
+Q or SPACE  - Quick Roll
+A           - Toggle Auto Roll
+H           - Open Help Guide
+I           - Items Tab
+P           - Potions Tab
+C           - Crafting Panel
+CTRL+S      - Save Game
+ESC         - Close Modals
+1/2/3       - Quick Slots
+
+⚡ BULK ACTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CLICK           - Use 1 item/potion
+SHIFT+CLICK     - Use 10 items/potions
+CTRL+CLICK      - Use ALL items/potions
+
+⚗️ CRAFTING MODES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SINGLE  - Craft 1 item
+MULTI   - Craft X items (you choose)
+MAX     - Craft maximum possible with materials
+INSTA   - Instant craft (no animation)
+
+⭐ - Favorite recipes (keeps them at top)
+⚡ - Quick craft button (one-click)
+
+📊 NEW PANELS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ROLL HISTORY    - See your last 10 rolls
+STATISTICS      - Session time, rolls/min, pity counters
+PINNED ACHIEVEMENTS - Track up to 5 achievements
+
+🎒 INVENTORY FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+AURAS:
+  - Sort by: Rarity, Alphabetical, Count, Recent
+  - Filter by: Tier (Common, Rare, Epic, etc.)
+  - Search: Type to find instantly
+
+POTIONS:
+  - Filter: All, Basic, Advanced, Ultimate, Special
+
+💾 SAVE MANAGEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Go to Settings Tab:
+  📤 Export Save  - Download backup
+  📥 Import Save  - Load backup
+  📋 Copy Stats   - Share your progress
+
+🎨 CUSTOMIZATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Settings Tab offers:
+  ☀️ Light/Dark Theme
+  📦 Compact Mode (more screen space)
+  ⚡ Performance Mode (better FPS)
+  👁️ Toggle Panels (show/hide features)
+
+🏆 ACHIEVEMENT PINNING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Go to Achievements Tab
+2. Click 📌 Pin button on any achievement
+3. See progress on main screen
+4. Max 5 pinned at once
+
+💡 PRO TIPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Use keyboard shortcuts for 3x faster gameplay
+✓ Pin achievements you're working on
+✓ Favorite your most-used recipes
+✓ Export save regularly (backup!)
+✓ Use Max mode when bulk crafting
+✓ Shift+Click to use 10 potions at once
+✓ Filter auras to find specific tiers
+✓ Check pity counters to track luck
+✓ Press H anytime for full help guide
+
+🚀 FIRST TIME SETUP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Press H to view help guide
+2. Go to Settings tab
+3. Enable/disable features you want
+4. Try keyboard shortcuts (R to roll!)
+5. Pin some achievements
+6. Favorite some recipes
+7. Export your save as backup
+
+📖 FULL DOCUMENTATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+See QOL-FEATURES.md for complete guide
+
+Enjoy your enhanced Sol's RNG experience! 🎮✨

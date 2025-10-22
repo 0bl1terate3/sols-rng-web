@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.git/
+electron-main.js
+build-installer.bat
+package-lock.json
+*.md
+BUILD-INSTALLER.md
+CHROMEBOOK-GUIDE.md
+CREATE-ICONS.md
+CHROMEBOOK-OFFLINE-INSTRUCTIONS.txt
+HOW-TO-PLAY-ON-CHROMEBOOK.txt
+QUICK-START.txt
+debug.js
+PLAY-GAME.html
+firebase.json
+.firebaserc

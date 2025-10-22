@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Aura Display</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        
+        .test-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        
+        /* Test different aura name styles */
+        .aura-item-name {
+            font-weight: bold;
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            font-size: 1.2em;
+            margin-bottom: 4px;
+            color: #ffffff;
+        }
+        
+        /* Gradient text effect for aura inventory items */
+        .aura-item-name.gradient-text {
+            background: var(--aura-gradient, linear-gradient(135deg, #ffffff, #cccccc));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: none;
+        }
+        
+        /* Test fallback for missing gradients */
+        .aura-item-name.missing-gradient {
+            background: linear-gradient(135deg, #ffffff, #cccccc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .aura-item-name.solid-color {
+            color: #ffffff;
+        }
+        
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Aura Name Display</h1>
+    
+    <div class="test-container">
+        <h3>Test Cases:</h3>
+        
+        <div class="test-item">
+            <div class="aura-item-name gradient-text" style="--aura-gradient: linear-gradient(135deg, #9333ea, #7c2d12);">
+                Arcane (with gradient)
+            </div>
+            <div>Should show purple gradient text</div>
+        </div>
+        
+        <div class="test-item">
+            <div class="aura-item-name gradient-text" style="--aura-gradient: linear-gradient(135deg, #000000, #333333);">
+                Undefined (black gradient)
+            </div>
+            <div>Should show black gradient text - might be invisible on dark background</div>
+        </div>
+        
+        <div class="test-item">
+            <div class="aura-item-name gradient-text" style="--aura-gradient: undefined;">
+                Missing Gradient Test
+            </div>
+            <div>Should show fallback gradient or be invisible</div>
+        </div>
+        
+        <div class="test-item">
+            <div class="aura-item-name missing-gradient">
+                Fallback Gradient
+            </div>
+            <div>Should show white to gray gradient</div>
+        </div>
+        
+        <div class="test-item">
+            <div class="aura-item-name solid-color">
+                Solid White Color
+            </div>
+            <div>Should show solid white text</div>
+        </div>
+        
+        <div class="test-item">
+            <div class="aura-item-name gradient-text" style="font-family: 'Bungee Shade', cursive; --aura-gradient: linear-gradient(135deg, #ffffff, #cccccc);">
+                Font Test (Bungee Shade)
+            </div>
+            <div>Should show gradient text with Bungee Shade font</div>
+        </div>
+    </div>
+    
+    <div class="test-container">
+        <h3>Browser Compatibility Test:</h3>
+        <div id="browser-info"></div>
+    </div>
+    
+    <script>
+        // Test browser compatibility
+        const browserInfo = document.getElementById('browser-info');
+        browserInfo.innerHTML = `
+            <p>User Agent: ${navigator.userAgent}</p>
+            <p>CSS Background Clip Support: ${CSS.supports('background-clip', 'text') ? 'Yes' : 'No'}</p>
+            <p>Webkit Background Clip Support: ${CSS.supports('-webkit-background-clip', 'text') ? 'Yes' : 'No'}</p>
+            <p>Webkit Text Fill Color Support: ${CSS.supports('-webkit-text-fill-color', 'transparent') ? 'Yes' : 'No'}</p>
+        `;
+        
+        // Test if custom fonts are loading
+        setTimeout(() => {
+            const fontTest = document.createElement('div');
+            fontTest.style.fontFamily = 'Bungee Shade, cursive';
+            fontTest.textContent = 'Font test';
+            document.body.appendChild(fontTest);
+            
+            const computedFont = window.getComputedStyle(fontTest).fontFamily;
+            browserInfo.innerHTML += `<p>Computed font: ${computedFont}</p>`;
+            fontTest.remove();
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+/* =================================================================
+   Performance Optimizer Styles
+   ================================================================= */
+
+/* Reduced Animations - Faster transitions */
+body.reduced-animations * {
+    animation-duration: 0.15s !important;
+    transition-duration: 0.15s !important;
+}
+
+body.reduced-animations .panel,
+body.reduced-animations .qol-panel {
+    transition: all 0.1s ease !important;
+}
+
+/* Disable Particles */
+body.no-particles .particle,
+body.no-particles canvas[id*="particle"],
+body.no-particles .star-particle,
+body.no-particles .energy-particle {
+    display: none !important;
+}
+
+/* Lower Quality Effects - Reduce blur and shadows */
+body.low-quality-effects * {
+    filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+body.low-quality-effects .panel,
+body.low-quality-effects .qol-panel,
+body.low-quality-effects button {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+body.low-quality-effects #currentAuraDisplay {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Disable Background Effects */
+body.no-background-effects::before,
+body.no-background-effects::after,
+body.no-background-effects .panel::before,
+body.no-background-effects .panel::after,
+body.no-background-effects header::before,
+body.no-background-effects header::after {
+    display: none !important;
+}
+
+body.no-background-effects {
+    /* Use biome colors but simplified - just use the primary color as solid background */
+    background: var(--bg-primary, #0f172a) !important;
+}
+
+body.no-background-effects .panel {
+    background: rgba(30, 41, 59, 0.95) !important;
+}
+
+/* Preserve biome colors on QoL panels even with background effects disabled */
+body.no-background-effects .roll-history-panel,
+body.no-background-effects .statistics-panel {
+    background: var(--biome-panel-gradient, rgba(30, 41, 59, 0.95)) !important;
+}
+
+/* Performance Settings Panel Styles */
+.performance-settings-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.performance-setting-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.performance-setting-item label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.performance-setting-item .setting-description {
+    margin-top: 6px;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.6);
+    margin-left: 30px;
+}
+
+.performance-quick-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.performance-quick-actions button {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px 15px;
+    font-weight: 600;
+}
+
+.performance-warning {
+    background: rgba(251, 191, 36, 0.1);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    color: #fbbf24;
+    font-size: 0.9em;
+}
+
+.performance-warning strong {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1.1em;
+}
+
+/* Optimize cutscene canvas rendering */
+body.low-quality-effects canvas {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+/* Reduce transform complexity */
+body.reduced-animations * {
+    will-change: auto !important;
+}
+
+/* Disable expensive CSS features */
+body.low-quality-effects .glow,
+body.low-quality-effects .shimmer,
+body.low-quality-effects .pulse {
+    animation: none !important;
+}
+
+/* Optimize scroll performance */
+body.low-quality-effects {
+    scroll-behavior: auto !important;
+}
+
+/* Reduce repaints */
+body.reduced-animations .inventory-item,
+body.reduced-animations .stat-item,
+body.reduced-animations .roll-history-item {
+    contain: layout style paint;
+}
+
+/* GPU acceleration for critical elements only */
+body.low-quality-effects #currentAuraDisplay {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}

@@ -1,0 +1,56 @@
+# AURA TIER MISMATCH ANALYSIS
+
+## Tier Ranges (Expected):
+- Common: 1-10
+- Uncommon: 4-20
+- Rare: 16-200
+- Epic: 200-1,500
+- Legendary: 1,000-10,000
+- Mythic: 8,000-100,000
+- Exotic: 40,000-1,000,000
+- Divine: 100,000-1,000,000
+- Celestial: 1,000,000-5,000,000
+- Transcendent: 5,000,000-10,000,000,000
+- Cosmic: 10,000,000,000+
+
+## ISSUES FOUND:
+
+### Watt: Superconductor
+- Current: rarity 131,072, tier "mythic"
+- Should be: tier "exotic" (too high for mythic)
+
+### Crimson
+- Current: rarity 8,000, tier "epic"
+- Should be: tier "mythic" (too high for epic)
+
+### Vertebrae
+- Current: rarity 15,000, tier "legendary"
+- Should be: tier "mythic" (borderline, but more mythic)
+
+### Hemogoblin
+- Current: rarity 35,000, tier "legendary"
+- Should be: tier "mythic" or "exotic"
+
+### Crimtane
+- Current: rarity 25,000, tier "legendary"
+- Should be: tier "mythic"
+
+### Vicious
+- Current: rarity 50,000, tier "exotic"
+- CORRECT ✓
+
+### Meteor
+- Current: rarity 200,005, tier "exotic"
+- Should be: tier "divine" (too high for exotic)
+
+### Radiation
+- Current: rarity 82,000, tier "exotic"
+- CORRECT ✓
+
+### Fault: Fatal
+- Current: rarity 303,330, tier "divine"
+- CORRECT ✓
+
+### Vampiric
+- Current: rarity 8,500,000, tier "celestial"
+- Should be: tier "transcendent" (too high for celestial)

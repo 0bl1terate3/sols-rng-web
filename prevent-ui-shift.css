@@ -1,0 +1,101 @@
+/* Prevent UI Shifting During Auto-Roll */
+
+/* Fix panel heights to prevent content from pushing UI around */
+.panel {
+    will-change: auto; /* Prevent GPU acceleration issues */
+}
+
+/* Fix tab positions and prevent resizing */
+.tabs {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: inherit;
+    padding-bottom: 10px;
+    margin-bottom: 10px !important;
+}
+
+/* Prevent tabs from changing size during updates - DISABLED FOR FLEXIBLE LAYOUT */
+/* These rules are commented out to allow the new flexible tab system to work
+.tab-btn {
+    flex: 0 0 auto !important;
+    min-width: 120px !important;
+    max-width: 140px !important;
+    width: 120px !important;
+    padding: 12px 8px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+}
+
+.tab-btn[data-tab="achievements"],
+.tab-btn[data-tab="settings"] {
+    width: 140px !important;
+    min-width: 140px !important;
+}
+
+.tab-btn[data-tab="quests"] {
+    width: 135px !important;
+    min-width: 135px !important;
+}
+*/
+
+.tab-content {
+    contain: layout style; /* CSS containment for better performance */
+}
+
+/* Prevent recipe list from causing shifts */
+.recipes-list {
+    contain: layout style;
+}
+
+/* Stable inventory grids */
+.inventory-grid {
+    contain: layout style;
+}
+
+/* Prevent filter controls from shifting */
+#craftingFilters {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    padding: 10px;
+    margin: -10px -10px 10px -10px;
+}
+
+/* Smooth transitions only for non-layout properties */
+.recipe-item,
+.inventory-item,
+.tab-btn {
+    transition: background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+    transition-property: background-color, border-color, opacity, transform; /* Explicitly exclude layout properties */
+}
+
+/* Prevent layout thrashing - Removed universal selector to prevent layout conflicts */
+
+/* Stable container for game area */
+/* Removed grid override to allow modern UI flex layout to work correctly */
+
+/* Performance optimizations */
+.panel-content {
+    contain: layout style paint;
+}
+
+.aura-name,
+.aura-rarity {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+}
+
+/* Prevent roll display from causing layout shifts */
+.roll-display {
+    contain: layout;
+    /* overflow: hidden; */ /* Removed to allow native indicator to display fully */
+}
+
+.roll-card {
+    contain: layout style;
+}

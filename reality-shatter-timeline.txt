@@ -1,0 +1,184 @@
+    timeline
+    // ===== REALITY SHATTER SEQUENCE =====
+    // Phase 1: The Calm - Everything is still
+    .add({
+        targets: cutsceneEl,
+        backgroundColor: ['rgba(10,10,15,1)', 'rgba(5,5,10,1)'],
+        duration: 1500,
+        easing: 'linear'
+    })
+    // Phase 2: Reality Crack - Single point of fracture
+    .add({
+        targets: cutsceneState.voidRift,
+        size: 100,
+        opacity: 0.8,
+        duration: 1000,
+        easing: 'easeOutQuad',
+        begin: () => {
+            anime({ targets: cutsceneState, cameraShake: [0, 5], duration: 1000 });
+        }
+    })
+    // Phase 3: THE SHATTER - Reality explodes into fragments
+    .add({
+        targets: cutsceneState.realityShards,
+        x: (el, i) => el.targetX,
+        y: (el, i) => el.targetY,
+        opacity: [0, 0.9],
+        rotation: (el) => el.rotation + Math.PI * 4,
+        duration: 1200,
+        delay: anime.stagger(15, {from: 'center'}),
+        easing: 'easeOutExpo',
+        begin: () => {
+            anime({ targets: cutsceneState, cameraShake: [5, 30], duration: 400 });
+            anime({ targets: cutsceneState, cameraZoom: [1, 1.15], duration: 800 });
+            // Screen flash
+            const flash = document.createElement('div');
+            Object.assign(flash.style, {
+                position: 'absolute', top: 0, left: 0, width: '100%',
+                height: '100%', backgroundColor: '#ffffff', opacity: 0, zIndex: 9998
+            });
+            cutsceneEl.appendChild(flash);
+            anime({ targets: flash, opacity: [0, 0.9, 0], duration: 400, easing: 'easeInOutQuad', complete: () => flash.remove() });
+        }
+    }, '-=200')
+    // Phase 4: Quantum Particles emerge from the void
+    .add({
+        targets: cutsceneState.quantumParticles,
+        opacity: [0, 1],
+        duration: 800,
+        delay: anime.stagger(2),
+        easing: 'easeOutQuad'
+    }, '-=800')
+    // Phase 5: Shards float and glitch in suspended animation
+    .add({
+        targets: cutsceneState.realityShards,
+        glitch: [0, 1, 0],
+        duration: 1500,
+        loop: 2,
+        easing: 'easeInOutSine',
+        begin: () => {
+            anime({ targets: cutsceneState, cameraShake: [30, 15], duration: 1500 });
+        }
+    })
+    // Phase 6: Sacred Geometry begins to form
+    .add({
+        targets: cutsceneState.sacredGeometry,
+        size: 20,
+        opacity: 1,
+        duration: 1000,
+        delay: anime.stagger(80, {from: 'center'}),
+        easing: 'easeOutBack'
+    }, '-=1000')
+    // Phase 7: Shards begin reassembly - pulled toward geometry
+    .add({
+        targets: cutsceneState.realityShards,
+        x: centerX,
+        y: centerY,
+        rotation: (el) => el.rotation + Math.PI * 2,
+        scale: [1, 0.1],
+        duration: 1800,
+        delay: anime.stagger(20, {from: 'last'}),
+        easing: 'easeInExpo',
+        begin: () => {
+            anime({ targets: cutsceneState, cameraZoom: [1.15, 1.05], duration: 1800 });
+        }
+    })
+    // Phase 8: Void Rift intensifies - pulling everything in
+    .add({
+        targets: cutsceneState.voidRift,
+        size: [100, 300, 0],
+        opacity: [0.8, 1, 0],
+        rotation: Math.PI * 6,
+        duration: 1500,
+        easing: 'easeInOutQuad',
+        begin: () => {
+            anime({ targets: cutsceneState, cameraShake: [15, 35, 0], duration: 1500 });
+        }
+    }, '-=1200')
+    // Phase 9: Sacred Geometry pulses and connects
+    .add({
+        targets: cutsceneState.sacredGeometry,
+        size: [20, 30, 25],
+        opacity: [1, 0.8, 1],
+        duration: 800,
+        loop: 3,
+        easing: 'easeInOutQuad'
+    }, '-=1000')
+    // Phase 10: Reality Reformation - Background shifts to aura color
+    .add({
+        targets: cutsceneEl,
+        backgroundColor: cutsceneState.currentColor,
+        duration: 1500,
+        easing: 'easeOutCubic'
+    })
+    // Phase 11: Geometry explodes into particles
+    .add({
+        targets: cutsceneState.sacredGeometry,
+        size: 0,
+        opacity: 0,
+        duration: 600,
+        delay: anime.stagger(30),
+        easing: 'easeInExpo',
+        begin: () => {
+            // Particles burst effect
+            for (let i = 0; i < 300; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 8 + 3;
+                cutsceneState.quantumParticles.push({
+                    x: centerX,
+                    y: centerY,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    size: Math.random() * 4 + 2,
+                    opacity: 1,
+                    life: 1
+                });
+            }
+        }
+    }, '-=800')
+    // Phase 12: Aura Name Materializes from the reformed reality
+    .add({
+        targets: cutsceneState.cosmicAura,
+        opacity: [0, 1],
+        scale: [0.5, 1],
+        yOffset: [100, 0],
+        duration: 1500,
+        easing: 'easeOutElastic(1, 0.6)',
+        begin: () => {
+            const auraNameEl = document.getElementById('cutsceneAuraName');
+            const rarityEl = document.getElementById('cutsceneRarity');
+            auraNameEl.style.fontFamily = getAuraFont(aura.name);
+            cutsceneState.cosmicAura.text = auraNameEl.textContent;
+            cutsceneState.cosmicAura.rarityText = rarityEl.textContent;
+            anime({ targets: cutsceneState, cameraZoom: [1.05, 1], duration: 1500 });
+            // Recreate geometry briefly for final reveal
+            cutsceneState.sacredGeometry.forEach((node, i) => {
+                node.size = 15;
+                node.opacity = 0;
+            });
+            anime({ 
+                targets: cutsceneState.sacredGeometry, 
+                opacity: [0, 0.4, 0], 
+                size: [15, 25, 15],
+                duration: 2000,
+                delay: anime.stagger(60),
+                easing: 'easeInOutQuad' 
+            });
+        }
+    })
+    // Phase 13: Final Hold and Fade
+    .add({
+        targets: cutsceneEl,
+        opacity: 0,
+        duration: 1200,
+        easing: 'easeInQuad',
+        begin: () => {
+            const flash = document.createElement('div');
+            Object.assign(flash.style, {
+                position: 'absolute', top: 0, left: 0, width: '100%',
+                height: '100%', backgroundColor: '#ffffff', opacity: 0, zIndex: 9999
+            });
+            cutsceneEl.appendChild(flash);
+            anime({ targets: flash, opacity: [0, 1, 0], duration: 600, easing: 'easeInOutQuad', complete: () => flash.remove() });
+        }
+    }, '+=2500');

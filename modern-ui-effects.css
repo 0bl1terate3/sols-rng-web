@@ -1,0 +1,692 @@
+/* ============================================
+   MODERN UI - Part 4: Effects & Animations
+   ============================================ */
+
+/* Rolling Animation */
+.roll-display.rolling {
+    animation: rollShake 0.1s infinite;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+@keyframes rollShake {
+    0%, 100% { transform: translateX(0) translateZ(0); }
+    25% { transform: translateX(-5px) translateZ(0); }
+    75% { transform: translateX(5px) translateZ(0); }
+}
+
+/* Rarity Colors */
+.rarity-common { border-color: #9ca3af !important; color: #9ca3af !important; }
+.rarity-uncommon { border-color: #22c55e !important; color: #22c55e !important; }
+.rarity-good { border-color: #3b82f6 !important; color: #3b82f6 !important; }
+.rarity-rare { border-color: #8b5cf6 !important; color: #8b5cf6 !important; }
+.rarity-epic { border-color: #a855f7 !important; color: #a855f7 !important; }
+.rarity-legendary { border-color: #f59e0b !important; color: #f59e0b !important; }
+.rarity-mythic { border-color: #ef4444 !important; color: #ef4444 !important; }
+.rarity-exotic { border-color: #ec4899 !important; color: #ec4899 !important; }
+.rarity-divine { border-color: #fbbf24 !important; color: #fbbf24 !important; }
+.rarity-celestial { border-color: #00d9ff !important; color: #00d9ff !important; }
+.rarity-transcendent { border-color: #c084fc !important; color: #c084fc !important; }
+
+/* Glow Effects */
+.glow-common { box-shadow: 0 0 20px rgba(156, 163, 175, 0.5); }
+.glow-uncommon { box-shadow: 0 0 20px rgba(34, 197, 94, 0.5); }
+.glow-good { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+.glow-rare { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+.glow-epic { box-shadow: 0 0 20px rgba(168, 85, 247, 0.5); }
+.glow-legendary { box-shadow: 0 0 20px rgba(245, 158, 11, 0.5); }
+.glow-mythic { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+.glow-exotic { box-shadow: 0 0 20px rgba(236, 72, 153, 0.5); }
+.glow-divine { box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+.glow-celestial { box-shadow: 0 0 20px rgba(0, 217, 255, 0.5); }
+.glow-transcendent { box-shadow: 0 0 20px rgba(192, 132, 252, 0.5); }
+
+/* Potion Selected State */
+.potion-selected {
+    border: 2px solid #00d9ff !important;
+    background: rgba(0, 217, 255, 0.2) !important;
+    transform: scale(0.95);
+}
+
+/* Potion Disabled State */
+.potion-disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+}
+
+.potion-disabled:hover {
+    transform: none !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Progress Bars */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00d9ff, #00ff88);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+/* Achievement Pin Button */
+.achievement-pin-btn {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.achievement-pin-btn:hover {
+    background: rgba(0, 217, 255, 0.2);
+    border-color: #00d9ff;
+}
+
+.achievement-pin-btn.pinned {
+    background: #00d9ff;
+    border-color: #00d9ff;
+    color: white;
+}
+
+/* Merchant Beam Effect */
+@keyframes beamPulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+/* Merchant Notification */
+@keyframes merchantNotif {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Gear Loadouts */
+.gear-loadouts-panel {
+    background: #242b3d;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.loadouts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.loadout-slot {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.loadout-slot:hover {
+    border-color: #00d9ff;
+}
+
+.loadout-slot.active {
+    border-color: #00d9ff;
+    background: rgba(0, 217, 255, 0.1);
+}
+
+.loadout-slot.empty {
+    opacity: 0.6;
+}
+
+.loadout-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.loadout-name {
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.loadout-name:hover {
+    color: #00d9ff;
+}
+
+.loadout-clear {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ef4444;
+    border: none;
+    color: white;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loadout-gear {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.loadout-gear-item {
+    font-size: 12px;
+    color: #a0aec0;
+}
+
+.gear-label {
+    font-weight: 700;
+    color: #6b7280;
+    margin-right: 4px;
+}
+
+.gear-name {
+    color: #00d9ff;
+}
+
+.loadout-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.loadout-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.loadout-btn.save {
+    background: rgba(0, 217, 255, 0.2);
+    color: #00d9ff;
+}
+
+.loadout-btn.save:hover {
+    background: #00d9ff;
+    color: white;
+}
+
+.loadout-btn.load {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.loadout-btn.load:hover {
+    background: #10b981;
+    color: white;
+}
+
+.loadout-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Roll History Panel */
+.roll-history-panel {
+    background: var(--biome-panel-gradient, #242b3d);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.roll-history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.history-settings-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #ffffff;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.history-settings-btn:hover {
+    background: rgba(0, 217, 255, 0.2);
+}
+
+.history-settings {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.history-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.history-control-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.history-control-group label {
+    font-size: 12px;
+    color: #a0aec0;
+    min-width: 80px;
+}
+
+.history-control-group select {
+    flex: 1;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.history-toggles {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.history-toggles label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.roll-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.roll-history-list.compact .history-entry {
+    padding: 8px;
+}
+
+.history-entry {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 3px solid;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.history-entry:hover {
+    background: rgba(0, 217, 255, 0.1);
+    transform: translateX(4px);
+}
+
+.history-name {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.history-rarity {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.history-time {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+.history-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* Statistics Panel */
+.statistics-panel {
+    background: var(--biome-panel-gradient, #242b3d);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.statistics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.stat-item {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-item.highlight {
+    border: 1px solid #00d9ff;
+    background: rgba(0, 217, 255, 0.1);
+}
+
+.stat-item.pity-counter {
+    border-left: 3px solid #f59e0b;
+}
+
+.stat-item.best-roll {
+    border: 1px solid #fbbf24;
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.rarity-distribution {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.rarity-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.rarity-bar-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rarity-label {
+    min-width: 80px;
+    font-size: 12px;
+    color: #a0aec0;
+    text-transform: capitalize;
+}
+
+.rarity-bar-container {
+    flex: 1;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.rarity-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.rarity-count {
+    min-width: 40px;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* Compact Mode */
+.compact-mode .card-body {
+    padding: 12px;
+}
+
+.compact-mode .stat-row {
+    padding: 6px 0;
+}
+
+.compact-mode .inventory-item {
+    padding: 12px;
+}
+
+.compact-mode .inventory-item-icon {
+    font-size: 28px;
+}
+
+/* Filter Pills */
+.filter-pills {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 6px;
+    border-radius: 12px;
+}
+
+.filter-pill {
+    flex: 1;
+    min-width: fit-content;
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #a0aec0;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: center;
+}
+
+.filter-pill:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.filter-pill.active {
+    background: #00d9ff;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 217, 255, 0.3);
+}
+
+/* Loading States */
+.loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    color: #6b7280;
+}
+
+.loading::after {
+    content: '...';
+    animation: loadingDots 1.5s infinite;
+}
+
+@keyframes loadingDots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+/* Tooltip */
+.tooltip {
+    position: absolute;
+    background: #1a1f2e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #ffffff;
+    pointer-events: none;
+    z-index: 4000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Pinned Achievements */
+.pinned-achievements-panel {
+    background: #242b3d;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 16px;
+    margin-top: 16px;
+}
+
+.pinned-achievements-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.pinned-achievement {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    border-radius: 8px;
+    border-left: 3px solid #00d9ff;
+}
+
+.pinned-achievement-name {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.pinned-achievement-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.progress-text {
+    font-size: 11px;
+    color: #6b7280;
+}
+
+/* Rainbow Animation for Chromatic and other rainbow effects */
+@keyframes rainbow-shift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+/* Chromatic Aura Rainbow Effect */
+.chromatic-rainbow {
+    background: linear-gradient(90deg, 
+        #ff0000, #ff7f00, #ffff00, #00ff00, 
+        #00ffff, #0000ff, #8b00ff, #ff00ff,
+        #ff0000, #ff7f00, #ffff00, #00ff00
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbow-shift 1s linear infinite;
+    background-size: 200% 100%;
+}
+
+/* Chromatic Genesis Emanating Words Container */
+.genesis-words-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Chromatic Genesis Emanating Word */
+.genesis-word {
+    position: absolute;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #f472b6, #c084fc, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 0 10px rgba(244, 114, 182, 0.5);
+    opacity: 0;
+    animation: emanateWord 2.5s ease-out forwards;
+}
+
+@keyframes emanateWord {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+    20% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 0.8;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.5);
+    }
+}
+
+/* Chromatic Genesis Text Style */
+.chromatic-genesis-text {
+    background: linear-gradient(135deg, #f472b6, #ec4899, #a78bfa, #7dd3fc, #93c5fd, #a78bfa, #ec4899, #f472b6) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    filter: drop-shadow(0 0 15px rgba(244, 114, 182, 0.6)) drop-shadow(0 0 25px rgba(125, 211, 252, 0.4));
+    animation: genesisGlow 6s ease-in-out infinite;
+    background-size: 400% 400%;
+}
+
+@keyframes genesisGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 15px rgba(244, 114, 182, 0.6)) drop-shadow(0 0 25px rgba(244, 114, 182, 0.4));
+        background-position: 0% 50%;
+    }
+    50% {
+        filter: drop-shadow(0 0 20px rgba(125, 211, 252, 0.7)) drop-shadow(0 0 30px rgba(147, 197, 253, 0.5));
+        background-position: 100% 50%;
+    }
+}
+
+/* Twilight: Withering Grace - Display Image Instead of Text */
+.withering-grace-image {
+    max-width: 100%;
+    height: auto;
+    max-height: 100px;
+    display: block;
+    margin: 0 auto;
+}

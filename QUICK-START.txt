@@ -1,0 +1,84 @@
+╔══════════════════════════════════════════════════════════╗
+║         Sol's RNG - Create Installer Guide              ║
+╚══════════════════════════════════════════════════════════╝
+
+🎮 EASIEST METHOD (Windows):
+
+   1. Double-click: build-installer.bat
+   2. Wait for it to finish (5-10 minutes)
+   3. Get your installer from the "dist" folder!
+
+   ⚠️ First time only: You need Node.js installed
+      Download: https://nodejs.org/ (choose LTS version)
+
+────────────────────────────────────────────────────────────
+
+📝 MANUAL METHOD:
+
+   1. Open terminal/command prompt in this folder
+   2. Run: npm install
+   3. Run: npm run dist-win
+   4. Find installer in "dist" folder
+
+────────────────────────────────────────────────────────────
+
+🧪 TEST BEFORE BUILDING:
+
+   Run: npm run electron-dev
+   (Opens the game in Electron with dev tools)
+
+────────────────────────────────────────────────────────────
+
+🎨 OPTIONAL - Add an Icon:
+
+   1. Create/find a 512x512 PNG image for your game
+   2. Convert to .ico using: https://convertico.com/
+   3. Save as "icon.ico" in this folder
+   4. Rebuild installer
+
+────────────────────────────────────────────────────────────
+
+📦 WHAT YOU GET:
+
+   ✓ Professional Windows installer (.exe)
+   ✓ Desktop shortcut
+   ✓ Start menu entry
+   ✓ Proper uninstaller
+   ✓ Works offline
+   ✓ No browser needed!
+
+────────────────────────────────────────────────────────────
+
+🚀 DISTRIBUTION:
+
+   After building, share the file:
+   "Sol's RNG Setup 1.0.0.exe" from the dist folder
+
+   Users just double-click to install!
+
+────────────────────────────────────────────────────────────
+
+❓ TROUBLESHOOTING:
+
+   Problem: "npm is not recognized"
+   Solution: Install Node.js from nodejs.org
+
+   Problem: Build fails
+   Solution: Check BUILD-INSTALLER.md for details
+
+   Problem: Need help
+   Solution: Check the console output for error details
+
+────────────────────────────────────────────────────────────
+
+📋 FILES CREATED:
+
+   ✓ package.json        - Build configuration
+   ✓ electron-main.js    - App launcher
+   ✓ build-installer.bat - Easy build script
+   ✓ BUILD-INSTALLER.md  - Detailed guide
+   ✓ .gitignore         - Git configuration
+
+────────────────────────────────────────────────────────────
+
+Good luck with your game! 🎲

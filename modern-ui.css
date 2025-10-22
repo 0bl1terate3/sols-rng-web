@@ -1,0 +1,474 @@
+/* ============================================
+   MODERN UI - Part 1: Base & Layout
+   ============================================ */
+
+/* Force override old styles */
+* {
+    box-sizing: border-box;
+}
+
+/* Hide old UI elements that might conflict */
+.container {
+    display: none !important;
+}
+
+/* Hide Limbo elements */
+#limboToggle,
+#limboToggleBtn,
+.limbo-toggle,
+.btn-limbo,
+.quest-card {
+    display: none !important;
+}
+
+/* Ensure sidebar cards are visible */
+.biome-card,
+.equipment-card,
+.stats-card,
+.effects-card {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.biome-icon {
+    font-size: 64px !important;
+    margin: 8px 0 4px 0 !important;
+    display: block !important;
+}
+
+.biome-name {
+    font-size: 20px !important;
+    font-weight: 700 !important;
+    color: var(--accent-primary) !important;
+    margin-bottom: 4px !important;
+    margin-top: 0 !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+.time-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 16px !important;
+    background: rgba(0, 217, 255, 0.1) !important;
+    border-radius: 9999px !important;
+    margin-top: 4px !important;
+    margin-bottom: 0 !important;
+}
+
+.time-icon {
+    font-size: 16px !important;
+}
+
+.time-text {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--text-secondary) !important;
+}
+
+.stat-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 12px 0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.stat-row:last-child {
+    border-bottom: none !important;
+}
+
+.stat-label {
+    font-size: 13px !important;
+    color: var(--text-secondary) !important;
+    font-weight: 600 !important;
+}
+
+.stat-value {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--accent-primary) !important;
+}
+
+:root {
+    --bg-primary: #0f1419;
+    --bg-secondary: #1a1f2e;
+    --bg-tertiary: #242b3d;
+    --accent-primary: #00d9ff;
+    --accent-secondary: #00ff88;
+    --text-primary: #ffffff;
+    --text-secondary: #a0aec0;
+    --text-muted: #6b7280;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    /* Transparent to allow 3D biome effects to show through */
+    background: transparent;
+    background-color: #0a0f1a; /* Dark fallback if effects fail */
+    color: var(--text-primary);
+    overflow-x: hidden;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* Top Navigation */
+.top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(26, 31, 46, 0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-lg);
+    z-index: 1000;
+    box-shadow: var(--shadow);
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.brand-icon {
+    font-size: 28px;
+    animation: rotate 10s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.brand-text {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+}
+
+.nav-stats {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+}
+
+.stat-pill {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.stat-pill:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent-primary);
+}
+
+.stat-icon {
+    font-size: 20px;
+}
+
+.stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-primary);
+}
+
+.nav-actions {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.nav-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    font-size: 20px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nav-btn:hover {
+    background: rgba(0, 217, 255, 0.1);
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+/* Main Container */
+.main-container {
+    display: grid;
+    grid-template-columns: 300px 1fr 380px;
+    gap: var(--spacing-lg);
+    padding: calc(64px + var(--spacing-lg)) var(--spacing-lg) var(--spacing-lg);
+    max-width: 1920px;
+    margin: 0 auto;
+    min-height: calc(100vh - 64px);
+    position: relative;
+    z-index: 1;
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    position: relative;
+    z-index: 1;
+}
+
+/* Sidebars */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--accent-primary);
+    border-radius: 3px;
+}
+
+/* Cards */
+.card {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.card:hover {
+    border-color: rgba(0, 217, 255, 0.3);
+}
+
+.card-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.card-title {
+    font-size: 16px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-primary);
+}
+
+.card-title .icon {
+    font-size: 20px;
+}
+
+.card-body {
+    padding: var(--spacing-md) !important;
+    display: block !important;
+    visibility: visible !important;
+    min-height: 50px !important;
+    overflow: visible !important;
+}
+
+.biome-card .card-body {
+    min-height: 180px !important;
+    padding: 12px 20px 20px 20px !important;
+}
+
+.equipment-card .card-body {
+    min-height: 320px !important;
+}
+
+.text-center {
+    text-align: center !important;
+    overflow: visible !important;
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-lg);
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+/* ============================================
+   EQUIPMENT SLOTS - Enhanced Display
+   ============================================ */
+
+.equipment-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+.slot-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.slot-label {
+    font-size: 11px;
+    color: #6b7280;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+/* Enhanced Equipment Slots */
+.equipment-slot {
+    position: relative;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.equipment-slot:hover {
+    border-color: rgba(0, 217, 255, 0.3);
+    background: rgba(0, 217, 255, 0.05);
+}
+
+.equipment-slot.equipped {
+    border-color: #00d9ff;
+    background: linear-gradient(135deg, rgba(0, 217, 255, 0.1), rgba(0, 184, 212, 0.05));
+    box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
+}
+
+.slot-item {
+    text-align: center;
+}
+
+.empty-slot-text {
+    color: #6b7280;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px 0;
+}
+
+.equipped-gear-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #00d9ff;
+    margin-bottom: 6px;
+    text-align: center;
+}
+
+.equipped-gear-tier {
+    font-size: 11px;
+    color: #fbbf24;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
+.equipped-gear-effects {
+    font-size: 11px;
+    color: #a0aec0;
+    line-height: 1.4;
+    text-align: center;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    margin-top: 8px;
+}
+
+.unequip-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    background: rgba(239, 68, 68, 0.8);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    line-height: 1;
+}
+
+.unequip-btn:hover {
+    background: #ef4444;
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}

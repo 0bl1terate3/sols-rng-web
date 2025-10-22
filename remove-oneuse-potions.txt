@@ -1,0 +1,24 @@
+One-Use Potions to Remove from All Achievement Rewards:
+
+1. 'Forbidden Potion I'
+2. 'Forbidden Potion II'
+3. 'Forbidden Potion III'
+4. 'Heavenly Potion'
+5. 'Godlike Potion'
+6. 'Oblivion Potion'
+7. 'Pump Kings Blood'
+8. 'Potion of Clarity'
+9. 'Potion of Hindsight'
+10. 'All-or-Nothing Brew'
+11. 'Gambler\'s Elixir'
+
+Keep These (they're not one-use):
+- Warp Potion (2000 rolls)
+- Transcendent Potion (20000 rolls)
+- All duration-based potions (Lucky, Speed, Haste, Fortune, etc.)
+
+Action: Replace all these one-use potions in rewards with either:
+1. More money
+2. More Void Coins
+3. Duration-based potions
+4. Nothing (just remove the entry)
