@@ -14,6 +14,30 @@ const LEADERBOARD_CATEGORIES = [
         name: '📊 Collection Score',
         icon: '📊',
         description: 'Total rarity of all unique auras owned'
+    },
+    {
+        id: 'totalRolls',
+        name: '🎲 Total Rolls',
+        icon: '🎲',
+        description: 'Most rolls of all time'
+    },
+    {
+        id: 'fastestGlobal',
+        name: '⚡ Fastest Global',
+        icon: '⚡',
+        description: 'Fewest rolls to get a global aura'
+    },
+    {
+        id: 'breakthroughs',
+        name: '🔥 Breakthrough King',
+        icon: '🔥',
+        description: 'Most breakthrough auras'
+    },
+    {
+        id: 'richest',
+        name: '💰 Richest Players',
+        icon: '💰',
+        description: 'Most money earned'
     }
 ];
 
@@ -130,6 +154,14 @@ async function loadLeaderboardCategory(categoryId) {
             await loadGlobalsLeaderboard(contentDiv);
         } else if (categoryId === 'collected') {
             await loadCollectedStatsLeaderboard(contentDiv);
+        } else if (categoryId === 'totalRolls') {
+            await loadGenericLeaderboard(contentDiv, 'totalRolls', '🎲 Most Rolls All-Time', 'rollCount');
+        } else if (categoryId === 'fastestGlobal') {
+            await loadGenericLeaderboard(contentDiv, 'fastestGlobal', '⚡ Fastest Global Aura', 'rollCount', true);
+        } else if (categoryId === 'breakthroughs') {
+            await loadGenericLeaderboard(contentDiv, 'breakthroughs', '🔥 Most Breakthroughs', 'breakthroughCount');
+        } else if (categoryId === 'richest') {
+            await loadGenericLeaderboard(contentDiv, 'richest', '💰 Richest Players', 'money');
         }
         console.log('✅ Category loaded successfully');
     } catch (error) {
@@ -267,6 +299,93 @@ async function loadCollectedStatsLeaderboard(container) {
         console.error('❌ Error loading collection stats:', error);
         container.innerHTML = '<div class="error">❌ Failed to load stats<br>Make sure backend is running</div>';
     }
+}
+
+// Generic leaderboard loader for new categories
+async function loadGenericLeaderboard(container, categoryId, title, scoreField, isLowerBetter = false) {
+    console.log(`📊 Loading ${categoryId} leaderboard`);
+    
+    if (!window.globalLeaderboard) {
+        container.innerHTML = '<div class="error">❌ Leaderboard system unavailable</div>';
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${window.globalLeaderboard.backendUrl}/leaderboard/${categoryId}?limit=50`, {
+            headers: { 'ngrok-skip-browser-warning': 'true' }
+        });
+        
+        if (!response.ok) {
+            console.warn(`⚠️ No data for ${categoryId}`);
+            container.innerHTML = `<div class="empty">No entries yet. Be the first!</div>`;
+            return;
+        }
+        
+        const data = await response.json();
+        const entries = data.entries || [];
+        
+        if (entries.length === 0) {
+            container.innerHTML = `<div class="empty">No entries yet. Be the first!</div>`;
+            return;
+        }
+        
+        container.innerHTML = `
+            <div class="leaderboard-section">
+                <h3>${title}</h3>
+                <p class="leaderboard-desc">Top 50 submissions</p>
+                <div class="leaderboard-content">
+                    <div class="leaderboard-grid">
+                        <div class="leaderboard-grid-header">
+                            <div class="grid-header-cell col-rank">Rank</div>
+                            <div class="grid-header-cell col-player">Player</div>
+                            <div class="grid-header-cell col-score">${getScoreLabel(scoreField, isLowerBetter)}</div>
+                            <div class="grid-header-cell col-date">Date</div>
+                        </div>
+                        ${entries.map((entry, index) => {
+                            const rank = index + 1;
+                            const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+                            const scoreValue = entry[scoreField] || entry.score || 0;
+                            const date = entry.timestamp ? new Date(entry.timestamp).toLocaleDateString() : 'N/A';
+                            
+                            return `
+                                <div class="leaderboard-grid-row rank-${rank}">
+                                    <div class="grid-cell col-rank">${medal}</div>
+                                    <div class="grid-cell col-player">${escapeHtml(entry.playerName)}</div>
+                                    <div class="grid-cell col-score">${formatScoreValue(scoreValue, scoreField)}</div>
+                                    <div class="grid-cell col-date">${date}</div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        console.log(`✅ ${categoryId} leaderboard rendered`);
+        
+    } catch (error) {
+        console.error(`❌ Error loading ${categoryId}:`, error);
+        container.innerHTML = '<div class="error">❌ Failed to load leaderboard</div>';
+    }
+}
+
+// Helper functions for generic leaderboard
+function getScoreLabel(scoreField, isLowerBetter) {
+    const labels = {
+        'rollCount': isLowerBetter ? 'Fewest Rolls' : 'Total Rolls',
+        'breakthroughCount': 'Breakthroughs',
+        'money': 'Money'
+    };
+    return labels[scoreField] || 'Score';
+}
+
+function formatScoreValue(value, scoreField) {
+    if (scoreField === 'money') {
+        return `$${formatNumber(value)}`;
+    } else if (scoreField === 'rollCount' || scoreField === 'breakthroughCount') {
+        return formatNumber(value);
+    }
+    return formatNumber(value);
 }
 
 // Utility Functions

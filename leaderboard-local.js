@@ -202,6 +202,45 @@ class GlobalLeaderboard {
         }
     }
 
+    // Submit to any leaderboard category
+    async submitToLeaderboard(category, data) {
+        if (!this.initialized) {
+            return false;
+        }
+
+        const playerName = localStorage.getItem('playerName') || 'Anonymous';
+        
+        try {
+            const response = await fetch(`${this.backendUrl}/leaderboard/${category}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
+                },
+                body: JSON.stringify({
+                    playerName,
+                    ...data
+                })
+            });
+
+            if (response.ok) {
+                console.log(`✅ Submitted to ${category} leaderboard`);
+                
+                // Trigger refresh if leaderboard is open
+                if (typeof window.refreshLeaderboardIfOpen === 'function') {
+                    setTimeout(() => window.refreshLeaderboardIfOpen(category), 1000);
+                }
+                
+                return true;
+            } else {
+                return false;
+            }
+        } catch (error) {
+            console.error(`❌ Error submitting to ${category}:`, error);
+            return false;
+        }
+    }
+
     // Set custom backend URL (useful for ngrok or remote backends)
     setBackendUrl(url) {
         this.backendUrl = url;
