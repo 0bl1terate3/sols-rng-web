@@ -5,8 +5,13 @@
 
 class LeaderboardAutoSubmit {
     constructor() {
-        this.submitInterval = 60000; // Submit every 60 seconds
+        this.submitInterval = 300000; // Submit every 5 minutes (reduced frequency)
         this.lastSubmittedStats = {};
+        this.minChangeThreshold = {
+            totalRolls: 100,      // Only submit if rolls increased by 100+
+            breakthroughs: 5,     // Only submit if breakthroughs increased by 5+
+            money: 1000          // Only submit if money increased by 1000+
+        };
     }
 
     initialize() {
@@ -43,9 +48,10 @@ class LeaderboardAutoSubmit {
         const stats = this.collectStats();
         console.log('📊 Auto-submit stats:', stats);
         
-        // Submit each stat if it has changed
-        if (stats.totalRolls !== this.lastSubmittedStats.totalRolls && stats.totalRolls > 0) {
-            console.log('📤 Submitting totalRolls:', stats.totalRolls);
+        // Submit each stat only if it has changed significantly
+        const rollsDiff = stats.totalRolls - (this.lastSubmittedStats.totalRolls || 0);
+        if (rollsDiff >= this.minChangeThreshold.totalRolls && stats.totalRolls > 0) {
+            console.log(`📤 Submitting totalRolls: ${stats.totalRolls} (+${rollsDiff})`);
             await this.submitStat('totalRolls', { 
                 rollCount: stats.totalRolls,
                 score: stats.totalRolls
@@ -53,8 +59,9 @@ class LeaderboardAutoSubmit {
             this.lastSubmittedStats.totalRolls = stats.totalRolls;
         }
 
-        if (stats.breakthroughs !== this.lastSubmittedStats.breakthroughs && stats.breakthroughs > 0) {
-            console.log('📤 Submitting breakthroughs:', stats.breakthroughs);
+        const breakthroughsDiff = stats.breakthroughs - (this.lastSubmittedStats.breakthroughs || 0);
+        if (breakthroughsDiff >= this.minChangeThreshold.breakthroughs && stats.breakthroughs > 0) {
+            console.log(`📤 Submitting breakthroughs: ${stats.breakthroughs} (+${breakthroughsDiff})`);
             await this.submitStat('breakthroughs', { 
                 breakthroughCount: stats.breakthroughs,
                 score: stats.breakthroughs
@@ -62,8 +69,9 @@ class LeaderboardAutoSubmit {
             this.lastSubmittedStats.breakthroughs = stats.breakthroughs;
         }
 
-        if (stats.money !== this.lastSubmittedStats.money && stats.money > 0) {
-            console.log('📤 Submitting money:', stats.money);
+        const moneyDiff = stats.money - (this.lastSubmittedStats.money || 0);
+        if (moneyDiff >= this.minChangeThreshold.money && stats.money > 0) {
+            console.log(`📤 Submitting money: ${stats.money} (+${moneyDiff})`);
             await this.submitStat('richest', { 
                 money: stats.money,
                 score: stats.money

@@ -129,25 +129,17 @@ app.post('/leaderboard/:name', (req, res) => {
     leaderboards[name] = [];
   }
   
-  // Check for duplicate aura submission (same playerId + auraName)
-  if (playerId && auraName) {
-    const duplicate = leaderboards[name].find(
-      entry => entry.playerId === playerId && entry.auraName === auraName
-    );
-    if (duplicate) {
-      return res.status(409).json({ 
-        error: 'Already submitted this aura',
-        message: `⚠️ Already submitted ${auraName} to leaderboard`
-      });
-    }
-  }
+  // Check for existing entry by playerName and update it instead of creating duplicate
+  const existingIndex = leaderboards[name].findIndex(
+    entry => entry.playerName === String(playerName).trim()
+  );
   
-  // Create new entry (supports both formats)
+  // Create entry data (supports both formats)
   const entry = {
-    playerId: playerId || 'local_' + Date.now(),
+    playerId: playerId || (existingIndex >= 0 ? leaderboards[name][existingIndex].playerId : 'local_' + Date.now()),
     playerName: String(playerName).trim(),
-    timestamp: timestamp || new Date().toISOString(),
-    submittedAt: submittedAt || Date.now()
+    timestamp: timestamp || (existingIndex >= 0 ? leaderboards[name][existingIndex].timestamp : new Date().toISOString()),
+    submittedAt: Date.now()
   };
   
   // Add aura-specific fields if provided
@@ -162,10 +154,20 @@ app.post('/leaderboard/:name', (req, res) => {
     if (uniqueAuras !== undefined && uniqueAuras !== null) {
       entry.uniqueAuras = Number(uniqueAuras);
     }
+    // Copy over other fields from request body
+    if (req.body.rollCount !== undefined) entry.rollCount = req.body.rollCount;
+    if (req.body.breakthroughCount !== undefined) entry.breakthroughCount = req.body.breakthroughCount;
+    if (req.body.money !== undefined) entry.money = req.body.money;
   }
   
-  // Add entry
-  leaderboards[name].push(entry);
+  // Update existing entry or add new one
+  if (existingIndex >= 0) {
+    leaderboards[name][existingIndex] = entry;
+    console.log(`Updated entry for ${playerName} in ${name}`);
+  } else {
+    leaderboards[name].push(entry);
+    console.log(`Added new entry for ${playerName} in ${name}`);
+  }
   
   // Save to file
   if (writeLeaderboards(leaderboards)) {
