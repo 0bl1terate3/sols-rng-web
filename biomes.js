@@ -1423,6 +1423,7 @@ const BIOME_UI_COLORS = {
         secondary: '#764ba2',
         accent: '#4ade80',
         glow: 'rgba(102, 126, 234, 0.3)',
+        bodyBackground: 'linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 100%)',
         headerGradient: 'linear-gradient(135deg, rgba(30, 30, 50, 0.9) 0%, rgba(20, 20, 40, 0.8) 100%)',
         panelGradient: 'linear-gradient(135deg, rgba(30, 30, 50, 0.9) 0%, rgba(20, 20, 40, 0.85) 100%)'
     },
@@ -1667,6 +1668,10 @@ function updateUIColors(biome) {
     root.style.setProperty('--biome-header-gradient', colors.headerGradient);
     root.style.setProperty('--biome-panel-gradient', colors.panelGradient);
     
+    // Create body background from biome colors (darker version of panel gradient)
+    const bodyBackground = colors.bodyBackground || colors.headerGradient.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\)/g, 
+        (match, r, g, b) => `rgba(${Math.floor(r * 0.5)}, ${Math.floor(g * 0.5)}, ${Math.floor(b * 0.5)}, 1)`);
+    
     // Animate UI elements to new colors
     const header = document.querySelector('header');
     const cards = document.querySelectorAll('.card');
@@ -1677,6 +1682,17 @@ function updateUIColors(biome) {
     const modals = document.querySelectorAll('.modal-content');
     const buttons = document.querySelectorAll('.roll-button, .quick-roll-button');
     const body = document.body;
+    
+    // Update body background
+    anime({
+        targets: body,
+        background: bodyBackground,
+        duration: 1500,
+        easing: 'easeInOutQuad',
+        complete: () => {
+            body.style.background = bodyBackground;
+        }
+    });
     
     if (header) {
         anime({
