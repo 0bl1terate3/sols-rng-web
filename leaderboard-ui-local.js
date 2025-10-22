@@ -108,7 +108,12 @@ function createLeaderboardModal() {
         <div class="modal-content modal-large leaderboard-modal">
             <div class="modal-header">
                 <h2>📊 Leaderboards</h2>
-                <button class="modal-close" onclick="closeLeaderboardModal()">✕</button>
+                <div class="modal-header-actions">
+                    <button class="refresh-leaderboard-btn" onclick="refreshCurrentLeaderboard()" title="Refresh leaderboard data">
+                        🔄 Refresh
+                    </button>
+                    <button class="modal-close" onclick="closeLeaderboardModal()">✕</button>
+                </div>
             </div>
             <div class="modal-body">
                 <div class="leaderboard-categories" id="leaderboardCategories"></div>
@@ -421,11 +426,32 @@ function refreshLeaderboardIfOpen(categoryId) {
 }
 
 // Global Exports
+// Manual refresh function
+function refreshCurrentLeaderboard() {
+    if (currentOpenCategory) {
+        console.log('🔄 Manually refreshing leaderboard:', currentOpenCategory);
+        const btn = document.querySelector('.refresh-leaderboard-btn');
+        if (btn) {
+            btn.textContent = '⏳ Refreshing...';
+            btn.disabled = true;
+        }
+        
+        loadLeaderboardCategory(currentOpenCategory).then(() => {
+            if (btn) {
+                btn.textContent = '🔄 Refresh';
+                btn.disabled = false;
+            }
+            console.log('✅ Leaderboard refreshed');
+        });
+    }
+}
+
 window.openLeaderboardModal = openLeaderboardModal;
 window.closeLeaderboardModal = closeLeaderboardModal;
 window.loadLeaderboardCategory = loadLeaderboardCategory;
 window.initializeLeaderboardUI = initializeLeaderboardUI;
 window.refreshLeaderboardIfOpen = refreshLeaderboardIfOpen;
+window.refreshCurrentLeaderboard = refreshCurrentLeaderboard;
 
 // Auto-initialize
 if (document.readyState === 'loading') {
