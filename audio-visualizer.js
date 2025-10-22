@@ -85,7 +85,11 @@ function connectVisualizerAudio() {
         }
         
         if (visualizerAudioContext.state === 'suspended') {
-            visualizerAudioContext.resume();
+            visualizerAudioContext.resume().then(() => {
+                console.log('🎵 AudioContext resumed in connectVisualizerAudio');
+            }).catch(e => {
+                console.warn('⚠️ Could not resume AudioContext:', e);
+            });
         }
         
         // Create or recreate analyzer
@@ -161,9 +165,11 @@ function initAudioVisualizer() {
             connectVisualizerAudio();
         }
         if (visualizerAudioContext && visualizerAudioContext.state === 'suspended') {
-            visualizerAudioContext.resume();
+            visualizerAudioContext.resume().then(() => {
+                console.log('🎵 AudioContext resumed');
+            });
         }
-    }, { once: true });
+    }); // Removed 'once' - allow multiple clicks to resume
     
     console.log('✅ Audio visualizer initialized');
 }
@@ -1932,8 +1938,7 @@ function updateVisualizerForBiome(biomeName) {
     console.log(`🎨 Visualizer Type Set: ${currentVisualizerType} for ${biomeName}`);
     console.log(`   Colors:`, visualizerColors);
     
-    // Don't reconnect - the audio element is reused, so existing connection works fine
-    // Just make sure we have a connection
+    // Always try to connect/resume audio when biome changes
     if (!visualizerAudioAnalyzer || !window.visualizerAudioSourceNode) {
         setTimeout(() => {
             connectVisualizerAudio();
@@ -1945,6 +1950,11 @@ function updateVisualizerForBiome(biomeName) {
                 connectVisualizerAudio();
             }
         }, 500);
+    } else if (visualizerAudioContext && visualizerAudioContext.state === 'suspended') {
+        // Resume if suspended
+        visualizerAudioContext.resume().then(() => {
+            console.log('🎵 AudioContext resumed for new biome');
+        });
     }
     
     if (!visualizerAnimationFrame) {
