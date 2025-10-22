@@ -311,17 +311,21 @@ async function loadGenericLeaderboard(container, categoryId, title, scoreField, 
     }
     
     try {
-        const response = await fetch(`${window.globalLeaderboard.backendUrl}/leaderboard/${categoryId}?limit=50`, {
+        const url = `${window.globalLeaderboard.backendUrl}/leaderboard/${categoryId}?limit=50`;
+        console.log(`📡 Fetching from: ${url}`);
+        
+        const response = await fetch(url, {
             headers: { 'ngrok-skip-browser-warning': 'true' }
         });
         
         if (!response.ok) {
-            console.warn(`⚠️ No data for ${categoryId}`);
+            console.warn(`⚠️ No data for ${categoryId}, status: ${response.status}`);
             container.innerHTML = `<div class="empty">No entries yet. Be the first!</div>`;
             return;
         }
         
         const data = await response.json();
+        console.log(`📊 Received data for ${categoryId}:`, data);
         const entries = data.entries || [];
         
         if (entries.length === 0) {
