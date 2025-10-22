@@ -7775,7 +7775,7 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
         typeof window.globalLeaderboard.isGlobalAura === 'function' &&
         window.globalLeaderboard.isGlobalAura(aura)) {
         try {
-            window.globalLeaderboard.submitGlobalAura(aura, gameState.totalRolls || 0);
+            window.globalLeaderboard.submitGlobalAura(aura, window.gameState.totalRolls || 0);
             
             // Broadcast global roll notification to all players
             if (typeof window.globalNotifications !== 'undefined') {

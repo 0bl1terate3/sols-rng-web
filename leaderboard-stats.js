@@ -56,7 +56,7 @@ class LeaderboardStatsTracker {
                 const success = await window.globalLeaderboard.submitGlobal(
                     aura.name,
                     aura.rarity,
-                    window.totalRolls || 0
+                    window.gameState?.totalRolls || 0
                 );
 
                 if (success) {
@@ -116,7 +116,7 @@ class LeaderboardStatsTracker {
             const success = await window.globalLeaderboard.submitGlobal(
                 name,
                 data.rarity,
-                window.totalRolls || 0
+                window.gameState?.totalRolls || 0
             );
             if (success) submittedCount++;
         }
