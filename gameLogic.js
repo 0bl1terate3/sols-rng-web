@@ -2583,12 +2583,14 @@ async function playChromaticGenesisCutscene(aura) {
     cutsceneState.active = true;
     cutsceneState.currentAuraRarity = aura.rarity;
 
+    console.log('🎬 Starting Chromatic Genesis cutscene...');
     document.getElementById('cutsceneCanvas').style.display = 'none';
     await fadeToBlackIntro();
 
     const cutscene = document.getElementById('ultraRareCutscene');
     cutscene.classList.add('active');
     const videoElement = document.getElementById('chromaticGenesisVideo');
+    console.log('📹 Video element found:', !!videoElement);
     setupVideoForMobile(videoElement);
     videoElement.innerHTML = `<source src="gen.mp4" type="video/mp4">`;
     videoElement.load();
@@ -2610,6 +2612,7 @@ async function playChromaticGenesisCutscene(aura) {
         const handleCutsceneEnd = async () => {
             if (ended) return;
             ended = true;
+            console.log('✅ Chromatic Genesis cutscene ended');
             
             // Close cutscene first, THEN trigger effect over main UI
             await closeCutscene(cutscene);
@@ -2622,10 +2625,17 @@ async function playChromaticGenesisCutscene(aura) {
         };
 
         videoElement.onended = handleCutsceneEnd;
-        videoElement.onerror = handleCutsceneEnd;
+        videoElement.onerror = (e) => {
+            console.error('❌ Chromatic Genesis video error:', e);
+            console.error('Video src:', videoElement.currentSrc);
+            handleCutsceneEnd();
+        };
         
         // Use fallback for mobile
-        playVideoWithFallback(videoElement);
+        playVideoWithFallback(videoElement).catch(err => {
+            console.error('❌ Failed to play video:', err);
+            handleCutsceneEnd();
+        });
     });
 }
 

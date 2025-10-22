@@ -33,6 +33,15 @@ class GlobalLeaderboard {
         }
     }
 
+    // Check if an aura qualifies as a "global" aura
+    isGlobalAura(aura) {
+        if (!aura || typeof aura.rarity !== 'number') {
+            return false;
+        }
+        // Global auras are those with rarity > 99,999,998
+        return aura.rarity > 99999998;
+    }
+
     async submitGlobal(auraName, auraRarity, rollCount) {
         if (!this.initialized) {
             console.warn('⚠️ Backend not initialized, skipping submission');
@@ -74,6 +83,15 @@ class GlobalLeaderboard {
             console.error('❌ Error submitting global:', error);
             return false;
         }
+    }
+
+    // Alias method for compatibility with gameLogic.js
+    async submitGlobalAura(aura, rollCount) {
+        if (!aura || !aura.name) {
+            console.error('❌ Invalid aura object');
+            return false;
+        }
+        return await this.submitGlobal(aura.name, aura.rarity, rollCount);
     }
 
     async submitCollectedStats(totalScore, uniqueAuras) {
