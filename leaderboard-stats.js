@@ -771,9 +771,7 @@ class LeaderboardStats {
     // ===================================================================
 
     async submitToLeaderboards() {
-        // 🔴 LEADERBOARD DISABLED - Skip all submissions
-        console.log('🔴 Leaderboard disabled - stats submission skipped');
-        return;
+        // ✅ LEADERBOARD ENABLED - Using local backend
         
         if (!window.globalLeaderboard || !window.globalLeaderboard.firebaseInitialized) {
             console.log('Leaderboard not initialized, skipping submission');
