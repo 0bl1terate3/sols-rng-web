@@ -48,7 +48,7 @@ class GlobalLeaderboard {
             return false;
         }
 
-        const playerName = window.playerName || 'Anonymous';
+        const playerName = localStorage.getItem('playerName') || 'Anonymous';
         
         try {
             const response = await fetch(`${this.backendUrl}/leaderboard/globals`, {
@@ -100,7 +100,7 @@ class GlobalLeaderboard {
             return false;
         }
 
-        const playerName = window.playerName || 'Anonymous';
+        const playerName = localStorage.getItem('playerName') || 'Anonymous';
         
         try {
             const response = await fetch(`${this.backendUrl}/leaderboard/collectedStats`, {
