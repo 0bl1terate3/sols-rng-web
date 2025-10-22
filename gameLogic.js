@@ -1359,15 +1359,14 @@ async function fadeToBlackIntro() {
 // Helper function to configure video for mobile playback
 function setupVideoForMobile(videoElement) {
     videoElement.playsInline = true; // Critical for iOS
-    videoElement.muted = true; // Required for autoplay on mobile
+    videoElement.muted = false; // Enable audio
+    videoElement.volume = 1.0; // Full volume
     videoElement.setAttribute('playsinline', ''); // Webkit compatibility
     videoElement.setAttribute('webkit-playsinline', ''); // Older iOS
-    videoElement.setAttribute('muted', ''); // Explicit muted attribute
     videoElement.setAttribute('autoplay', ''); // Try autoplay
     videoElement.controls = false;
     videoElement.preload = 'auto';
-    videoElement.defaultMuted = true;
-    videoElement.volume = 0;
+    videoElement.defaultMuted = false;
 }
 
 // Helper function to play video with fallback for mobile
