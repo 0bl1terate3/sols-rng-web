@@ -25,12 +25,15 @@ function initializeLeaderboardUI() {
 
 // Open leaderboard modal
 async function openLeaderboardModal(categoryId = 'globals') {
+    console.log('🎯 Opening leaderboard modal, category:', categoryId);
     let modal = document.getElementById('leaderboardModal');
     if (!modal) {
+        console.log('📦 Creating new modal...');
         modal = createLeaderboardModal();
     }
     
     modal.style.display = 'flex';
+    console.log('📂 Loading category:', categoryId);
     await loadLeaderboardCategory(categoryId);
 }
 
@@ -109,12 +112,16 @@ async function loadLeaderboardCategory(categoryId) {
 
 // Load globals leaderboard
 async function loadGlobalsLeaderboard(container) {
+    console.log('🔍 Loading globals leaderboard...');
     if (!window.globalLeaderboard) {
+        console.error('❌ globalLeaderboard not available');
         container.innerHTML = '<div class="error">❌ Leaderboard system not available</div>';
         return;
     }
     
+    console.log('📡 Fetching top globals from backend...');
     const entries = await window.globalLeaderboard.getTopGlobals(50);
+    console.log('📊 Received entries:', entries.length, entries);
     
     if (!entries || entries.length === 0) {
         container.innerHTML = '<div class="empty">No global auras submitted yet. Be the first!</div>';
@@ -169,17 +176,26 @@ async function loadGlobalsLeaderboard(container) {
 
 // Load collected stats leaderboard
 async function loadCollectedStatsLeaderboard(container) {
+    console.log('🔍 Loading collected stats leaderboard...');
     if (!window.globalLeaderboard) {
+        console.error('❌ globalLeaderboard not available');
         container.innerHTML = '<div class="error">❌ Leaderboard system not available</div>';
         return;
     }
     
     try {
-        const response = await fetch(`${window.globalLeaderboard.backendUrl}/leaderboard/collectedStats?limit=50`);
+        console.log('📡 Fetching collected stats from:', `${window.globalLeaderboard.backendUrl}/leaderboard/collectedStats`);
+        const response = await fetch(`${window.globalLeaderboard.backendUrl}/leaderboard/collectedStats?limit=50`, {
+            headers: {
+                'ngrok-skip-browser-warning': 'true'
+            }
+        });
         if (!response.ok) throw new Error('Failed to fetch');
         
         const data = await response.json();
+        console.log('📊 Received data:', data);
         const entries = data.entries || [];
+        console.log('📊 Total entries:', entries.length);
         
         if (entries.length === 0) {
             container.innerHTML = '<div class="empty">No collection stats submitted yet</div>';

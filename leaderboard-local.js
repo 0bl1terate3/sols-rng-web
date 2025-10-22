@@ -38,7 +38,11 @@ class GlobalLeaderboard {
     async initializeLocal() {
         try {
             // Test backend connection
-            const response = await fetch(this.backendUrl);
+            const response = await fetch(this.backendUrl, {
+                headers: {
+                    'ngrok-skip-browser-warning': 'true'
+                }
+            });
             if (response.ok) {
                 console.log('✅ Local backend connected successfully');
                 this.firebaseInitialized = true; // For compatibility
@@ -151,6 +155,7 @@ class GlobalLeaderboard {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
                 },
                 body: JSON.stringify({
                     playerId: this.playerId,
@@ -232,7 +237,11 @@ class GlobalLeaderboard {
         }
 
         try {
-            const response = await fetch(`${this.backendUrl}/leaderboard/globals?limit=${limit}`);
+            const response = await fetch(`${this.backendUrl}/leaderboard/globals?limit=${limit}`, {
+                headers: {
+                    'ngrok-skip-browser-warning': 'true'
+                }
+            });
             if (!response.ok) {
                 throw new Error('Failed to fetch leaderboard');
             }
@@ -262,7 +271,11 @@ class GlobalLeaderboard {
         const targetPlayerId = playerId || this.playerId;
 
         try {
-            const response = await fetch(`${this.backendUrl}/leaderboard/globals?limit=1000`);
+            const response = await fetch(`${this.backendUrl}/leaderboard/globals?limit=1000`, {
+                headers: {
+                    'ngrok-skip-browser-warning': 'true'
+                }
+            });
             if (!response.ok) {
                 throw new Error('Failed to fetch leaderboard');
             }
@@ -291,7 +304,11 @@ class GlobalLeaderboard {
         }
 
         try {
-            const response = await fetch(`${this.backendUrl}/leaderboard/globals?limit=10000`);
+            const response = await fetch(`${this.backendUrl}/leaderboard/globals?limit=10000`, {
+                headers: {
+                    'ngrok-skip-browser-warning': 'true'
+                }
+            });
             if (!response.ok) {
                 throw new Error('Failed to fetch stats');
             }
@@ -378,6 +395,7 @@ class GlobalLeaderboard {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'ngrok-skip-browser-warning': 'true'
                 },
                 body: JSON.stringify({
                     playerId: this.playerId,
