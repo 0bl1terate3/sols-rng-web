@@ -427,22 +427,32 @@ function refreshLeaderboardIfOpen(categoryId) {
 
 // Global Exports
 // Manual refresh function
-function refreshCurrentLeaderboard() {
+async function refreshCurrentLeaderboard() {
     if (currentOpenCategory) {
         console.log('🔄 Manually refreshing leaderboard:', currentOpenCategory);
         const btn = document.querySelector('.refresh-leaderboard-btn');
         if (btn) {
-            btn.textContent = '⏳ Refreshing...';
+            btn.textContent = '⏳ Submitting...';
             btn.disabled = true;
         }
         
-        loadLeaderboardCategory(currentOpenCategory).then(() => {
-            if (btn) {
-                btn.textContent = '🔄 Refresh';
-                btn.disabled = false;
-            }
-            console.log('✅ Leaderboard refreshed');
-        });
+        // Force submit current stats first
+        if (window.leaderboardAutoSubmit && typeof window.leaderboardAutoSubmit.submitAllStats === 'function') {
+            console.log('📤 Force submitting current stats...');
+            await window.leaderboardAutoSubmit.submitAllStats();
+        }
+        
+        // Wait a moment for backend to process
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Then reload the leaderboard UI
+        await loadLeaderboardCategory(currentOpenCategory);
+        
+        if (btn) {
+            btn.textContent = '🔄 Refresh';
+            btn.disabled = false;
+        }
+        console.log('✅ Leaderboard refreshed with latest stats');
     }
 }
 
