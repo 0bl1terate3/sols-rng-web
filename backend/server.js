@@ -258,6 +258,90 @@ app.delete('/chat/clear', (req, res) => {
 });
 
 // =================================================================
+// ADMIN ENDPOINTS
+// =================================================================
+
+// Admin password - Change this to your own secure password
+const ADMIN_PASSWORD = 'admin123';
+
+// Admin authentication
+app.post('/admin/auth', (req, res) => {
+  const { password } = req.body;
+  
+  if (password === ADMIN_PASSWORD) {
+    res.json({ success: true, message: 'Authenticated' });
+  } else {
+    res.status(401).json({ success: false, message: 'Invalid password' });
+  }
+});
+
+// Get all leaderboards summary
+app.get('/admin/stats', (req, res) => {
+  const leaderboards = readLeaderboards();
+  
+  const stats = {
+    totalLeaderboards: Object.keys(leaderboards).length,
+    leaderboards: {}
+  };
+  
+  for (const [name, entries] of Object.entries(leaderboards)) {
+    stats.leaderboards[name] = {
+      entries: entries.length,
+      lastUpdate: entries.length > 0 ? Math.max(...entries.map(e => e.submittedAt || 0)) : 0
+    };
+  }
+  
+  res.json(stats);
+});
+
+// Clear all leaderboards
+app.delete('/admin/leaderboards/clear', (req, res) => {
+  try {
+    writeLeaderboards({});
+    res.json({ success: true, message: 'All leaderboards cleared' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to clear leaderboards' });
+  }
+});
+
+// Clear specific leaderboard (already exists, but adding to admin section for clarity)
+// app.delete('/leaderboard/:name') - already defined above
+
+// Get recent players from leaderboards
+app.get('/admin/players', (req, res) => {
+  const leaderboards = readLeaderboards();
+  const playersMap = new Map();
+  
+  // Collect unique players from all leaderboards
+  for (const entries of Object.values(leaderboards)) {
+    for (const entry of entries) {
+      if (entry.playerName && entry.playerId) {
+        if (!playersMap.has(entry.playerId)) {
+          playersMap.set(entry.playerId, {
+            playerId: entry.playerId,
+            playerName: entry.playerName,
+            lastSeen: entry.submittedAt || entry.timestamp || 0,
+            totalSubmissions: 1
+          });
+        } else {
+          const player = playersMap.get(entry.playerId);
+          player.totalSubmissions++;
+          if ((entry.submittedAt || entry.timestamp || 0) > player.lastSeen) {
+            player.lastSeen = entry.submittedAt || entry.timestamp || 0;
+          }
+        }
+      }
+    }
+  }
+  
+  // Convert to array and sort by last seen
+  const players = Array.from(playersMap.values())
+    .sort((a, b) => b.lastSeen - a.lastSeen);
+  
+  res.json({ players, total: players.length });
+});
+
+// =================================================================
 // START SERVER
 // =================================================================
 
@@ -267,4 +351,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Leaderboards stored in: ${DATA_FILE}`);
   console.log(`💬 Live Chat enabled`);
+  console.log(`🔐 Admin password: ${ADMIN_PASSWORD}`);
 });
