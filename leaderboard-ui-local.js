@@ -21,6 +21,10 @@ function initializeLeaderboardUI() {
     console.log('✅ Leaderboard UI initialized');
 }
 
+// Auto-refresh interval ID
+let leaderboardRefreshInterval = null;
+let currentOpenCategory = null;
+
 async function openLeaderboardModal(categoryId = 'globals') {
     console.log('🎯 Opening leaderboard modal, category:', categoryId);
     let modal = document.getElementById('leaderboardModal');
@@ -43,13 +47,32 @@ async function openLeaderboardModal(categoryId = 'globals') {
     }
     
     modal.style.display = 'flex';
+    currentOpenCategory = categoryId;
     console.log('🔄 Loading category content...');
     await loadLeaderboardCategory(categoryId);
+    
+    // Start periodic refresh (every 10 seconds)
+    if (leaderboardRefreshInterval) {
+        clearInterval(leaderboardRefreshInterval);
+    }
+    leaderboardRefreshInterval = setInterval(() => {
+        if (currentOpenCategory) {
+            console.log('🔄 Periodic refresh...');
+            loadLeaderboardCategory(currentOpenCategory);
+        }
+    }, 10000); // 10 seconds
 }
 
 function closeLeaderboardModal() {
     const modal = document.getElementById('leaderboardModal');
     if (modal) modal.style.display = 'none';
+    
+    // Stop auto-refresh
+    if (leaderboardRefreshInterval) {
+        clearInterval(leaderboardRefreshInterval);
+        leaderboardRefreshInterval = null;
+    }
+    currentOpenCategory = null;
 }
 
 function createLeaderboardModal() {
@@ -82,6 +105,7 @@ function createLeaderboardModal() {
 
 async function loadLeaderboardCategory(categoryId) {
     console.log('📋 Loading category:', categoryId);
+    currentOpenCategory = categoryId; // Track current category for auto-refresh
     const categoriesDiv = document.getElementById('leaderboardCategories');
     const contentDiv = document.getElementById('leaderboardContent');
     
@@ -262,11 +286,23 @@ function formatRarity(rarity) {
     return `1 in ${formatNumber(rarity)}`;
 }
 
+// Auto-refresh leaderboard if modal is open
+function refreshLeaderboardIfOpen(categoryId) {
+    const modal = document.getElementById('leaderboardModal');
+    
+    // Only refresh if modal is visible
+    if (modal && modal.style.display === 'flex') {
+        console.log(`🔄 Auto-refreshing leaderboard: ${categoryId}`);
+        loadLeaderboardCategory(categoryId);
+    }
+}
+
 // Global Exports
 window.openLeaderboardModal = openLeaderboardModal;
 window.closeLeaderboardModal = closeLeaderboardModal;
 window.loadLeaderboardCategory = loadLeaderboardCategory;
 window.initializeLeaderboardUI = initializeLeaderboardUI;
+window.refreshLeaderboardIfOpen = refreshLeaderboardIfOpen;
 
 // Auto-initialize
 if (document.readyState === 'loading') {

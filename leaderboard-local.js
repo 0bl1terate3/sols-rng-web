@@ -74,6 +74,11 @@ class GlobalLeaderboard {
                     this.showNotification(`🏆 Rank #${data.rank} on Global Leaderboard!`, auraName);
                 }
                 
+                // Trigger leaderboard refresh if UI is open
+                if (typeof window.refreshLeaderboardIfOpen === 'function') {
+                    setTimeout(() => window.refreshLeaderboardIfOpen('globals'), 1000);
+                }
+                
                 return true;
             } else {
                 console.error('❌ Failed to submit global:', response.status);
@@ -123,6 +128,11 @@ class GlobalLeaderboard {
                 // Show notification if rank is good
                 if (data.rank && data.rank <= 10) {
                     this.showNotification(`📊 Rank #${data.rank} on Collection Leaderboard!`, `Score: ${totalScore.toLocaleString()}`);
+                }
+                
+                // Trigger leaderboard refresh if UI is open
+                if (typeof window.refreshLeaderboardIfOpen === 'function') {
+                    setTimeout(() => window.refreshLeaderboardIfOpen('collected'), 1000);
                 }
                 
                 return true;
