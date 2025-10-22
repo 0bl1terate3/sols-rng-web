@@ -10400,6 +10400,43 @@ function calculateSpecialEffects() {
                         luckBonus += gearEffects.windyBonus / 100;
                     }
                     break;
+                case 'starGlimmer':
+                    // Starlight Ring - visual sparkle effect on rare rolls (passive effect)
+                    // Implementation handled in roll display function
+                    break;
+                case 'windyBiomeAffinity':
+                    // Windy Bracelet - bonus in windy biomes
+                    if (typeof biomeState !== 'undefined' && biomeState.currentBiome === 'WINDY') {
+                        speedBonus += gearEffects.bonus / 100;
+                    }
+                    break;
+                case 'crimsonPulse':
+                    // Ruby Knuckles - bonus in crimson-themed biomes
+                    if (typeof biomeState !== 'undefined' && (biomeState.currentBiome === 'CRIMSON' || biomeState.currentBiome === 'BLOOD_RAIN')) {
+                        luckBonus += 0.15; // 15% bonus in crimson biomes
+                    }
+                    break;
+                case 'forbiddenPower':
+                    // Forbidden Shard - high risk, high reward (already applied via base stats)
+                    // Adds slight instability effect (visual only)
+                    break;
+                case 'luckyNumber':
+                    // Jackpot Token - bonus every 77th roll
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.luckyNumberCounter) {
+                        gameState.specialEffects.luckyNumberCounter = 0;
+                    }
+                    gameState.specialEffects.luckyNumberCounter++;
+                    if (gameState.specialEffects.luckyNumberCounter >= 77) {
+                        luckBonus += 0.77; // 77% bonus on 77th roll
+                        gameState.specialEffects.luckyNumberCounter = 0;
+                        if (typeof showNotification === 'function') {
+                            showNotification('🎰 Lucky Number 77! +77% Luck Bonus!');
+                        }
+                    }
+                    break;
                 case 'jackpotBonus':
                     // Apply jackpot bonus
                     luckBonus += gearEffects.bonus / 100;
@@ -10407,6 +10444,855 @@ function calculateSpecialEffects() {
                 case 'jackpotMiniBonus':
                     // Apply mini jackpot bonus
                     luckBonus += gearEffects.bonus / 100;
+                    break;
+                case 'magneticPull':
+                    // Magnetic Coil - slightly attracts rarer auras (passive rarity boost)
+                    luckBonus += 0.05; // 5% passive luck bonus
+                    break;
+                case 'moonPhase':
+                    // Lunar Pendant - bonus during night or lunar events
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Check if it's "night time" based on roll count or time
+                    const currentHour = new Date().getHours();
+                    if (currentHour >= 20 || currentHour < 6) { // 8 PM to 6 AM
+                        luckBonus += 0.20; // 20% bonus during night
+                    }
+                    break;
+                case 'bloodSacrifice':
+                    // Bleeding Edge - already applied via base stats (high luck, negative speed)
+                    // Passive effect only
+                    break;
+                case 'ashTrail':
+                    // Ash Walker - builds momentum over consecutive rolls
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.ashTrailStacks) {
+                        gameState.specialEffects.ashTrailStacks = 0;
+                    }
+                    gameState.specialEffects.ashTrailStacks = Math.min(gameState.specialEffects.ashTrailStacks + 1, 5);
+                    luckBonus += (gameState.specialEffects.ashTrailStacks * 0.02); // Up to 10% bonus at 5 stacks
+                    break;
+                case 'rapidFire':
+                    // Glock Trigger - chance for instant follow-up roll
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (Math.random() < 0.08) { // 8% chance
+                        speedBonus += 0.50; // 50% speed boost for this roll
+                        if (typeof showNotification === 'function') {
+                            showNotification('⚡ Rapid Fire! +50% Speed!');
+                        }
+                    }
+                    break;
+                case 'crystalResonance':
+                    // Quartz Resonator - harmonizes with crystal auras
+                    // Bonus applied when rolling crystal-type auras (handled in roll function)
+                    luckBonus += 0.03; // 3% passive bonus
+                    break;
+                case 'sweetLuck':
+                    // Honey Dripper - gradual luck increase over consecutive rolls
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.sweetLuckStacks) {
+                        gameState.specialEffects.sweetLuckStacks = 0;
+                    }
+                    gameState.specialEffects.sweetLuckStacks = Math.min(gameState.specialEffects.sweetLuckStacks + 1, 10);
+                    luckBonus += (gameState.specialEffects.sweetLuckStacks * 0.03); // Up to 30% bonus at 10 stacks
+                    break;
+                case 'spiralPower':
+                    // Nautilus Shell - power grows in spiral pattern
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.spiralCounter) {
+                        gameState.specialEffects.spiralCounter = 0;
+                    }
+                    gameState.specialEffects.spiralCounter++;
+                    // Fibonacci-like growth: bonus every 1, 2, 3, 5, 8, 13 rolls
+                    const spiralMilestones = [1, 2, 3, 5, 8, 13, 21, 34];
+                    if (spiralMilestones.includes(gameState.specialEffects.spiralCounter % 34)) {
+                        luckBonus += 0.15; // 15% bonus on spiral milestones
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌀 Spiral Power Activated!');
+                        }
+                    }
+                    break;
+                case 'ghostlyPresence':
+                    // Spectral Gauntlet - chance to phase through bad rolls
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (Math.random() < 0.12) { // 12% chance to activate
+                        luckBonus += 0.25; // 25% luck bonus when phasing
+                        if (typeof showNotification === 'function') {
+                            showNotification('👻 Ghostly Presence! Phasing through misfortune!');
+                        }
+                    }
+                    break;
+                case 'cometTail':
+                    // Comet Striker - speed increases after each roll
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.cometTailStacks) {
+                        gameState.specialEffects.cometTailStacks = 0;
+                    }
+                    gameState.specialEffects.cometTailStacks = Math.min(gameState.specialEffects.cometTailStacks + 1, 8);
+                    speedBonus += (gameState.specialEffects.cometTailStacks * 0.025); // Up to 20% speed at 8 stacks
+                    break;
+                case 'hazardBonus':
+                    // Hazard Containment - bonus in corruption biome
+                    if (typeof biomeState !== 'undefined' && biomeState.currentBiome === 'CORRUPTION') {
+                        luckBonus += 0.30; // 30% bonus in corruption biome
+                        speedBonus += 0.10; // 10% speed bonus too
+                    }
+                    break;
+                case 'electricCharge':
+                    // Lightning Rod - builds charge for burst speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.electricCharge) {
+                        gameState.specialEffects.electricCharge = 0;
+                    }
+                    gameState.specialEffects.electricCharge++;
+                    if (gameState.specialEffects.electricCharge >= 10) {
+                        speedBonus += 0.75; // 75% speed burst every 10 rolls
+                        gameState.specialEffects.electricCharge = 0;
+                        if (typeof showNotification === 'function') {
+                            showNotification('⚡ Electric Charge Released! +75% Speed!');
+                        }
+                    }
+                    break;
+                case 'deepFreeze':
+                    // Frosty Embrace - already applied via base stats (high luck, very negative speed)
+                    // Visual effect only
+                    break;
+                case 'exoticResonance':
+                    // Exotic Amplifier - bonus when rolling exotic tier auras
+                    // This will be checked when an aura is rolled (passive bonus for now)
+                    luckBonus += 0.08; // 8% passive bonus
+                    break;
+                case 'eyeOfStorm':
+                    // Stormal Eye - bonus during storms/windy biomes
+                    if (typeof biomeState !== 'undefined' && (biomeState.currentBiome === 'WINDY' || biomeState.currentBiome === 'MONSOON')) {
+                        luckBonus += 0.25; // 25% bonus in storm biomes
+                        speedBonus += 0.15; // 15% speed bonus
+                    }
+                    break;
+                case 'demonDeal':
+                    // Diabolic Pact - high luck with demonic power
+                    luckBonus += 0.10; // 10% passive demonic bonus
+                    // Additional bonus if in HELL biome
+                    if (typeof biomeState !== 'undefined' && biomeState.currentBiome === 'HELL') {
+                        luckBonus += 0.20; // Extra 20% in hell
+                    }
+                    break;
+                case 'jadeFortune':
+                    // Jade Talisman - eastern fortune and prosperity
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.jadeFortuneCounter) {
+                        gameState.specialEffects.jadeFortuneCounter = 0;
+                    }
+                    gameState.specialEffects.jadeFortuneCounter++;
+                    // Bonus every 8 rolls (lucky number in Chinese culture)
+                    if (gameState.specialEffects.jadeFortuneCounter % 8 === 0) {
+                        luckBonus += 0.88; // 88% bonus (8 is lucky)
+                        if (typeof showNotification === 'function') {
+                            showNotification('🀄 Jade Fortune! Lucky 8!');
+                        }
+                    }
+                    break;
+                case 'playerBoost':
+                    // Player's Advantage - balanced boost for active players
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Small passive bonus
+                    luckBonus += 0.05; // 5% luck
+                    speedBonus += 0.05; // 5% speed
+                    break;
+                case 'celestialBlessing':
+                    // Celestial Conduit - bonus when rolling divine+ auras
+                    luckBonus += 0.10; // 10% passive bonus
+                    // Additional bonus tracked when divine+ aura is rolled
+                    break;
+                case 'fearFactor':
+                    // Terror Engine - high luck but induces fear
+                    luckBonus += 0.15; // 15% luck bonus from terror
+                    // Speed penalty already applied via base stats
+                    break;
+                case 'rareGemPower':
+                    // Kyawthuite Core - extremely rare gem amplifies all stats
+                    luckBonus += 0.18; // 18% luck bonus
+                    speedBonus += 0.08; // 8% speed bonus
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Rare gem has chance to double bonuses
+                    if (Math.random() < 0.05) { // 5% chance
+                        luckBonus += 0.18; // Double the bonus
+                        speedBonus += 0.08;
+                        if (typeof showNotification === 'function') {
+                            showNotification('💎 Kyawthuite Resonance! Doubled Power!');
+                        }
+                    }
+                    break;
+                case 'paradoxLoop':
+                    // Bounded Paradox - creates temporal loops
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.paradoxCounter) {
+                        gameState.specialEffects.paradoxCounter = 0;
+                    }
+                    gameState.specialEffects.paradoxCounter++;
+                    // Every 15 rolls, create a temporal loop
+                    if (gameState.specialEffects.paradoxCounter % 15 === 0) {
+                        luckBonus += 0.50; // 50% bonus in the loop
+                        speedBonus += 0.25; // 25% speed bonus
+                        if (typeof showNotification === 'function') {
+                            showNotification('⏰ Paradox Loop! Time Bends!');
+                        }
+                    }
+                    break;
+                case 'arcanePower':
+                    // Arcane Catalyst - massive luck from pure arcane energy
+                    luckBonus += 0.20; // 20% passive arcane bonus
+                    // Chance for arcane surge
+                    if (Math.random() < 0.10) { // 10% chance
+                        luckBonus += 0.40; // 40% surge bonus
+                        if (typeof showNotification === 'function') {
+                            showNotification('🔮 Arcane Surge! Power Overflows!');
+                        }
+                    }
+                    break;
+                case 'darkMagic':
+                    // Warlock's Grimoire - dark magic enhances rolls
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    luckBonus += 0.12; // 12% dark magic bonus
+                    // Grimoire grows stronger with use
+                    if (!gameState.specialEffects.grimorePages) {
+                        gameState.specialEffects.grimorePages = 0;
+                    }
+                    gameState.specialEffects.grimorePages = Math.min(gameState.specialEffects.grimorePages + 1, 666);
+                    luckBonus += (gameState.specialEffects.grimorePages * 0.0001); // Up to 6.66% at 666 pages
+                    break;
+                case 'astralPlane':
+                    // Astral Projector - projects into astral plane
+                    luckBonus += 0.15; // 15% astral bonus
+                    speedBonus += 0.10; // 10% speed from astral projection
+                    // Chance to fully project
+                    if (Math.random() < 0.08) { // 8% chance
+                        luckBonus += 0.30; // 30% full projection bonus
+                        if (typeof showNotification === 'function') {
+                            showNotification('✨ Full Astral Projection! Cosmic Vision!');
+                        }
+                    }
+                    break;
+                case 'darkOmen':
+                    // Raven's Omen - dark omens reveal hidden fortune
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.ravenOmens) {
+                        gameState.specialEffects.ravenOmens = 0;
+                    }
+                    gameState.specialEffects.ravenOmens++;
+                    // Every 13 rolls (unlucky number), reveal fortune
+                    if (gameState.specialEffects.ravenOmens % 13 === 0) {
+                        luckBonus += 0.65; // 65% omen bonus
+                        if (typeof showNotification === 'function') {
+                            showNotification('🐦‍⬛ Dark Omen Revealed! Fortune Unveiled!');
+                        }
+                    }
+                    luckBonus += 0.08; // 8% passive bonus
+                    break;
+                case 'hindsight':
+                    // Retrospective Lens - learn from past rolls
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.hindsightLearning) {
+                        gameState.specialEffects.hindsightLearning = 0;
+                    }
+                    // Gradually learn and improve (caps at 20% bonus)
+                    gameState.specialEffects.hindsightLearning = Math.min(
+                        gameState.specialEffects.hindsightLearning + 0.001, 
+                        0.20
+                    );
+                    luckBonus += gameState.specialEffects.hindsightLearning;
+                    break;
+                case 'refreshingBoost':
+                    // Watermelon Charm - refreshing energy for sustained speed
+                    speedBonus += 0.15; // 15% sustained speed bonus
+                    // Refreshing effect prevents speed decay
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    gameState.specialEffects.refreshed = true;
+                    break;
+                case 'twilightZone':
+                    // Twilight Nexus - between day and night, reality bends
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    const hour = new Date().getHours();
+                    // Strongest during twilight hours (5-7 AM, 6-8 PM)
+                    if ((hour >= 5 && hour <= 7) || (hour >= 18 && hour <= 20)) {
+                        luckBonus += 0.40; // 40% during twilight
+                        speedBonus += 0.20; // 20% speed during twilight
+                        if (typeof showNotification === 'function' && Math.random() < 0.1) {
+                            showNotification('🌅 Twilight Zone Active! Reality Bends!');
+                        }
+                    } else {
+                        luckBonus += 0.15; // 15% passive bonus
+                    }
+                    break;
+                case 'primordialPower':
+                    // Origin Conduit - taps into the origin of all things
+                    luckBonus += 0.25; // 25% primordial power
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.originEnergy) {
+                        gameState.specialEffects.originEnergy = 0;
+                    }
+                    // Builds primordial energy over time (caps at 30%)
+                    gameState.specialEffects.originEnergy = Math.min(
+                        gameState.specialEffects.originEnergy + 0.002,
+                        0.30
+                    );
+                    luckBonus += gameState.specialEffects.originEnergy;
+                    break;
+                case 'speedDemon':
+                    // Velocity Driver - extreme speed at slight luck cost
+                    speedBonus += 0.35; // 35% speed boost
+                    // Speed increases over consecutive fast rolls
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.velocityStacks) {
+                        gameState.specialEffects.velocityStacks = 0;
+                    }
+                    gameState.specialEffects.velocityStacks = Math.min(gameState.specialEffects.velocityStacks + 1, 15);
+                    speedBonus += (gameState.specialEffects.velocityStacks * 0.01); // Up to +15% more
+                    break;
+                case 'voltageOverload':
+                    // Hyper-Volt Matrix - electrical surges boost performance
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.voltageCharge) {
+                        gameState.specialEffects.voltageCharge = 0;
+                    }
+                    gameState.specialEffects.voltageCharge++;
+                    // Every 7 rolls, voltage overload
+                    if (gameState.specialEffects.voltageCharge % 7 === 0) {
+                        luckBonus += 0.55; // 55% overload bonus
+                        speedBonus += 0.35; // 35% speed surge
+                        if (typeof showNotification === 'function') {
+                            showNotification('⚡ VOLTAGE OVERLOAD! Maximum Power!');
+                        }
+                    }
+                    luckBonus += 0.12; // 12% passive
+                    speedBonus += 0.08; // 8% passive speed
+                    break;
+                case 'weighHeart':
+                    // Anubis Judgment - judges rolls, rewarding the worthy
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.judgmentScore) {
+                        gameState.specialEffects.judgmentScore = 0;
+                    }
+                    // Judgment improves with worthy rolls
+                    gameState.specialEffects.judgmentScore = Math.min(
+                        gameState.specialEffects.judgmentScore + 1,
+                        100
+                    );
+                    luckBonus += (gameState.specialEffects.judgmentScore * 0.003); // Up to 30% at 100 score
+                    // Every 42 rolls (sacred number), divine judgment
+                    if (gameState.specialEffects.judgmentScore % 42 === 0) {
+                        luckBonus += 0.42; // 42% divine judgment
+                        if (typeof showNotification === 'function') {
+                            showNotification('⚖️ Divine Judgment! Heart Weighed Worthy!');
+                        }
+                    }
+                    break;
+                case 'solarSupremacy':
+                    // Helios Crown - harness the power of the sun god
+                    luckBonus += 0.28; // 28% solar power
+                    speedBonus += 0.15; // 15% speed from sun's energy
+                    // Stronger during daytime
+                    const heliosHour = new Date().getHours();
+                    if (heliosHour >= 6 && heliosHour <= 18) {
+                        luckBonus += 0.20; // Extra 20% during day
+                        if (typeof showNotification === 'function' && Math.random() < 0.05) {
+                            showNotification('☀️ Solar Supremacy! Sun God\'s Blessing!');
+                        }
+                    }
+                    break;
+                case 'embraceVoid':
+                    // Nihility Void - from nothing comes everything
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    luckBonus += 0.30; // 30% void power
+                    // Paradox: the more you roll, the stronger the void
+                    if (!gameState.specialEffects.voidDepth) {
+                        gameState.specialEffects.voidDepth = 0;
+                    }
+                    gameState.specialEffects.voidDepth = Math.min(
+                        gameState.specialEffects.voidDepth + 0.0015,
+                        0.35
+                    );
+                    luckBonus += gameState.specialEffects.voidDepth; // Up to 35% more
+                    break;
+                case 'stellarDestruction':
+                    // Starscourge Blade - destroys stars to forge luck
+                    luckBonus += 0.22; // 22% stellar power
+                    speedBonus += 0.12; // 12% speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.starsDestroyed) {
+                        gameState.specialEffects.starsDestroyed = 0;
+                    }
+                    // Each roll "destroys" a star
+                    gameState.specialEffects.starsDestroyed++;
+                    // Every 50 stars destroyed, massive bonus
+                    if (gameState.specialEffects.starsDestroyed % 50 === 0) {
+                        luckBonus += 1.00; // 100% supernova bonus!
+                        if (typeof showNotification === 'function') {
+                            showNotification('💥 SUPERNOVA! 50 Stars Destroyed!');
+                        }
+                    }
+                    break;
+                case 'lunarBloom':
+                    // Moonflower Bloom - blooms under moonlight
+                    luckBonus += 0.18; // 18% passive
+                    const nightHour = new Date().getHours();
+                    if (nightHour >= 20 || nightHour < 6) {
+                        luckBonus += 0.25; // 25% bloom bonus at night
+                        speedBonus += 0.12; // 12% speed under moonlight
+                    }
+                    // Full bloom every 28 rolls (lunar cycle)
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.lunarCycle) {
+                        gameState.specialEffects.lunarCycle = 0;
+                    }
+                    gameState.specialEffects.lunarCycle++;
+                    if (gameState.specialEffects.lunarCycle % 28 === 0) {
+                        luckBonus += 0.50; // 50% full bloom
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌸 Moonflower Full Bloom! Lunar Cycle Complete!');
+                        }
+                    }
+                    break;
+                case 'realityGlitch':
+                    // Glitch Exploit - exploits glitches in reality
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Random glitch effects
+                    const glitchRoll = Math.random();
+                    if (glitchRoll < 0.15) { // 15% chance for glitch
+                        const glitchType = Math.floor(Math.random() * 3);
+                        if (glitchType === 0) {
+                            luckBonus += 0.60; // Luck glitch
+                            if (typeof showNotification === 'function') {
+                                showNotification('⚠️ REALITY GLITCH: Luck Overflow!');
+                            }
+                        } else if (glitchType === 1) {
+                            speedBonus += 0.50; // Speed glitch
+                            if (typeof showNotification === 'function') {
+                                showNotification('⚠️ REALITY GLITCH: Time Skip!');
+                            }
+                        } else {
+                            luckBonus += 0.30;
+                            speedBonus += 0.30; // Balanced glitch
+                            if (typeof showNotification === 'function') {
+                                showNotification('⚠️ REALITY GLITCH: System Error!');
+                            }
+                        }
+                    }
+                    luckBonus += 0.10; // 10% passive from instability
+                    speedBonus += 0.15; // 15% passive speed
+                    break;
+                case 'freedomReign':
+                    // Freedom Ring - breaks all limits
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    luckBonus += 0.20; // 20% base bonus
+                    // Gradually breaks limits over time
+                    if (!gameState.specialEffects.freedomLevel) {
+                        gameState.specialEffects.freedomLevel = 0;
+                    }
+                    gameState.specialEffects.freedomLevel = Math.min(
+                        gameState.specialEffects.freedomLevel + 0.001,
+                        0.25
+                    );
+                    luckBonus += gameState.specialEffects.freedomLevel; // Up to 25% more
+                    break;
+                case 'ghostForm':
+                    // Ghost Veil - phase through bad luck
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    luckBonus += 0.15; // 15% passive
+                    // Chance to phase through bad rolls
+                    if (Math.random() < 0.20) { // 20% chance
+                        luckBonus += 0.35; // 35% phase bonus
+                        if (typeof showNotification === 'function') {
+                            showNotification('👻 Ghost Form! Phasing through misfortune!');
+                        }
+                    }
+                    break;
+                case 'speedSingularity':
+                    // Warp Core - extreme speed singularity
+                    speedBonus += 0.40; // 40% base speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.warpCounter) {
+                        gameState.specialEffects.warpCounter = 0;
+                    }
+                    gameState.specialEffects.warpCounter++;
+                    // Every 20 rolls, singularity activates
+                    if (gameState.specialEffects.warpCounter % 20 === 0) {
+                        speedBonus += 0.60; // 60% warp speed
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌀 Warp Singularity! Maximum Speed!');
+                        }
+                    }
+                    break;
+                case 'trueNorth':
+                    // Sailor Compass - guides toward fortune
+                    luckBonus += 0.25; // 25% guidance bonus
+                    speedBonus += 0.10; // 10% speed
+                    // Compass always points to fortune
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.compassReading) {
+                        gameState.specialEffects.compassReading = 0;
+                    }
+                    gameState.specialEffects.compassReading++;
+                    // Every 30 rolls, perfect reading
+                    if (gameState.specialEffects.compassReading % 30 === 0) {
+                        luckBonus += 0.50; // 50% perfect navigation
+                        if (typeof showNotification === 'function') {
+                            showNotification('🧭 True North! Perfect Navigation!');
+                        }
+                    }
+                    break;
+                case 'divineIntervention':
+                    // Angel Wings - prevents catastrophic rolls
+                    luckBonus += 0.28; // 28% divine bonus
+                    speedBonus += 0.08; // 8% speed
+                    // Divine protection active (prevents bad outcomes)
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    gameState.specialEffects.divineProtection = true;
+                    break;
+                case 'downRabbitHole':
+                    // Wonder Ring - random reality shifts
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Random wonderland effects
+                    const wonderRoll = Math.random();
+                    if (wonderRoll < 0.25) { // 25% chance for chaos
+                        const chaosType = Math.floor(Math.random() * 4);
+                        if (chaosType === 0) {
+                            luckBonus += 0.70; // Massive luck
+                            if (typeof showNotification === 'function') {
+                                showNotification('🎩 Down the Rabbit Hole! Luck Surge!');
+                            }
+                        } else if (chaosType === 1) {
+                            speedBonus += 0.60; // Massive speed
+                            if (typeof showNotification === 'function') {
+                                showNotification('🎩 Down the Rabbit Hole! Time Warps!');
+                            }
+                        } else if (chaosType === 2) {
+                            luckBonus += 0.40;
+                            speedBonus += 0.40; // Balanced chaos
+                            if (typeof showNotification === 'function') {
+                                showNotification('🎩 Down the Rabbit Hole! Pure Chaos!');
+                            }
+                        } else {
+                            luckBonus -= 0.10; // Slight penalty
+                            speedBonus += 0.70; // But huge speed
+                            if (typeof showNotification === 'function') {
+                                showNotification('🎩 Down the Rabbit Hole! Mad Rush!');
+                            }
+                        }
+                    }
+                    luckBonus += 0.12; // 12% passive
+                    speedBonus += 0.18; // 18% passive speed
+                    break;
+                case 'lockReality':
+                    // Lock Device - locks favorable outcomes
+                    luckBonus += 0.22; // 22% lock bonus
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.realityLocks) {
+                        gameState.specialEffects.realityLocks = 0;
+                    }
+                    // Build up reality locks
+                    gameState.specialEffects.realityLocks = Math.min(
+                        gameState.specialEffects.realityLocks + 1,
+                        50
+                    );
+                    luckBonus += (gameState.specialEffects.realityLocks * 0.002); // Up to 10% at 50 locks
+                    // Every 25 rolls, lock activates
+                    if (gameState.specialEffects.realityLocks % 25 === 0) {
+                        luckBonus += 0.40; // 40% lock bonus
+                        if (typeof showNotification === 'function') {
+                            showNotification('🔒 Reality Locked! Favorable Outcome Secured!');
+                        }
+                    }
+                    break;
+                case 'adaptiveGrowth':
+                    // Symbiote Glove - grows stronger with each roll
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.symbioteGrowth) {
+                        gameState.specialEffects.symbioteGrowth = 0;
+                    }
+                    // Symbiote grows infinitely (but slowly)
+                    gameState.specialEffects.symbioteGrowth = Math.min(
+                        gameState.specialEffects.symbioteGrowth + 0.0015,
+                        0.50
+                    );
+                    luckBonus += gameState.specialEffects.symbioteGrowth; // Up to 50%
+                    speedBonus += (gameState.specialEffects.symbioteGrowth * 0.5); // Up to 25% speed
+                    break;
+                case 'eclipsePower':
+                    // Dark Moon - harness dark moon power
+                    luckBonus += 0.18; // 18% base
+                    const eclipseHour = new Date().getHours();
+                    // Stronger at night
+                    if (eclipseHour >= 20 || eclipseHour < 6) {
+                        luckBonus += 0.30; // 30% night bonus
+                        speedBonus += 0.15; // 15% speed at night
+                    }
+                    // Every 28 rolls (lunar cycle), eclipse occurs
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.eclipseCycle) {
+                        gameState.specialEffects.eclipseCycle = 0;
+                    }
+                    gameState.specialEffects.eclipseCycle++;
+                    if (gameState.specialEffects.eclipseCycle % 28 === 0) {
+                        luckBonus += 0.55; // 55% eclipse bonus
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌑 Lunar Eclipse! Dark Moon Power!');
+                        }
+                    }
+                    break;
+                case 'impossibleFusion':
+                    // Fusion Core - fuses opposing elements
+                    luckBonus += 0.30; // 30% fusion power
+                    speedBonus += 0.12; // 12% speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Fusion becomes unstable and powerful
+                    if (Math.random() < 0.15) { // 15% chance
+                        luckBonus += 0.50; // 50% fusion surge
+                        if (typeof showNotification === 'function') {
+                            showNotification('💥 Fusion Reaction! Elements Collide!');
+                        }
+                    }
+                    break;
+                case 'titanStrength':
+                    // Titan Gauntlet - overwhelming power that grows
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    luckBonus += 0.35; // 35% base titan power
+                    if (!gameState.specialEffects.titanPower) {
+                        gameState.specialEffects.titanPower = 0;
+                    }
+                    // Titan power grows with use
+                    gameState.specialEffects.titanPower = Math.min(
+                        gameState.specialEffects.titanPower + 0.002,
+                        0.40
+                    );
+                    luckBonus += gameState.specialEffects.titanPower; // Up to 40% more
+                    speedBonus += (gameState.specialEffects.titanPower * 0.5); // Up to 20% speed
+                    break;
+                case 'apexPredator':
+                    // Apex Ring - dominates all lesser forces
+                    luckBonus += 0.40; // 40% apex dominance
+                    speedBonus += 0.15; // 15% speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Apex predator gets stronger when winning
+                    if (!gameState.specialEffects.apexStreak) {
+                        gameState.specialEffects.apexStreak = 0;
+                    }
+                    gameState.specialEffects.apexStreak++;
+                    if (gameState.specialEffects.apexStreak % 10 === 0) {
+                        luckBonus += 0.60; // 60% dominance surge
+                        if (typeof showNotification === 'function') {
+                            showNotification('👑 Apex Predator! Total Dominance!');
+                        }
+                    }
+                    break;
+                case 'fallenKing':
+                    // Impeached Crown - power of fallen ruler
+                    luckBonus += 0.38; // 38% fallen power
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Fallen king seeks redemption
+                    if (!gameState.specialEffects.redemptionCounter) {
+                        gameState.specialEffects.redemptionCounter = 0;
+                    }
+                    gameState.specialEffects.redemptionCounter++;
+                    // Every 50 rolls, seeks redemption
+                    if (gameState.specialEffects.redemptionCounter % 50 === 0) {
+                        luckBonus += 0.75; // 75% redemption surge
+                        if (typeof showNotification === 'function') {
+                            showNotification('👑 Fallen King Rises! Redemption!');
+                        }
+                    }
+                    break;
+                case 'exoticConvergence':
+                    // Exotic Nexus - all exotic energies converge
+                    luckBonus += 0.42; // 42% convergence
+                    speedBonus += 0.18; // 18% speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Exotic energies build up
+                    if (Math.random() < 0.18) { // 18% chance
+                        luckBonus += 0.55; // 55% convergence burst
+                        if (typeof showNotification === 'function') {
+                            showNotification('✨ Exotic Convergence! Energies Align!');
+                        }
+                    }
+                    break;
+                case 'immortalWill':
+                    // Undying Band - refuses to accept defeat
+                    luckBonus += 0.36; // 36% undying will
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Undying will grows stronger over time
+                    if (!gameState.specialEffects.willPower) {
+                        gameState.specialEffects.willPower = 0;
+                    }
+                    gameState.specialEffects.willPower = Math.min(
+                        gameState.specialEffects.willPower + 0.0018,
+                        0.45
+                    );
+                    luckBonus += gameState.specialEffects.willPower; // Up to 45% more
+                    break;
+                case 'rainbowPower':
+                    // Chromatic Prism - harnesses all colors
+                    luckBonus += 0.45; // 45% rainbow power
+                    speedBonus += 0.20; // 20% speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Rainbow cycles through colors
+                    if (!gameState.specialEffects.rainbowCycle) {
+                        gameState.specialEffects.rainbowCycle = 0;
+                    }
+                    gameState.specialEffects.rainbowCycle++;
+                    // Every 7 rolls (colors of rainbow), full spectrum
+                    if (gameState.specialEffects.rainbowCycle % 7 === 0) {
+                        luckBonus += 0.70; // 70% full spectrum
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌈 Full Spectrum! All Colors Aligned!');
+                        }
+                    }
+                    break;
+                case 'ancientRunes':
+                    // Runic Stone - ancient runes grant wisdom
+                    luckBonus += 0.40; // 40% runic wisdom
+                    speedBonus += 0.15; // 15% speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Runes reveal secrets over time
+                    if (!gameState.specialEffects.runesDeciphered) {
+                        gameState.specialEffects.runesDeciphered = 0;
+                    }
+                    gameState.specialEffects.runesDeciphered = Math.min(
+                        gameState.specialEffects.runesDeciphered + 1,
+                        100
+                    );
+                    luckBonus += (gameState.specialEffects.runesDeciphered * 0.003); // Up to 30% at 100
+                    break;
+                case 'rushOfPower':
+                    // Flushed Device - sudden bursts of speed
+                    speedBonus += 0.35; // 35% base speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Random power rushes
+                    if (Math.random() < 0.22) { // 22% chance
+                        speedBonus += 0.70; // 70% rush
+                        luckBonus += 0.30; // 30% luck during rush
+                        if (typeof showNotification === 'function') {
+                            showNotification('💨 Power Rush! Overwhelming Speed!');
+                        }
+                    }
+                    break;
+                case 'codeBreaker':
+                    // Matrix Core - breaks reality code
+                    luckBonus += 0.43; // 43% code breaking
+                    speedBonus += 0.17; // 17% speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.codesBroken) {
+                        gameState.specialEffects.codesBroken = 0;
+                    }
+                    gameState.specialEffects.codesBroken++;
+                    // Every 33 rolls, break major code
+                    if (gameState.specialEffects.codesBroken % 33 === 0) {
+                        luckBonus += 0.80; // 80% code break
+                        if (typeof showNotification === 'function') {
+                            showNotification('💻 Code Broken! Reality Hacked!');
+                        }
+                    }
+                    break;
+                case 'giantPower':
+                    // Colossal Fist - massive luck, reduced speed
+                    luckBonus += 0.50; // 50% giant power
+                    // Speed penalty already in base stats
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Giant power crushes all
+                    if (Math.random() < 0.12) { // 12% chance
+                        luckBonus += 0.70; // 70% crushing blow
+                        if (typeof showNotification === 'function') {
+                            showNotification('👊 Colossal Strike! Overwhelming Force!');
+                        }
+                    }
                     break;
                 case 'timeWarpBonus':
                     // Bonus that increases with time since last roll
@@ -10721,6 +11607,524 @@ function calculateSpecialEffects() {
                     break;
                 case 'timeWarpBonus':
                     // This effect would be handled during specific roll triggers
+                    break;
+                case 'blackHolePull':
+                    // Singularity Core - gravitational singularity pulls rare auras
+                    luckBonus += 0.55; // 55% black hole luck
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Gravitational pull intensifies over time
+                    if (!gameState.specialEffects.singularityPull) {
+                        gameState.specialEffects.singularityPull = 0;
+                    }
+                    gameState.specialEffects.singularityPull = Math.min(
+                        gameState.specialEffects.singularityPull + 0.001,
+                        0.20
+                    );
+                    luckBonus += gameState.specialEffects.singularityPull; // Up to 20% more
+                    break;
+                case 'finalRuler':
+                    // Omega Throne - ultimate power of the final ruler
+                    luckBonus += 0.60; // 60% ruler power
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.throneCounter) {
+                        gameState.specialEffects.throneCounter = 0;
+                    }
+                    gameState.specialEffects.throneCounter++;
+                    // Every 100 rolls, absolute power surge
+                    if (gameState.specialEffects.throneCounter % 100 === 0) {
+                        luckBonus += 1.00; // 100% absolute power surge!
+                        if (typeof showNotification === 'function') {
+                            showNotification('👑 OMEGA THRONE! Absolute Power!');
+                        }
+                    }
+                    break;
+                case 'creationPower':
+                    // Primordial Spark - spark of creation
+                    luckBonus += 0.50; // 50% creation luck
+                    speedBonus += 0.25; // 25% creation speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Power grows infinitely to +80%
+                    if (!gameState.specialEffects.creationGrowth) {
+                        gameState.specialEffects.creationGrowth = 0;
+                    }
+                    gameState.specialEffects.creationGrowth = Math.min(
+                        gameState.specialEffects.creationGrowth + 0.0015,
+                        0.30
+                    );
+                    luckBonus += gameState.specialEffects.creationGrowth; // Up to 30% more (total 80%)
+                    break;
+                case 'undyingFire':
+                    // Eternal Flame - flame that never dies
+                    luckBonus += 0.65; // 65% eternal flame luck (never diminishes)
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Flame burns eternally and grows stronger
+                    if (!gameState.specialEffects.eternalFlame) {
+                        gameState.specialEffects.eternalFlame = 0;
+                    }
+                    gameState.specialEffects.eternalFlame = Math.min(
+                        gameState.specialEffects.eternalFlame + 0.0008,
+                        0.15
+                    );
+                    luckBonus += gameState.specialEffects.eternalFlame; // Up to 15% more
+                    break;
+                case 'quantumLeap':
+                    // Quantum Shift - quantum mechanics at play
+                    speedBonus += 0.45; // 45% quantum speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // 15% chance for quantum jump
+                    if (Math.random() < 0.15) { // 15% chance
+                        speedBonus += 0.80; // 80% quantum jump!
+                        if (typeof showNotification === 'function') {
+                            showNotification('⚛️ QUANTUM LEAP! Reality Shifts!');
+                        }
+                    }
+                    break;
+                case 'legendaryPower':
+                    // Mythic Seal - seals legendary power
+                    luckBonus += 0.70; // 70% legendary power
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Sealed power grows over time
+                    if (!gameState.specialEffects.sealedPower) {
+                        gameState.specialEffects.sealedPower = 0;
+                    }
+                    gameState.specialEffects.sealedPower = Math.min(
+                        gameState.specialEffects.sealedPower + 0.001,
+                        0.20
+                    );
+                    luckBonus += gameState.specialEffects.sealedPower; // Up to 20% more
+                    break;
+                case 'endlessLoop':
+                    // Infinity Loop - loops infinitely
+                    luckBonus += 0.55; // 55% loop luck
+                    speedBonus += 0.30; // 30% loop speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Loops infinitely to +90%
+                    if (!gameState.specialEffects.infiniteLoop) {
+                        gameState.specialEffects.infiniteLoop = 0;
+                    }
+                    gameState.specialEffects.infiniteLoop = Math.min(
+                        gameState.specialEffects.infiniteLoop + 0.002,
+                        0.35
+                    );
+                    luckBonus += gameState.specialEffects.infiniteLoop; // Up to 35% more (total 90%)
+                    break;
+                case 'voidDominion':
+                    // Void Emperor - rules the void
+                    luckBonus += 0.75; // 75% void dominion (highest T8!)
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Void power intensifies
+                    if (!gameState.specialEffects.voidRule) {
+                        gameState.specialEffects.voidRule = 0;
+                    }
+                    gameState.specialEffects.voidRule = Math.min(
+                        gameState.specialEffects.voidRule + 0.0012,
+                        0.25
+                    );
+                    luckBonus += gameState.specialEffects.voidRule; // Up to 25% more (total 100%!)
+                    break;
+                case 'fullSpectrum':
+                    // Spectrum Fusion - full spectrum power
+                    luckBonus += 0.60; // 60% spectrum luck
+                    speedBonus += 0.20; // 20% spectrum speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.spectrumCounter) {
+                        gameState.specialEffects.spectrumCounter = 0;
+                    }
+                    gameState.specialEffects.spectrumCounter++;
+                    // Every 7 rolls, full rainbow spectrum
+                    if (gameState.specialEffects.spectrumCounter % 7 === 0) {
+                        luckBonus += 1.00; // 100% rainbow bonus!
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌈 FULL SPECTRUM! Rainbow Fusion!');
+                        }
+                    }
+                    break;
+                case 'transcendence':
+                    // Ascension Gate - transcends mortal limits
+                    luckBonus += 0.65; // 65% transcendence luck
+                    speedBonus += 0.35; // 35% transcendence speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Transcends limits over time
+                    if (!gameState.specialEffects.transcendenceLevel) {
+                        gameState.specialEffects.transcendenceLevel = 0;
+                    }
+                    gameState.specialEffects.transcendenceLevel = Math.min(
+                        gameState.specialEffects.transcendenceLevel + 0.0015,
+                        0.35
+                    );
+                    luckBonus += gameState.specialEffects.transcendenceLevel; // Up to 35% more (total 100%)
+                    break;
+                // T9 Special Effects
+                case 'starDestruction':
+                    // Stellar Decimator - destroys stars
+                    luckBonus += 0.80; // 80% star destruction
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.stellarCounter) {
+                        gameState.specialEffects.stellarCounter = 0;
+                    }
+                    gameState.specialEffects.stellarCounter++;
+                    // Every 25 rolls, supernova burst
+                    if (gameState.specialEffects.stellarCounter % 25 === 0) {
+                        luckBonus += 1.50; // 150% supernova!
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌟 SUPERNOVA! Star Destruction Complete!');
+                        }
+                    }
+                    break;
+                case 'timeDilation':
+                    // Temporal Sovereign - controls time
+                    luckBonus += 0.75; // 75% time control
+                    speedBonus += 0.30; // 30% temporal speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Time dilation grows stronger
+                    if (!gameState.specialEffects.timeFlow) {
+                        gameState.specialEffects.timeFlow = 0;
+                    }
+                    gameState.specialEffects.timeFlow = Math.min(
+                        gameState.specialEffects.timeFlow + 0.001,
+                        0.20
+                    );
+                    luckBonus += gameState.specialEffects.timeFlow; // Up to 20% more
+                    break;
+                case 'deepDarkness':
+                    // Abyssal Crown - abyss power
+                    luckBonus += 0.85; // 85% abyss power
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.abyssCounter) {
+                        gameState.specialEffects.abyssCounter = 0;
+                    }
+                    gameState.specialEffects.abyssCounter++;
+                    // Every 50 rolls, darkness surge
+                    if (gameState.specialEffects.abyssCounter % 50 === 0) {
+                        luckBonus += 2.00; // 200% darkness surge!
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌑 DARKNESS SURGE! Abyss Awakens!');
+                        }
+                    }
+                    break;
+                case 'perfectBalance':
+                    // Equilibrium Core - perfect balance
+                    luckBonus += 0.70; // 70% balance luck
+                    speedBonus += 0.40; // 40% balance speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Balance stabilizes and strengthens
+                    if (!gameState.specialEffects.equilibrium) {
+                        gameState.specialEffects.equilibrium = 0;
+                    }
+                    gameState.specialEffects.equilibrium = Math.min(
+                        gameState.specialEffects.equilibrium + 0.0012,
+                        0.25
+                    );
+                    luckBonus += gameState.specialEffects.equilibrium; // Up to 25% more
+                    speedBonus += gameState.specialEffects.equilibrium * 0.5; // Up to 12.5% more speed
+                    break;
+                case 'divineAscension':
+                    // Archangel Wings - divine ascension
+                    luckBonus += 0.90; // 90% divine power
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.ascensionCounter) {
+                        gameState.specialEffects.ascensionCounter = 0;
+                    }
+                    gameState.specialEffects.ascensionCounter++;
+                    // Every 33 rolls, heavenly blessing
+                    if (gameState.specialEffects.ascensionCounter % 33 === 0) {
+                        luckBonus += 1.20; // 120% blessing!
+                        if (typeof showNotification === 'function') {
+                            showNotification('👼 HEAVENLY BLESSING! Divine Grace!');
+                        }
+                    }
+                    break;
+                case 'ancientKnowledge':
+                    // Runic Grimoire - infinite knowledge
+                    luckBonus += 0.80; // 80% ancient knowledge
+                    speedBonus += 0.35; // 35% wisdom speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Knowledge grows infinitely
+                    if (!gameState.specialEffects.grimoireKnowledge) {
+                        gameState.specialEffects.grimoireKnowledge = 0;
+                    }
+                    gameState.specialEffects.grimoireKnowledge = Math.min(
+                        gameState.specialEffects.grimoireKnowledge + 0.002,
+                        0.50
+                    );
+                    luckBonus += gameState.specialEffects.grimoireKnowledge; // Up to 50% more (infinite growth)
+                    break;
+                case 'worldWeight':
+                    // Atlas Burden - bears world's weight
+                    luckBonus += 0.95; // 95% world power (highest T9!)
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Weight grows heavier but power increases
+                    if (!gameState.specialEffects.atlasStrength) {
+                        gameState.specialEffects.atlasStrength = 0;
+                    }
+                    gameState.specialEffects.atlasStrength = Math.min(
+                        gameState.specialEffects.atlasStrength + 0.0015,
+                        0.30
+                    );
+                    luckBonus += gameState.specialEffects.atlasStrength; // Up to 30% more
+                    break;
+                case 'betweenWorlds':
+                    // Dimensional Rift - parallel worlds
+                    luckBonus += 0.75; // 75% dimensional luck
+                    speedBonus += 0.35; // 35% rift speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // 20% chance to peek into parallel worlds
+                    if (Math.random() < 0.20) { // 20% chance
+                        luckBonus += 1.00; // 100% parallel vision!
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌀 PARALLEL WORLDS! Reality Splits!');
+                        }
+                    }
+                    break;
+                case 'fallenEmpire':
+                    // Impeached Throne - fallen empire
+                    luckBonus += 0.85; // 85% fallen power
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.empireCounter) {
+                        gameState.specialEffects.empireCounter = 0;
+                    }
+                    gameState.specialEffects.empireCounter++;
+                    // Every 77 rolls, reclaim throne
+                    if (gameState.specialEffects.empireCounter % 77 === 0) {
+                        luckBonus += 1.75; // 175% reclamation!
+                        if (typeof showNotification === 'function') {
+                            showNotification('👑 THRONE RECLAIMED! Empire Restored!');
+                        }
+                    }
+                    break;
+                case 'harmonicResonance':
+                    // Symphony Conductor - harmonic resonance
+                    luckBonus += 0.80; // 80% harmony
+                    speedBonus += 0.38; // 38% tempo
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.symphonyCounter) {
+                        gameState.specialEffects.symphonyCounter = 0;
+                    }
+                    gameState.specialEffects.symphonyCounter++;
+                    // Every 7 rolls, perfect harmony
+                    if (gameState.specialEffects.symphonyCounter % 7 === 0) {
+                        luckBonus += 0.90; // 90% perfect harmony!
+                        if (typeof showNotification === 'function') {
+                            showNotification('🎵 PERFECT HARMONY! Symphony Crescendo!');
+                        }
+                    }
+                    break;
+                // T10 Special Effects
+                case 'realityWeaving':
+                    // Cosmic Weaver - weaves reality
+                    luckBonus += 1.20; // 120% reality weaving
+                    speedBonus += 0.50; // 50% cosmic speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Reality weaving grows stronger
+                    if (!gameState.specialEffects.cosmicWeave) {
+                        gameState.specialEffects.cosmicWeave = 0;
+                    }
+                    gameState.specialEffects.cosmicWeave = Math.min(
+                        gameState.specialEffects.cosmicWeave + 0.0018,
+                        0.40
+                    );
+                    luckBonus += gameState.specialEffects.cosmicWeave; // Up to 40% more
+                    break;
+                case 'cosmicHorror':
+                    // Abomination Vessel - cosmic horror
+                    luckBonus += 1.50; // 150% cosmic horror (ULTIMATE!)
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.horrorCounter) {
+                        gameState.specialEffects.horrorCounter = 0;
+                    }
+                    gameState.specialEffects.horrorCounter++;
+                    // Every 100 rolls, cosmic awakening
+                    if (gameState.specialEffects.horrorCounter % 100 === 0) {
+                        luckBonus += 2.50; // 250% COSMIC AWAKENING!
+                        if (typeof showNotification === 'function') {
+                            showNotification('💀 COSMIC AWAKENING! Unspeakable Power!');
+                        }
+                    }
+                    break;
+                case 'newBeginning':
+                    // Genesis Protocol - new beginning
+                    luckBonus += 1.10; // 110% genesis
+                    speedBonus += 0.55; // 55% creation speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.genesisCounter) {
+                        gameState.specialEffects.genesisCounter = 0;
+                    }
+                    gameState.specialEffects.genesisCounter++;
+                    // Every 50 rolls, rebirth with doubled bonuses
+                    if (gameState.specialEffects.genesisCounter % 50 === 0) {
+                        luckBonus *= 2; // DOUBLE all bonuses!
+                        speedBonus *= 2;
+                        if (typeof showNotification === 'function') {
+                            showNotification('🌅 REBIRTH! All Bonuses DOUBLED!');
+                        }
+                    }
+                    break;
+                case 'absolutePower':
+                    // Sovereign Authority - absolute power
+                    luckBonus += 1.40; // 140% sovereign power
+                    speedBonus += 0.45; // 45% authority speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Absolute power grows
+                    if (!gameState.specialEffects.sovereignty) {
+                        gameState.specialEffects.sovereignty = 0;
+                    }
+                    gameState.specialEffects.sovereignty = Math.min(
+                        gameState.specialEffects.sovereignty + 0.002,
+                        0.35
+                    );
+                    luckBonus += gameState.specialEffects.sovereignty; // Up to 35% more
+                    break;
+                case 'ultimateBalance':
+                    // Equilibrium Apex - ultimate balance
+                    luckBonus += 1.25; // 125% ultimate balance
+                    speedBonus += 0.60; // 60% apex speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Perfect equilibrium strengthens both equally
+                    if (!gameState.specialEffects.apexBalance) {
+                        gameState.specialEffects.apexBalance = 0;
+                    }
+                    gameState.specialEffects.apexBalance = Math.min(
+                        gameState.specialEffects.apexBalance + 0.0015,
+                        0.30
+                    );
+                    luckBonus += gameState.specialEffects.apexBalance; // Up to 30% more
+                    speedBonus += gameState.specialEffects.apexBalance; // Up to 30% more
+                    break;
+                case 'beyondMortal':
+                    // Transcendent Mind - beyond mortal
+                    luckBonus += 1.15; // 115% transcendent
+                    speedBonus += 0.50; // 50% beyond speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.mindCounter) {
+                        gameState.specialEffects.mindCounter = 0;
+                    }
+                    gameState.specialEffects.mindCounter++;
+                    // Every 40 rolls, transcendent vision
+                    if (gameState.specialEffects.mindCounter % 40 === 0) {
+                        luckBonus += 1.80; // 180% transcendent vision!
+                        if (typeof showNotification === 'function') {
+                            showNotification('🧠 TRANSCENDENT VISION! Beyond Reality!');
+                        }
+                    }
+                    break;
+                case 'neverEnding':
+                    // Eternal Dominion - never ending
+                    luckBonus += 1.35; // 135% eternal power
+                    speedBonus += 0.48; // 48% eternal speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Power that never fades, only grows infinitely
+                    if (!gameState.specialEffects.eternalGrowth) {
+                        gameState.specialEffects.eternalGrowth = 0;
+                    }
+                    gameState.specialEffects.eternalGrowth = Math.min(
+                        gameState.specialEffects.eternalGrowth + 0.003,
+                        0.65
+                    );
+                    luckBonus += gameState.specialEffects.eternalGrowth; // Up to 65% more (infinite growth!)
+                    break;
+                case 'entropyMastery':
+                    // Primordial Chaos - entropy mastery
+                    luckBonus += 1.05; // 105% chaos
+                    speedBonus += 0.52; // 52% entropy speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // 15% chance for chaos cascade
+                    if (Math.random() < 0.15) { // 15% chance
+                        luckBonus += 2.00; // 200% CHAOS CASCADE!
+                        if (typeof showNotification === 'function') {
+                            showNotification('💥 CHAOS CASCADE! Entropy Unleashed!');
+                        }
+                    }
+                    break;
+                case 'guidingLight':
+                    // Luminous Beacon - guiding light
+                    luckBonus += 1.30; // 130% guiding light
+                    speedBonus += 0.52; // 52% luminous speed
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    // Light illuminates path to rarest outcomes
+                    if (!gameState.specialEffects.beaconLight) {
+                        gameState.specialEffects.beaconLight = 0;
+                    }
+                    gameState.specialEffects.beaconLight = Math.min(
+                        gameState.specialEffects.beaconLight + 0.0015,
+                        0.30
+                    );
+                    luckBonus += gameState.specialEffects.beaconLight; // Up to 30% more
+                    break;
+                case 'finalNothingness':
+                    // Oblivion End - final nothingness
+                    luckBonus += 1.45; // 145% oblivion power
+                    if (!gameState.specialEffects) {
+                        gameState.specialEffects = {};
+                    }
+                    if (!gameState.specialEffects.oblivionCounter) {
+                        gameState.specialEffects.oblivionCounter = 0;
+                    }
+                    gameState.specialEffects.oblivionCounter++;
+                    // Every 150 rolls, oblivion surge
+                    if (gameState.specialEffects.oblivionCounter % 150 === 0) {
+                        luckBonus += 3.00; // 300% OBLIVION SURGE!
+                        if (typeof showNotification === 'function') {
+                            showNotification('☠️ OBLIVION SURGE! The Final End!');
+                        }
+                    }
                     break;
             }
         }
