@@ -12,14 +12,26 @@ class LeaderboardAutoSubmit {
     initialize() {
         console.log('📊 Leaderboard auto-submit system initialized');
         
-        // Submit immediately on init
-        setTimeout(() => this.submitAllStats(), 2000);
+        // Wait for gameState to be ready before submitting
+        this.waitForGameState();
         
         // Start periodic submission
         setInterval(() => this.submitAllStats(), this.submitInterval);
         
         // Submit on page unload
         window.addEventListener('beforeunload', () => this.submitAllStats());
+    }
+
+    waitForGameState() {
+        // Check if gameState exists
+        if (window.gameState && window.globalLeaderboard) {
+            console.log('✅ gameState and globalLeaderboard ready, starting auto-submit');
+            // Submit first stats
+            setTimeout(() => this.submitAllStats(), 1000);
+        } else {
+            // Check again after 1 second
+            setTimeout(() => this.waitForGameState(), 1000);
+        }
     }
 
     async submitAllStats() {
