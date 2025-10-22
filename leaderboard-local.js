@@ -382,7 +382,7 @@ class GlobalLeaderboard {
                 body: JSON.stringify({
                     playerId: this.playerId,
                     playerName: playerName,
-                    totalScore: stats.totalScore,
+                    score: stats.totalScore, // Backend expects 'score' not 'totalScore'
                     uniqueAuras: stats.uniqueAuras,
                     timestamp: new Date().toISOString(),
                     lastUpdated: Date.now()
