@@ -1017,11 +1017,17 @@ function applyBiomeVisuals(biome) {
     const biomeCssClass = `biome-${biome.name.toLowerCase().replace(/ /g, '-')}`;
     body.classList.add(biomeCssClass);
     
-    // Update UI colors
-    updateUIColors(biome);
+    // Remove any existing effects overlay
+    const effectsOverlay = document.getElementById('biomeEffectsOverlay');
+    if (effectsOverlay) {
+        effectsOverlay.remove();
+    }
     
-    // Apply biome-specific visual effects
-    applyBiomeStaticEffects(biome.name);
+    // Clear any filters
+    body.style.filter = '';
+    
+    // Update UI colors only (no visual effects)
+    updateUIColors(biome);
 }
 
 // Apply cool static effects for each biome
