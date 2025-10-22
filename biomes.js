@@ -824,13 +824,15 @@ function setBiome(biomeName) {
     updateBiomeDisplay();
     applyBiomeVisuals(biome);
     
-    // Update audio visualizer for biome ✅
-    if (typeof updateVisualizerForBiome === 'function') {
-        updateVisualizerForBiome(biomeName);
-    }
-    
     // Play biome music (including day/night music for NORMAL)
     playBiomeMusic(biomeName);
+    
+    // Update audio visualizer AFTER music starts (so audio element exists)
+    if (typeof updateVisualizerForBiome === 'function') {
+        setTimeout(() => {
+            updateVisualizerForBiome(biomeName);
+        }, 150); // Wait for audio element to be created and added to DOM
+    }
     
     // Show notification
     if (biomeName !== "NORMAL") {
@@ -1997,9 +1999,11 @@ function loadBiomeState() {
         if (biome) {
             applyBiomeVisuals(biome);
             
-            // Apply audio visualizer
+            // Apply audio visualizer (delayed to ensure audio element exists)
             if (typeof updateVisualizerForBiome === 'function') {
-                updateVisualizerForBiome(biomeState.currentBiome);
+                setTimeout(() => {
+                    updateVisualizerForBiome(biomeState.currentBiome);
+                }, 200); // Slightly longer delay for page load
             }
         }
         
