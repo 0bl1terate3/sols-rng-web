@@ -827,13 +827,6 @@ function setBiome(biomeName) {
     // Play biome music (including day/night music for NORMAL)
     playBiomeMusic(biomeName);
     
-    // Update audio visualizer AFTER music starts (so audio element exists)
-    if (typeof updateVisualizerForBiome === 'function') {
-        setTimeout(() => {
-            updateVisualizerForBiome(biomeName);
-        }, 150); // Wait for audio element to be created and added to DOM
-    }
-    
     // Show notification
     if (biomeName !== "NORMAL") {
         showBiomeNotification(biome);
@@ -1024,8 +1017,264 @@ function applyBiomeVisuals(biome) {
     const biomeCssClass = `biome-${biome.name.toLowerCase().replace(/ /g, '-')}`;
     body.classList.add(biomeCssClass);
     
-    // Only update UI colors - no visual effects
+    // Update UI colors
     updateUIColors(biome);
+    
+    // Apply biome-specific visual effects
+    applyBiomeStaticEffects(biome.name);
+}
+
+// Apply cool static effects for each biome
+function applyBiomeStaticEffects(biomeName) {
+    const body = document.body;
+    
+    // Remove existing biome effects overlay
+    let effectsOverlay = document.getElementById('biomeEffectsOverlay');
+    if (!effectsOverlay) {
+        effectsOverlay = document.createElement('div');
+        effectsOverlay.id = 'biomeEffectsOverlay';
+        effectsOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        `;
+        document.body.prepend(effectsOverlay);
+    }
+    
+    // Clear previous effects
+    effectsOverlay.innerHTML = '';
+    body.style.filter = '';
+    
+    // Apply biome-specific effects
+    const effects = {
+        WINDY: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 200%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent 0%, rgba(165, 243, 252, 0.1) 50%, transparent 100%);
+                animation: windSweep 3s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(1.1)';
+        },
+        SNOWY: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(2px 2px at 20% 30%, white, transparent),
+                    radial-gradient(2px 2px at 60% 70%, white, transparent),
+                    radial-gradient(1px 1px at 50% 50%, white, transparent),
+                    radial-gradient(1px 1px at 80% 10%, white, transparent),
+                    radial-gradient(2px 2px at 90% 60%, white, transparent),
+                    radial-gradient(1px 1px at 33% 80%, white, transparent);
+                background-size: 200% 200%;
+                animation: snowfall 20s linear infinite;
+                opacity: 0.6;
+            "></div>`;
+            body.style.filter = 'brightness(1.15) contrast(1.1)';
+        },
+        BLIZZARD: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    linear-gradient(45deg, transparent 30%, rgba(191, 219, 254, 0.3) 50%, transparent 70%),
+                    radial-gradient(circle, rgba(191, 219, 254, 0.1) 0%, transparent 50%);
+                animation: blizzardWind 2s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(1.2) blur(0.5px)';
+        },
+        RAINY: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(transparent 50%, rgba(125, 211, 252, 0.1) 50%);
+                background-size: 2px 10px;
+                animation: rainfall 0.3s linear infinite;
+            "></div>`;
+            body.style.filter = 'brightness(0.9) saturate(1.2)';
+        },
+        MONSOON: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(transparent 50%, rgba(30, 64, 175, 0.15) 50%);
+                background-size: 1px 15px;
+                animation: heavyRain 0.2s linear infinite;
+            "></div>`;
+            body.style.filter = 'brightness(0.75) contrast(1.3)';
+        },
+        SANDSTORM: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(120deg, transparent, rgba(251, 191, 36, 0.2), transparent);
+                animation: sandWaves 4s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'sepia(0.3) brightness(1.1)';
+        },
+        HELL: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 50% 100%, rgba(239, 68, 68, 0.3) 0%, transparent 70%);
+                animation: hellPulse 2s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(0.9) saturate(1.4) hue-rotate(-10deg)';
+        },
+        STARFALL: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(1px 1px at 10% 20%, rgba(252, 211, 77, 0.9), transparent),
+                    radial-gradient(1px 1px at 50% 50%, rgba(252, 211, 77, 0.9), transparent),
+                    radial-gradient(2px 2px at 80% 30%, rgba(252, 211, 77, 0.9), transparent);
+                animation: starTwinkle 3s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(1.2) contrast(1.1)';
+        },
+        GLITCHED: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(34, 211, 238, 0.03) 2px,
+                    rgba(34, 211, 238, 0.03) 4px
+                );
+                animation: glitchShift 0.1s infinite;
+            "></div>`;
+            body.style.filter = 'saturate(1.3)';
+        },
+        VOID: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
+                animation: voidPulse 4s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(0.7) contrast(1.5)';
+        },
+        CORRUPTION: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(ellipse at 30% 50%, rgba(168, 85, 247, 0.2), transparent),
+                             radial-gradient(ellipse at 70% 50%, rgba(147, 51, 234, 0.2), transparent);
+                animation: corruptionPulse 3s ease-in-out infinite alternate;
+            "></div>`;
+            body.style.filter = 'saturate(1.3) hue-rotate(5deg)';
+        },
+        PUMPKIN_MOON: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 80% 20%, rgba(255, 140, 0, 0.3) 0%, transparent 20%);
+            "></div>`;
+            body.style.filter = 'brightness(1.1) saturate(1.2) hue-rotate(-5deg)';
+        },
+        GRAVEYARD: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+            "></div>`;
+            body.style.filter = 'brightness(0.85) grayscale(0.2)';
+        },
+        VOLCANO: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(ellipse at 50% 100%, rgba(255, 69, 0, 0.3), transparent);
+                animation: volcanoGlow 2.5s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(1.1) saturate(1.4) hue-rotate(-15deg)';
+        },
+        BIOLUMINESCENT: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.2) 0%, transparent 10%),
+                    radial-gradient(circle at 80% 60%, rgba(127, 255, 212, 0.2) 0%, transparent 10%),
+                    radial-gradient(circle at 50% 40%, rgba(0, 206, 209, 0.2) 0%, transparent 10%);
+                animation: biolumGlow 4s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(1.2) saturate(1.5)';
+        },
+        BLOOD_RAIN: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(transparent 50%, rgba(139, 0, 0, 0.15) 50%);
+                background-size: 2px 12px;
+                animation: bloodFall 0.25s linear infinite;
+            "></div>`;
+            body.style.filter = 'brightness(0.8) saturate(1.4) hue-rotate(-10deg)';
+        },
+        CHARGED: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, transparent 0%, rgba(251, 191, 36, 0.1) 50%, transparent 100%);
+                animation: lightning 4s ease-in-out infinite;
+            "></div>`;
+            body.style.filter = 'brightness(1.15) saturate(1.3)';
+        }
+    };
+    
+    // Apply effect if it exists, otherwise use default
+    if (effects[biomeName]) {
+        effects[biomeName]();
+    }
+    
+    // Add animations if they don't exist
+    if (!document.getElementById('biomeAnimations')) {
+        const style = document.createElement('style');
+        style.id = 'biomeAnimations';
+        style.textContent = `
+            @keyframes windSweep { 0%, 100% { transform: translateX(-50%); } 50% { transform: translateX(0%); } }
+            @keyframes snowfall { 0% { background-position: 0% 0%; } 100% { background-position: 10% 100%; } }
+            @keyframes blizzardWind { 0%, 100% { transform: translateX(-5px); } 50% { transform: translateX(5px); } }
+            @keyframes rainfall { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+            @keyframes heavyRain { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+            @keyframes sandWaves { 0%, 100% { transform: translateX(-20px); opacity: 0.5; } 50% { transform: translateX(20px); opacity: 0.8; } }
+            @keyframes hellPulse { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; } }
+            @keyframes starTwinkle { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+            @keyframes glitchShift { 0% { transform: translateX(0); } 25% { transform: translateX(-2px); } 50% { transform: translateX(2px); } 75% { transform: translateX(-1px); } 100% { transform: translateX(0); } }
+            @keyframes voidPulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+            @keyframes corruptionPulse { 0% { opacity: 0.6; } 100% { opacity: 1; } }
+            @keyframes volcanoGlow { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
+            @keyframes biolumGlow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+            @keyframes bloodFall { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+            @keyframes lightning { 0%, 90%, 100% { opacity: 0.3; } 95% { opacity: 1; } }
+        `;
+        document.head.appendChild(style);
+    }
 }
 
 // Biome color schemes for UI
