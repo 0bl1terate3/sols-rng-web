@@ -4339,7 +4339,7 @@ const ACHIEVEMENTS = typeof ACHIEVEMENTS_DATA !== 'undefined' ? ACHIEVEMENTS_DAT
 // Main Game Logic
 // =================================================================
 
-const gameState = {
+window.gameState = {
     totalRolls: 0,
     currentLuck: 1.0,
     currentSpeed: 1.0,
