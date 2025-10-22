@@ -1244,6 +1244,19 @@ function applyBiomeStaticEffects(biomeName) {
                 animation: lightning 4s ease-in-out infinite;
             "></div>`;
             body.style.filter = 'brightness(1.15) saturate(1.3)';
+        },
+        HALLOW: () => {
+            effectsOverlay.innerHTML = `<div style="
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                background: 
+                    radial-gradient(circle at 30% 30%, rgba(255, 105, 180, 0.2) 0%, transparent 15%),
+                    radial-gradient(circle at 70% 60%, rgba(0, 206, 209, 0.2) 0%, transparent 15%),
+                    radial-gradient(circle at 50% 80%, rgba(255, 105, 180, 0.15) 0%, transparent 20%);
+                animation: hallowGlow 3s ease-in-out infinite alternate;
+            "></div>`;
+            body.style.filter = 'brightness(1.15) saturate(1.4) contrast(1.1)';
         }
     };
     
@@ -1272,6 +1285,7 @@ function applyBiomeStaticEffects(biomeName) {
             @keyframes biolumGlow { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
             @keyframes bloodFall { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
             @keyframes lightning { 0%, 90%, 100% { opacity: 0.3; } 95% { opacity: 1; } }
+            @keyframes hallowGlow { 0% { opacity: 0.7; transform: scale(1); } 100% { opacity: 1; transform: scale(1.05); } }
         `;
         document.head.appendChild(style);
     }
