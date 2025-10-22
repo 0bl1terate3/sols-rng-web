@@ -12,6 +12,9 @@ class LeaderboardAutoSubmit {
     initialize() {
         console.log('📊 Leaderboard auto-submit system initialized');
         
+        // Submit immediately on init
+        setTimeout(() => this.submitAllStats(), 2000);
+        
         // Start periodic submission
         setInterval(() => this.submitAllStats(), this.submitInterval);
         
@@ -21,13 +24,16 @@ class LeaderboardAutoSubmit {
 
     async submitAllStats() {
         if (!window.globalLeaderboard || !window.gameState) {
+            console.log('⚠️ Auto-submit: No globalLeaderboard or gameState');
             return;
         }
 
         const stats = this.collectStats();
+        console.log('📊 Auto-submit stats:', stats);
         
         // Submit each stat if it has changed
-        if (stats.totalRolls !== this.lastSubmittedStats.totalRolls) {
+        if (stats.totalRolls !== this.lastSubmittedStats.totalRolls && stats.totalRolls > 0) {
+            console.log('📤 Submitting totalRolls:', stats.totalRolls);
             await this.submitStat('totalRolls', { 
                 rollCount: stats.totalRolls,
                 score: stats.totalRolls
@@ -35,7 +41,8 @@ class LeaderboardAutoSubmit {
             this.lastSubmittedStats.totalRolls = stats.totalRolls;
         }
 
-        if (stats.breakthroughs !== this.lastSubmittedStats.breakthroughs) {
+        if (stats.breakthroughs !== this.lastSubmittedStats.breakthroughs && stats.breakthroughs > 0) {
+            console.log('📤 Submitting breakthroughs:', stats.breakthroughs);
             await this.submitStat('breakthroughs', { 
                 breakthroughCount: stats.breakthroughs,
                 score: stats.breakthroughs
@@ -43,7 +50,8 @@ class LeaderboardAutoSubmit {
             this.lastSubmittedStats.breakthroughs = stats.breakthroughs;
         }
 
-        if (stats.money !== this.lastSubmittedStats.money) {
+        if (stats.money !== this.lastSubmittedStats.money && stats.money > 0) {
+            console.log('📤 Submitting money:', stats.money);
             await this.submitStat('richest', { 
                 money: stats.money,
                 score: stats.money
@@ -52,7 +60,8 @@ class LeaderboardAutoSubmit {
         }
 
         // Submit fastest global if they have one
-        if (stats.fastestGlobal && stats.fastestGlobal !== this.lastSubmittedStats.fastestGlobal) {
+        if (stats.fastestGlobal && JSON.stringify(stats.fastestGlobal) !== JSON.stringify(this.lastSubmittedStats.fastestGlobal)) {
+            console.log('📤 Submitting fastestGlobal:', stats.fastestGlobal);
             await this.submitStat('fastestGlobal', {
                 rollCount: stats.fastestGlobal.rollCount,
                 auraName: stats.fastestGlobal.auraName,
@@ -67,8 +76,8 @@ class LeaderboardAutoSubmit {
         
         const stats = {
             totalRolls: gameState.totalRolls || 0,
-            breakthroughs: gameState.totalBreakthroughs || 0,
-            money: gameState.money || 0,
+            breakthroughs: (gameState.achievements && gameState.achievements.stats && gameState.achievements.stats.breakthroughCount) || 0,
+            money: (gameState.currency && gameState.currency.money) || 0,
             fastestGlobal: null
         };
 
@@ -80,7 +89,7 @@ class LeaderboardAutoSubmit {
             for (const [auraName, auraData] of Object.entries(gameState.inventory.auras)) {
                 if (auraData.rarity && auraData.rarity > 99999998) { // Global aura
                     const rollsWhenObtained = auraData.rollsWhenObtained || gameState.totalRolls;
-                    if (rollsWhenObtained < minRolls) {
+                    if (rollsWhenObtained < minRolls && rollsWhenObtained > 0) {
                         minRolls = rollsWhenObtained;
                         fastestGlobal = {
                             rollCount: rollsWhenObtained,
