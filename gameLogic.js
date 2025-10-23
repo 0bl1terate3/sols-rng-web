@@ -8603,6 +8603,15 @@ function equipGear(gearName, slot) {
     const gearInfo = gearData[gearName];
     if (!gearInfo || (gearInfo.hand && gearInfo.hand !== slot)) return;
     
+    // Check challenge restrictions
+    if (gameState.challengeSystem && gameState.challengeSystem.activeChallenges.length > 0) {
+        const activeChallenge = gameState.challengeSystem.activeChallenges[0];
+        if (activeChallenge.restrictions && activeChallenge.restrictions.noItems) {
+            showNotification(`⚔️ Gear is forbidden in ${activeChallenge.name}!`, 'error');
+            return;
+        }
+    }
+    
     if (gameState.equipped[slot]) unequipGear(slot);
     
     gameState.equipped[slot] = gearName;
@@ -14423,6 +14432,15 @@ function usePotion(name, amount = 1) {
     if (recipe.dayMode && gameState.timeOfDay !== 'day') {
         showNotification(`☀️ ${name} can only be used during daytime!`, 'error');
         return;
+    }
+    
+    // Check challenge restrictions
+    if (gameState.challengeSystem && gameState.challengeSystem.activeChallenges.length > 0) {
+        const activeChallenge = gameState.challengeSystem.activeChallenges[0];
+        if (activeChallenge.restrictions && activeChallenge.restrictions.noPotions) {
+            showNotification(`⚔️ Potions are forbidden in ${activeChallenge.name}!`, 'error');
+            return;
+        }
     }
 
     amount = Math.max(1, Math.min(amount, gameState.inventory.potions[name].count));
