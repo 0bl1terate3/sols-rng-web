@@ -715,6 +715,13 @@ function resumeBiomeMusic() {
 function initBiomeSystem() {
     console.log('Initializing biome system...');
     loadBiomeState(); // Load saved state first
+    
+    // Sync initial time state to gameState
+    if (typeof gameState !== 'undefined') {
+        gameState.timeOfDay = biomeState.isDay ? 'day' : 'night';
+        console.log(`🕐 Initial time: ${gameState.timeOfDay}`);
+    }
+    
     startBiomeRoller();
     startTimeSystem();
     updateBiomeDisplay();
@@ -853,6 +860,11 @@ function startTimeSystem() {
             biomeState.isDay = !biomeState.isDay;
             const duration = biomeState.isDay ? TIME_CYCLE.dayDuration : TIME_CYCLE.nightDuration;
             biomeState.timeEndTime = Date.now() + (duration * 1000);
+            
+            // Sync to gameState for potion checks
+            if (typeof gameState !== 'undefined') {
+                gameState.timeOfDay = biomeState.isDay ? 'day' : 'night';
+            }
             
             // Save time state
             saveBiomeState();
@@ -2420,6 +2432,11 @@ function loadBiomeState() {
             // Restore time state
             biomeState.isDay = state.isDay;
             biomeState.timeEndTime = state.timeEndTime;
+        }
+        
+        // Sync to gameState for potion checks
+        if (typeof gameState !== 'undefined') {
+            gameState.timeOfDay = biomeState.isDay ? 'day' : 'night';
         }
         
         // Apply visuals for loaded biome
