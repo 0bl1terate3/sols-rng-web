@@ -4208,7 +4208,7 @@ async function playRareCutscene(aura) {
     const audio = new Audio('1milplus.mp3');
     audio.play();
 
-    // Create video element with color filters
+    // Create video element (no filter)
     const videoEl = document.createElement('video');
     videoEl.src = 'starcutscene.mp4';
     videoEl.style.cssText = `
@@ -4219,10 +4219,24 @@ async function playRareCutscene(aura) {
         height: 100vh;
         object-fit: cover;
         z-index: 9998;
-        filter: sepia(100%) hue-rotate(${hueRotation}deg) saturate(300%) brightness(0.8);
     `;
     videoEl.autoplay = true;
     videoEl.muted = false;
+
+    // Create colored overlay using mix-blend-mode: color
+    const colorOverlay = document.createElement('div');
+    colorOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background-color: ${auraColor};
+        z-index: 9999;
+        pointer-events: none;
+        mix-blend-mode: color;
+        opacity: 0.85;
+    `;
 
     // Setup cutscene overlay
     cutsceneEl.classList.add('active');
@@ -4244,20 +4258,23 @@ async function playRareCutscene(aura) {
     document.getElementById('rareAuraName').style.opacity = 0;
     document.getElementById('rareAuraRarity').style.opacity = 0;
 
-    // Add video to cutscene
+    // Add video and overlay to cutscene
     cutsceneEl.appendChild(videoEl);
+    cutsceneEl.appendChild(colorOverlay);
 
     // Auto-close after video ends or 9 seconds
     const duration = 9000;
     videoEl.addEventListener('ended', () => {
         closeRareCutscene(cutsceneEl, null, savedScrollX, savedScrollY);
         if (videoEl.parentNode) videoEl.parentNode.removeChild(videoEl);
+        if (colorOverlay.parentNode) colorOverlay.parentNode.removeChild(colorOverlay);
     });
 
     setTimeout(() => {
         if (cutsceneEl.classList.contains('active')) {
             closeRareCutscene(cutsceneEl, null, savedScrollX, savedScrollY);
             if (videoEl.parentNode) videoEl.parentNode.removeChild(videoEl);
+            if (colorOverlay.parentNode) colorOverlay.parentNode.removeChild(colorOverlay);
         }
     }, duration);
 }
