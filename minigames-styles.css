@@ -1,0 +1,332 @@
+/* Minigames Styles */
+.minigame-menu-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.minigame-locked {
+    text-align: center;
+    padding: 48px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    font-size: 18px;
+}
+
+.minigame-progress-text {
+    margin-top: 12px;
+    color: #888;
+    font-size: 14px;
+}
+
+.minigame-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.minigame-stat {
+    background: rgba(255,255,255,0.05);
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.minigame-stat-label {
+    color: #888;
+    font-size: 14px;
+}
+
+.minigame-stat-value {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.minigame-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.minigame-card {
+    background: linear-gradient(135deg, #1a1f2e, #242b3d);
+    padding: 24px;
+    border-radius: 12px;
+    border: 2px solid rgba(255,255,255,0.1);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.minigame-card:hover {
+    border-color: rgba(0, 217, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.minigame-card-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.minigame-card h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+}
+
+.minigame-card p {
+    margin: 0 0 16px 0;
+    color: #888;
+    font-size: 14px;
+}
+
+.minigame-play-btn {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #00d9ff, #00ff88);
+    border: none;
+    border-radius: 8px;
+    color: #000;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.minigame-play-btn:hover:not(:disabled) {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 217, 255, 0.4);
+}
+
+.minigame-play-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.minigame-instructions {
+    text-align: center;
+    margin-bottom: 24px;
+    color: #888;
+}
+
+.minigame-action-btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 16px;
+}
+
+.minigame-action-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+}
+
+.minigame-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.minigame-close-btn {
+    width: 100%;
+    padding: 10px;
+    background: rgba(255,255,255,0.1);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.3s ease;
+}
+
+.minigame-close-btn:hover {
+    background: rgba(255,255,255,0.15);
+}
+
+.minigame-result {
+    text-align: center;
+    padding: 32px;
+}
+
+.minigame-result-icon {
+    font-size: 80px;
+    margin-bottom: 16px;
+}
+
+.minigame-result.success .minigame-result-icon {
+    color: #10b981;
+}
+
+.minigame-result.failure .minigame-result-icon {
+    color: #ef4444;
+}
+
+.minigame-rewards {
+    background: rgba(255,255,255,0.05);
+    padding: 16px;
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+.reward-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.reward-list > div {
+    padding: 8px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 4px;
+}
+
+/* Timing Game */
+.timing-bar-container {
+    position: relative;
+    height: 40px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 24px 0;
+}
+
+.timing-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #00d9ff, #00ff88);
+    transition: width 0.05s linear;
+}
+
+.timing-target {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 6%;
+    background: rgba(16, 185, 129, 0.5);
+    border: 2px solid #10b981;
+}
+
+.timing-timer {
+    text-align: center;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+/* Memory Game */
+.memory-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 24px;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
+
+.memory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.memory-card {
+    aspect-ratio: 1;
+    cursor: pointer;
+    perspective: 1000px;
+}
+
+.memory-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+.memory-card.flipped .memory-card-inner {
+    transform: rotateY(180deg);
+}
+
+.memory-card-front,
+.memory-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+
+.memory-card-front {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.memory-card-back {
+    background: linear-gradient(135deg, #10b981, #059669);
+    transform: rotateY(180deg);
+}
+
+.memory-card.matched {
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.minigame-stats-final {
+    margin: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.bonus-text {
+    color: #fbbf24;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+/* Spin Wheel */
+.wheel-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 24px 0;
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 40px;
+    color: #ef4444;
+    z-index: 10;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+#wheelCanvas {
+    border-radius: 50%;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+}
+
+.prize-display {
+    font-size: 48px;
+    margin: 24px 0;
+    font-weight: 700;
+}
+
+.minigame-fail-msg {
+    color: #888;
+    font-size: 16px;
+    margin-top: 16px;
+}

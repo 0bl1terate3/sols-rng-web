@@ -37,6 +37,11 @@
     <link rel="stylesheet" href="battlePass.css?v=1.2">
     <link rel="stylesheet" href="cosmetics-selector.css?v=1.1">
     
+    <!-- New Systems Stylesheets -->
+    <link rel="stylesheet" href="minigames-styles.css?v=1.0">
+    <link rel="stylesheet" href="aura-gallery-styles.css?v=1.0">
+    <link rel="stylesheet" href="challenge-modes-styles.css?v=1.0">
+    
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -101,6 +106,11 @@
             <!-- ✅ Leaderboard enabled with local backend -->
             <button class="nav-btn" id="statsLeaderboardBtn" title="Stats Leaderboards - Global Auras" onclick="openLeaderboardModal('globals')">📊</button>
             <button class="nav-btn" id="battlePassBtn" title="Battle Pass" onclick="openBattlePassModal()">⚔️</button>
+            <button class="nav-btn" id="bountyBtn" title="Aura Hunter Bounties" onclick="document.getElementById('bountyModal').style.display='flex'; createBountyUI();">🎯</button>
+            <button class="nav-btn" id="expeditionBtn" title="Aura Expeditions" onclick="document.getElementById('expeditionModal').style.display='flex'; createExpeditionUI();">🌌</button>
+            <button class="nav-btn" id="minigameBtn" title="Mini Games" onclick="document.getElementById('minigameMenuModal').style.display='flex'; createMinigameMenu();">🎮</button>
+            <button class="nav-btn" id="galleryBtn" title="Aura Gallery" onclick="openAuraGallery()">🎨</button>
+            <button class="nav-btn" id="challengeBtn" title="Challenge Modes" onclick="document.getElementById('challengeModal').style.display='flex'; createChallengeMenu();">⚔️</button>
             <button class="nav-btn" id="settingsBtn" title="Settings" onclick="openSettingsModal()">⚙️</button>
             <button class="nav-btn" id="helpBtn" title="Help (H)" onclick="openHelpModal()">❓</button>
         </div>
@@ -474,6 +484,82 @@
     </div>
 
     <!-- ============================================
+         NEW SYSTEMS MODALS
+         ============================================ -->
+    
+    <!-- Bounty System Modal -->
+    <div id="bountyModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🎯 Aura Hunter Bounties</h2>
+                <button class="modal-close" onclick="document.getElementById('bountyModal').style.display='none'">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="bountySystemContainer"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Expedition System Modal -->
+    <div id="expeditionModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🌌 Aura Expeditions</h2>
+                <button class="modal-close" onclick="document.getElementById('expeditionModal').style.display='none'">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="expeditionSystemContainer"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mini Games Modal -->
+    <div id="minigameModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🎮 Mini Games</h2>
+                <button class="modal-close" onclick="closeMinigame()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="minigameContent"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mini Games Menu Modal -->
+    <div id="minigameMenuModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>🎮 Mini Games</h2>
+                <button class="modal-close" onclick="document.getElementById('minigameMenuModal').style.display='none'">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="minigameMenuContainer"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Aura Gallery Modal -->
+    <div id="galleryModal" class="modal">
+        <div class="modal-content modal-xlarge">
+            <div id="galleryContent"></div>
+        </div>
+    </div>
+    
+    <!-- Challenge Modes Modal -->
+    <div id="challengeModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>⚔️ Challenge Modes</h2>
+                <button class="modal-close" onclick="document.getElementById('challengeModal').style.display='none'">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="challengeMenuContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================
          CUTSCENES
          ============================================ -->
     <div id="ultraRareCutscene" class="ultra-rare-cutscene">
@@ -582,7 +668,7 @@
     <!-- Game Scripts -->
     <script src="debug.js?v=1.1"></script>
     <script src="debugAuth.js?v=2.2"></script>
-    <script src="auraData.js?v=1.2"></script>
+    <script src="auraData.js?v=1.3"></script>
     <script src="potionRecipes.js?v=1.0"></script>
     <script src="runesData.js?v=1.0"></script>
     <script src="biomes.js?v=1.7"></script>
@@ -634,6 +720,13 @@
     <script src="battlePass.js?v=1.3"></script>
     <script src="cosmetics-selector.js?v=1.2"></script>
     
+    <!-- New Systems -->
+    <script src="bounty-system.js?v=1.0"></script>
+    <script src="expedition-system.js?v=1.0"></script>
+    <script src="minigames.js?v=1.0"></script>
+    <script src="aura-gallery.js?v=1.1"></script>
+    <script src="challenge-modes.js?v=1.0"></script>
+    
     <!-- UI Initialization -->
     <script src="ui-init.js?v=1.0"></script>
     
@@ -648,7 +741,18 @@
                 if (typeof initGearLoadouts === 'function') initGearLoadouts();
                 if (typeof initAdvancedFeatures === 'function') initAdvancedFeatures();
                 if (typeof initPerformanceOptimizer === 'function') initPerformanceOptimizer();
+                
+                // Initialize new systems
+                if (typeof initializeBounties === 'function') initializeBounties();
+                if (typeof createBountyUI === 'function') createBountyUI();
+                if (typeof createExpeditionUI === 'function') createExpeditionUI();
+                if (typeof createMinigameMenu === 'function') createMinigameMenu();
+                if (typeof createChallengeMenu === 'function') createChallengeMenu();
+                if (typeof checkMinigameUnlock === 'function') checkMinigameUnlock();
+                if (typeof checkChallengeUnlock === 'function') checkChallengeUnlock();
+                
                 console.log('🎮 All Enhanced QoL Systems Initialized!');
+                console.log('🎯 New Systems: Bounties, Expeditions, Mini Games, Gallery, Challenges Loaded!');
             }, 2000);
         });
     </script>

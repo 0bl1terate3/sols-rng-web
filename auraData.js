@@ -501,3 +501,7 @@ const AURAS = [
     { name: "Leviathan: Depths", rarity: 8527650000, tier: "transcendent" },
     { name: "Aegis: Fortress", rarity: 4537500000, tier: "transcendent" }
 ];
+
+// Export to window for global access
+window.AURAS = AURAS;
+console.log(`✅ Loaded ${AURAS.length} auras into window.AURAS`);
