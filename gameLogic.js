@@ -9349,6 +9349,272 @@ function processSpecialGearEffects(aura) {
                         showNotification('♾️ Infinity Gauntlet: SNAP OF FATE! Next roll guaranteed COSMIC!');
                     }
                     break;
+                
+                // ========== NEW ACCESSORY SPECIAL EFFECTS ==========
+                case 'warmGlow':
+                case 'rebirth':
+                case 'trueNorth':
+                case 'undyingFire':
+                case 'neverEnding':
+                case 'endgamePower':
+                case 'universalKey':
+                    // Passive percentage bonuses (handled in luck/speed calculation)
+                    break;
+                
+                case 'fourLeaf':
+                    // Clover Brooch: Every 4th roll +20% luck
+                    if (!gameState.specialEffects.fourLeafCounter) gameState.specialEffects.fourLeafCounter = 0;
+                    gameState.specialEffects.fourLeafCounter++;
+                    if (gameState.specialEffects.fourLeafCounter >= 4) {
+                        gameState.specialEffects.fourLeafCounter = 0;
+                        gameState.specialEffects.fourLeafActive = true;
+                        gameState.specialEffects.fourLeafBonus = 20;
+                        showNotification('🍀 Clover Brooch: Four-leaf luck! +20% bonus!');
+                        setTimeout(() => { gameState.specialEffects.fourLeafActive = false; }, 5000);
+                    }
+                    break;
+                
+                case 'wisdomBonus':
+                    // Fortune Cookie: Grows +5% to +15% over 20 rolls
+                    if (!gameState.specialEffects.wisdomStack) gameState.specialEffects.wisdomStack = 0;
+                    gameState.specialEffects.wisdomStack = Math.min(gameState.specialEffects.wisdomStack + 0.5, 15);
+                    break;
+                
+                case 'voidTouch':
+                    // Void Shard Necklace: +10% passive, +5% in dark biomes
+                    if (['HELL', 'GRAVEYARD', 'PUMPKIN_MOON'].includes(gameState.currentBiome)) {
+                        if (!gameState.specialEffects.voidTouchActive) {
+                            gameState.specialEffects.voidTouchActive = true;
+                            gameState.specialEffects.voidTouchBonus = 15;
+                        }
+                    } else {
+                        gameState.specialEffects.voidTouchActive = false;
+                        gameState.specialEffects.voidTouchBonus = 10;
+                    }
+                    break;
+                
+                case 'starlight':
+                    // Starlight Pendant: +15% in Starfall biome
+                    if (gameState.currentBiome === 'STARFALL') {
+                        if (!gameState.specialEffects.starlightActive) {
+                            gameState.specialEffects.starlightActive = true;
+                            gameState.specialEffects.starlightBonus = 15;
+                        }
+                    } else {
+                        gameState.specialEffects.starlightActive = false;
+                    }
+                    break;
+                
+                case 'swiftness':
+                    // Windrunner Anklet: +10% to +20% over 5 rolls
+                    if (!gameState.specialEffects.swiftnessStack) gameState.specialEffects.swiftnessStack = 0;
+                    gameState.specialEffects.swiftnessStack = Math.min(gameState.specialEffects.swiftnessStack + 2, 20);
+                    break;
+                
+                case 'dragonGaze':
+                    // Dragon's Eye: +20% luck, +10% in Crimson/Hell
+                    if (['CRIMSON', 'HELL', 'BLOOD_RAIN'].includes(gameState.currentBiome)) {
+                        if (!gameState.specialEffects.dragonGazeActive) {
+                            gameState.specialEffects.dragonGazeActive = true;
+                            gameState.specialEffects.dragonGazeBonus = 30;
+                        }
+                    } else {
+                        gameState.specialEffects.dragonGazeActive = false;
+                        gameState.specialEffects.dragonGazeBonus = 20;
+                    }
+                    break;
+                
+                case 'timeSand':
+                    // Hourglass Pendant: Every 15 rolls +40% speed burst for 3 rolls
+                    if (!gameState.specialEffects.timeSandCounter) gameState.specialEffects.timeSandCounter = 0;
+                    gameState.specialEffects.timeSandCounter++;
+                    if (gameState.specialEffects.timeSandCounter >= 15) {
+                        gameState.specialEffects.timeSandCounter = 0;
+                        gameState.specialEffects.timeSandActive = true;
+                        gameState.specialEffects.timeSandRolls = 3;
+                        showNotification('⏳ Hourglass Pendant: Time sand! +40% speed for 3 rolls!');
+                    }
+                    if (gameState.specialEffects.timeSandActive && gameState.specialEffects.timeSandRolls > 0) {
+                        gameState.specialEffects.timeSandRolls--;
+                        if (gameState.specialEffects.timeSandRolls <= 0) {
+                            gameState.specialEffects.timeSandActive = false;
+                        }
+                    }
+                    break;
+                
+                case 'lunarCycle':
+                    // Moonstone Amulet: +30% at night, +15% during day
+                    const currentHour = new Date().getHours();
+                    const isNight = currentHour >= 20 || currentHour < 6;
+                    gameState.specialEffects.lunarCycleBonus = isNight ? 30 : 15;
+                    break;
+                
+                case 'easternBlessing':
+                    // Jade Dragon: +35% luck every 8th roll
+                    if (!gameState.specialEffects.easternCounter) gameState.specialEffects.easternCounter = 0;
+                    gameState.specialEffects.easternCounter++;
+                    if (gameState.specialEffects.easternCounter >= 8) {
+                        gameState.specialEffects.easternCounter = 0;
+                        gameState.specialEffects.easternActive = true;
+                        gameState.specialEffects.easternBonus = 35;
+                        showNotification('🐉 Jade Dragon: Lucky 8! +35% bonus!');
+                        setTimeout(() => { gameState.specialEffects.easternActive = false; }, 5000);
+                    }
+                    break;
+                
+                case 'stormPower':
+                    // Storm Orb: +25% speed in weather biomes
+                    if (['WINDY', 'RAINY', 'MONSOON', 'BLIZZARD'].includes(gameState.currentBiome)) {
+                        if (!gameState.specialEffects.stormPowerActive) {
+                            gameState.specialEffects.stormPowerActive = true;
+                            gameState.specialEffects.stormPowerBonus = 25;
+                        }
+                    } else {
+                        gameState.specialEffects.stormPowerActive = false;
+                    }
+                    break;
+                
+                case 'endless':
+                    // Infinity Symbol: +20% to +30% infinitely
+                    if (!gameState.specialEffects.endlessStack) gameState.specialEffects.endlessStack = 20;
+                    gameState.specialEffects.endlessStack = Math.min(gameState.specialEffects.endlessStack + 0.1, 30);
+                    break;
+                
+                case 'divineRight':
+                    // Celestial Crown: +40% on Divine+ rolls
+                    if (['divine', 'celestial', 'transcendent', 'cosmic'].includes(aura.tier)) {
+                        gameState.specialEffects.divineRightActive = true;
+                        gameState.specialEffects.divineRightBonus = 40;
+                        showNotification('👑 Celestial Crown: Divine right! +40% bonus!');
+                        setTimeout(() => { gameState.specialEffects.divineRightActive = false; }, 10000);
+                    }
+                    break;
+                
+                case 'voidEmbrace':
+                    // Void Heart: +50% luck, immune to negative effects (passive)
+                    gameState.specialEffects.voidEmbraceActive = true;
+                    break;
+                
+                case 'cosmicLink':
+                    // Astral Ankh: +45% in space biomes
+                    if (['STARFALL', 'METEOR_SHOWER'].includes(gameState.currentBiome)) {
+                        if (!gameState.specialEffects.cosmicLinkActive) {
+                            gameState.specialEffects.cosmicLinkActive = true;
+                            gameState.specialEffects.cosmicLinkBonus = 45;
+                        }
+                    } else {
+                        gameState.specialEffects.cosmicLinkActive = false;
+                    }
+                    break;
+                
+                case 'timeFreeze':
+                    // Timeless Watch: Every 20 rolls instant
+                    if (!gameState.specialEffects.timeFreezeCounter) gameState.specialEffects.timeFreezeCounter = 0;
+                    gameState.specialEffects.timeFreezeCounter++;
+                    if (gameState.specialEffects.timeFreezeCounter >= 20) {
+                        gameState.specialEffects.timeFreezeCounter = 0;
+                        gameState.specialEffects.instantRollNext = true;
+                        showNotification('⏱️ Timeless Watch: Time frozen! Next roll instant!');
+                    }
+                    break;
+                
+                case 'soulPower':
+                    // Soul Gem: +60% base, +5% per Lost Soul
+                    const lostSoulCount = gameState.inventory.auras['Lost Soul']?.count || 0;
+                    gameState.specialEffects.soulPowerBonus = 60 + Math.min(lostSoulCount * 5, 100);
+                    break;
+                
+                case 'lightningStrike':
+                    // Thunder God's Belt: Every 10 rolls +100% surge
+                    if (!gameState.specialEffects.lightningCounter) gameState.specialEffects.lightningCounter = 0;
+                    gameState.specialEffects.lightningCounter++;
+                    if (gameState.specialEffects.lightningCounter >= 10) {
+                        gameState.specialEffects.lightningCounter = 0;
+                        gameState.specialEffects.lightningActive = true;
+                        gameState.specialEffects.lightningBonus = 100;
+                        showNotification('⚡ Thunder God\'s Belt: Lightning strike! +100% surge!');
+                        setTimeout(() => { gameState.specialEffects.lightningActive = false; }, 3000);
+                    }
+                    break;
+                
+                case 'reflection':
+                    // Obsidian Mirror: +75% luck, reflects negatives (passive)
+                    gameState.specialEffects.reflectionActive = true;
+                    break;
+                
+                case 'realityBend':
+                    // Reality Marble: 10% reroll bad outcomes
+                    if (['common', 'uncommon', 'rare'].includes(aura.tier) && Math.random() < 0.1) {
+                        showNotification('🔮 Reality Marble: Reality bent! Rerolling...');
+                        return getRandomAura();
+                    }
+                    break;
+                
+                case 'heavenlyGrace':
+                    // Divine Halo: Prevents Nothing rolls (handled in roll logic)
+                    gameState.specialEffects.heavenlyGraceActive = true;
+                    break;
+                
+                case 'infinitePower':
+                    // Infinity Stone: +150% to +250% infinitely
+                    if (!gameState.specialEffects.infinitePowerStack) gameState.specialEffects.infinitePowerStack = 150;
+                    gameState.specialEffects.infinitePowerStack = Math.min(gameState.specialEffects.infinitePowerStack + 0.5, 250);
+                    break;
+                
+                case 'universeCore':
+                    // Cosmic Heart: +180% luck, +50% in cosmic biomes
+                    if (['STARFALL', 'METEOR_SHOWER'].includes(gameState.currentBiome)) {
+                        if (!gameState.specialEffects.universeCoreActive) {
+                            gameState.specialEffects.universeCoreActive = true;
+                            gameState.specialEffects.universeCoreBonus = 230;
+                        }
+                    } else {
+                        gameState.specialEffects.universeCoreActive = false;
+                        gameState.specialEffects.universeCoreBonus = 180;
+                    }
+                    break;
+                
+                case 'timeMaster':
+                    // Time Lord's Pendant: Every 5th roll instant, +30% passive
+                    if (!gameState.specialEffects.timeMasterCounter) gameState.specialEffects.timeMasterCounter = 0;
+                    gameState.specialEffects.timeMasterCounter++;
+                    if (gameState.specialEffects.timeMasterCounter >= 5) {
+                        gameState.specialEffects.timeMasterCounter = 0;
+                        gameState.specialEffects.instantRollNext = true;
+                        showNotification('⏰ Time Lord: Mastery! Next roll instant!');
+                    }
+                    break;
+                
+                case 'mythicResonance':
+                    // Mythic Core: +160% on Mythic+ rolls
+                    if (['mythic', 'exotic', 'divine', 'celestial', 'transcendent', 'cosmic'].includes(aura.tier)) {
+                        gameState.specialEffects.mythicResonanceActive = true;
+                        gameState.specialEffects.mythicResonanceBonus = 160;
+                        showNotification('✨ Mythic Core: Resonance! +160% bonus!');
+                        setTimeout(() => { gameState.specialEffects.mythicResonanceActive = false; }, 10000);
+                    }
+                    break;
+                
+                case 'seeAllKnowAll':
+                    // Transcendent Eye: Reveals next 5 tiers (passive display)
+                    gameState.specialEffects.seeAllKnowAllActive = true;
+                    break;
+                
+                case 'cosmicEssence':
+                    // Universe Heart: +250% luck, +100% all biomes (passive)
+                    gameState.specialEffects.cosmicEssenceBonus = 350;
+                    break;
+                
+                case 'divineAuthority':
+                    // God Spark: +300% luck, guaranteed Epic+ every 10 rolls
+                    if (!gameState.specialEffects.authorityCounter) gameState.specialEffects.authorityCounter = 0;
+                    gameState.specialEffects.authorityCounter++;
+                    if (gameState.specialEffects.authorityCounter >= 10) {
+                        gameState.specialEffects.authorityCounter = 0;
+                        gameState.specialEffects.guaranteedEpicPlus = true;
+                        showNotification('⚡ God Spark: Divine Authority! Next roll guaranteed Epic+!');
+                    }
+                    break;
             }
             
             // Handle special2 effects (for gears with multiple special effects like Darkshader)
@@ -12187,6 +12453,135 @@ function calculateSpecialEffects() {
                         if (typeof showNotification === 'function') {
                             showNotification('☠️ OBLIVION SURGE! The Final End!');
                         }
+                    }
+                    break;
+                
+                // ========== NEW ACCESSORY BONUSES ==========
+                case 'warmGlow':
+                    luckBonus += 0.03; // +3% passive
+                    break;
+                case 'wisdomBonus':
+                    if (gameState.specialEffects?.wisdomStack) {
+                        luckBonus += gameState.specialEffects.wisdomStack / 100;
+                    }
+                    break;
+                case 'voidTouch':
+                    if (gameState.specialEffects?.voidTouchBonus) {
+                        luckBonus += gameState.specialEffects.voidTouchBonus / 100;
+                    }
+                    break;
+                case 'starlight':
+                    if (gameState.specialEffects?.starlightActive && gameState.specialEffects?.starlightBonus) {
+                        luckBonus += gameState.specialEffects.starlightBonus / 100;
+                    }
+                    break;
+                case 'swiftness':
+                    if (gameState.specialEffects?.swiftnessStack) {
+                        speedBonus += gameState.specialEffects.swiftnessStack / 100;
+                    }
+                    break;
+                case 'dragonGaze':
+                    if (gameState.specialEffects?.dragonGazeBonus) {
+                        luckBonus += gameState.specialEffects.dragonGazeBonus / 100;
+                    }
+                    break;
+                case 'timeSand':
+                    if (gameState.specialEffects?.timeSandActive) {
+                        speedBonus += 0.40; // +40% speed burst
+                    }
+                    break;
+                case 'rebirth':
+                    luckBonus += 0.25; // +25% that never decays
+                    break;
+                case 'trueNorth':
+                    luckBonus += 0.15; // +15% always
+                    break;
+                case 'lunarCycle':
+                    if (gameState.specialEffects?.lunarCycleBonus) {
+                        luckBonus += gameState.specialEffects.lunarCycleBonus / 100;
+                    }
+                    break;
+                case 'easternBlessing':
+                    if (gameState.specialEffects?.easternActive && gameState.specialEffects?.easternBonus) {
+                        luckBonus += gameState.specialEffects.easternBonus / 100;
+                    }
+                    break;
+                case 'stormPower':
+                    if (gameState.specialEffects?.stormPowerActive && gameState.specialEffects?.stormPowerBonus) {
+                        speedBonus += gameState.specialEffects.stormPowerBonus / 100;
+                    }
+                    break;
+                case 'endless':
+                    if (gameState.specialEffects?.endlessStack) {
+                        luckBonus += gameState.specialEffects.endlessStack / 100;
+                        speedBonus += gameState.specialEffects.endlessStack / 100;
+                    }
+                    break;
+                case 'divineRight':
+                    if (gameState.specialEffects?.divineRightActive && gameState.specialEffects?.divineRightBonus) {
+                        luckBonus += gameState.specialEffects.divineRightBonus / 100;
+                    }
+                    break;
+                case 'voidEmbrace':
+                    luckBonus += 0.50; // +50% passive
+                    break;
+                case 'cosmicLink':
+                    if (gameState.specialEffects?.cosmicLinkActive && gameState.specialEffects?.cosmicLinkBonus) {
+                        luckBonus += gameState.specialEffects.cosmicLinkBonus / 100;
+                    }
+                    break;
+                case 'soulPower':
+                    if (gameState.specialEffects?.soulPowerBonus) {
+                        luckBonus += gameState.specialEffects.soulPowerBonus / 100;
+                    }
+                    break;
+                case 'universalKey':
+                    luckBonus += 0.70; // +70% passive
+                    break;
+                case 'lightningStrike':
+                    if (gameState.specialEffects?.lightningActive && gameState.specialEffects?.lightningBonus) {
+                        luckBonus += gameState.specialEffects.lightningBonus / 100;
+                        speedBonus += gameState.specialEffects.lightningBonus / 100;
+                    }
+                    break;
+                case 'reflection':
+                    luckBonus += 0.75; // +75% passive
+                    break;
+                case 'undyingFire':
+                    luckBonus += 0.90; // +90% eternal
+                    break;
+                case 'endgamePower':
+                    luckBonus += 0.95; // +95% combined
+                    break;
+                case 'infinitePower':
+                    if (gameState.specialEffects?.infinitePowerStack) {
+                        luckBonus += gameState.specialEffects.infinitePowerStack / 100;
+                    }
+                    break;
+                case 'universeCore':
+                    if (gameState.specialEffects?.universeCoreBonus) {
+                        luckBonus += gameState.specialEffects.universeCoreBonus / 100;
+                    }
+                    break;
+                case 'timeMaster':
+                    speedBonus += 0.30; // +30% passive
+                    break;
+                case 'mythicResonance':
+                    if (gameState.specialEffects?.mythicResonanceActive && gameState.specialEffects?.mythicResonanceBonus) {
+                        luckBonus += gameState.specialEffects.mythicResonanceBonus / 100;
+                    }
+                    break;
+                case 'neverEnding':
+                    luckBonus += 2.20; // +220% permanent
+                    break;
+                case 'cosmicEssence':
+                    if (gameState.specialEffects?.cosmicEssenceBonus) {
+                        luckBonus += gameState.specialEffects.cosmicEssenceBonus / 100;
+                    }
+                    break;
+                case 'fourLeaf':
+                    if (gameState.specialEffects?.fourLeafActive && gameState.specialEffects?.fourLeafBonus) {
+                        luckBonus += gameState.specialEffects.fourLeafBonus / 100;
                     }
                     break;
             }
