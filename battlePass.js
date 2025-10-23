@@ -332,7 +332,12 @@ function openBattlePassModal() {
             <div class="modal-content modal-large battle-pass-modal">
                 <div class="modal-header">
                     <h2>⚔️ Battle Pass - ${BATTLE_PASS.seasonName}</h2>
-                    <button class="modal-close" onclick="closeBattlePassModal()">✕</button>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="bp-settings-btn" onclick="openCosmeticsSelector()" title="Change Title & Badge">
+                            👑 Cosmetics
+                        </button>
+                        <button class="modal-close" onclick="closeBattlePassModal()">✕</button>
+                    </div>
                 </div>
                 <div class="modal-body">
                     <div class="bp-header">
