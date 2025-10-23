@@ -8305,31 +8305,23 @@ function toggleAutoRoll() {
             autoRollWorker.terminate();
             autoRollWorker = null;
         }
+
+        // NEW: Stop the warp speed UI updater when auto-roll is turned off
+        if (warpSpeedUIUpdater) {
+            clearInterval(warpSpeedUIUpdater);
+            warpSpeedUIUpdater = null;
+        }
+
     } else {
         gameState.autoRoll.active = true;
         lastRollTime = Date.now(); // Initialize timestamp
+
+        // Check for removeCooldown effect
+        const hasCooldownRemoval = gameState.activeEffects.some(effect => effect.removeCooldown);
         
-        // Check if any active potion removes cooldown (Warp or Transcendent)
-        let hasCooldownRemoval = false;
-        if (gameState.activePotions) {
-            hasCooldownRemoval = gameState.activePotions.some(potion => {
-                const recipe = POTION_RECIPES.find(r => r.name === potion.name);
-                return recipe && recipe.removeCooldown === true;
-            });
-        }
-        
-        // Calculate effective delay based on roll speed
         const baseDelay = gameState.autoRoll.delay || 600;
-        let effectiveDelay;
-        
-        if (hasCooldownRemoval) {
-            // Remove cooldown entirely for super fast rolling
-            effectiveDelay = 0;
-            console.log('🚀 WARP/TRANSCENDENT ACTIVE - COOLDOWN REMOVED!');
-        } else {
-            effectiveDelay = Math.max(50, baseDelay / gameState.currentSpeed); // Min 50ms
-        }
-        
+        let effectiveDelay = hasCooldownRemoval ? 0 : Math.max(50, baseDelay / gameState.currentSpeed);
+
         expectedNextRollTime = lastRollTime + effectiveDelay;
         
         // Start anti-throttle system on user interaction
@@ -8354,6 +8346,21 @@ function toggleAutoRoll() {
                     performAutoRoll();
                 }
             }, effectiveDelay);
+        }
+
+        // NEW: If in warp speed, start a separate UI updater.
+        if (hasCooldownRemoval) {
+            // This timer updates the UI 4 times per second, which is smooth but not laggy.
+            warpSpeedUIUpdater = setInterval(() => {
+                if (gameState.autoRoll.active) {
+                    // Update only the most essential UI elements to stay responsive
+                    updateUI(); 
+                    updateInventoryDisplay(true); // Pass true to skip heavy recipe updates
+                } else {
+                    clearInterval(warpSpeedUIUpdater);
+                    warpSpeedUIUpdater = null;
+                }
+            }, 250); // 250ms = 4 times per second
         }
     }
     updateAutoRollButton();
@@ -8450,6 +8457,7 @@ window.requestAnimationFrame = function(callback) {
 
 // Alternative approach using Web Workers for background processing
 let autoRollWorker = null;
+let warpSpeedUIUpdater = null;
 let lastRollTime = 0;
 let expectedNextRollTime = 0;
 
@@ -8528,50 +8536,34 @@ function createAutoRollWorker() {
     const worker = new Worker(URL.createObjectURL(blob));
     
     worker.onmessage = function(e) {
-        if (e.data.type === 'roll' && gameState.autoRoll.active) {
-            const now = Date.now();
-            const timeSinceLastRoll = now - lastRollTime;
-            const expectedDelay = e.data.expectedDelay;
-            
-            // Calculate how many rolls we missed due to throttling
-            let missedRolls = 0;
-            if (timeSinceLastRoll > expectedDelay * 1.2) { // More sensitive threshold (1.2x instead of 1.5x)
-                missedRolls = Math.floor(timeSinceLastRoll / expectedDelay) - 1;
-                missedRolls = Math.max(0, Math.min(missedRolls, 100)); // Increased cap to 100 catch-up rolls per cycle
-                
-                if (missedRolls > 0) {
-                    const secondsDelayed = (timeSinceLastRoll / 1000).toFixed(1);
-                    if (e.data.backup) {
-                        console.log(`🔄 Background throttling detected: ${missedRolls} instant rolls (${secondsDelayed}s delay)`);
-                    } else {
-                        console.log(`⚡ Catch-up: ${missedRolls} instant rolls (${secondsDelayed}s delay)`);
-                    }
-                }
-            }
-            
-            // Do ALL missed rolls instantly (no animation) - this keeps pace even when throttled
-            for (let i = 0; i < missedRolls; i++) {
-                if (!gameState.autoRoll.active) break;
+    if (e.data.type === 'roll' && gameState.autoRoll.active) {
+        // Check if any active effect removes the cooldown
+        const hasCooldownRemoval = gameState.activeEffects.some(effect => effect.removeCooldown);
+
+        // If a cutscene is active, do nothing to prevent interrupting it
+        if (cutsceneState.active) return;
+
+        // NEW LOGIC: If cooldown is removed, ALWAYS use instant roll, regardless of tab visibility.
+        if (hasCooldownRemoval) {
+            instantRollAura();
+        } 
+        // Original logic for normal auto-rolling
+        else {
+            if (document.hidden) {
+                // Instant roll when tab is hidden for performance
                 instantRollAura();
-            }
-            
-            // Do the current roll - instant if tab is hidden, animated if visible
-            if (gameState.autoRoll.active && !cutsceneState.active) {
-                if (document.hidden) {
-                    // Instant roll when tab is hidden for maximum speed
-                    instantRollAura();
-                } else {
-                    // Animated roll when tab is visible
-                    if (!gameState.isRolling) {
-                        performAutoRoll();
-                    }
+            } else {
+                // Animated roll when tab is visible
+                if (!gameState.isRolling) {
+                    performAutoRoll();
                 }
             }
-            
-            lastRollTime = now;
-            expectedNextRollTime = now + expectedDelay;
         }
-    };
+        
+        lastRollTime = Date.now();
+        expectedNextRollTime = lastRollTime + (e.data.expectedDelay || 600);
+    }
+};
     
     return worker;
 }
@@ -8583,18 +8575,69 @@ function performAutoRoll() {
 }
 
 function instantRollAura() {
-    // Truly instant roll for catch-up (no animation, no delay)
+    // Truly instant roll for catch-up and warp speed (no animation, no delay)
+    
+    // Check for isRolling flag to prevent race conditions, but don't set it to true
+    // as this function must be able to be called in rapid succession.
+    if (gameState.isRolling) return;
+    
+    // Get the final aura with all luck/effects applied
     const finalAura = getActualRolledAura();
     
-    // Increment roll counter
+    // --- CORE LOGIC COPIED/ADAPTED FROM completeRollWithAura ---
+    // This is the lightweight part of the roll completion process.
+
+    gameState.totalRolls++;
     gameState.currentRollCount = (gameState.currentRollCount + 1) % 10;
     
-    // Update roll counter display
-    updateRollCounter();
+    // Store base rarity
+    if (!finalAura.baseRarity) {
+        finalAura.baseRarity = finalAura.rarity;
+    }
+    const storedRarity = finalAura.effectiveRarity || finalAura.rarity;
+
+    // Add to inventory
+    if (!gameState.inventory.auras[finalAura.name]) {
+        gameState.inventory.auras[finalAura.name] = { count: 0, rarity: storedRarity, tier: finalAura.tier };
+    }
+    gameState.inventory.auras[finalAura.name].count++;
     
-    // Complete immediately without setting isRolling flag
-    // This allows multiple instant rolls in succession
-    completeRollWithAura(finalAura, true);
+    // Handle one-roll potions
+    const oneRollIndex = gameState.activeEffects.findIndex(effect => effect.oneRoll);
+    if (oneRollIndex !== -1) {
+        gameState.activeEffects.splice(oneRollIndex, 1);
+    }
+
+    // Decrement roll-based effects
+    for (const effect of gameState.activeEffects) {
+        if (effect.rollCount) {
+            effect.rollsLeft = (effect.rollsLeft || effect.rollCount) - 1;
+        }
+    }
+    gameState.activeEffects = gameState.activeEffects.filter(effect => !effect.rollCount || effect.rollsLeft > 0);
+
+    // Track achievements and stats
+    trackAuraRarity(finalAura.rarity);
+    if (finalAura.breakthrough) {
+        trackBreakthrough();
+    }
+    trackStreaks(finalAura);
+    trackNewAchievements(finalAura);
+    checkAchievements();
+    
+    // --- END OF CORE LOGIC ---
+
+    // NEW: Instead of a full UI refresh, only update the lightweight roll counter.
+    // The batched updater will handle the rest.
+    const hasCooldownRemoval = gameState.activeEffects.some(effect => effect.removeCooldown);
+    if (hasCooldownRemoval) {
+        updateRollCounter(); // This is fast enough to run every time
+        const totalRollsEl = document.getElementById('totalRolls');
+        if (totalRollsEl) totalRollsEl.textContent = gameState.totalRolls.toLocaleString();
+    } else {
+        // If not in warp speed (e.g., background tab), do a full but less frequent update.
+        completeRollWithAura(finalAura, true);
+    }
 }
 
 function updateAutoRollButton() {
@@ -14583,14 +14626,30 @@ function usePotion(name, amount = 1) {
     updateInventoryDisplay();
     updateActiveEffects();
     saveGameState();
-    
-    // Update autoroll delay if removeCooldown potion was activated
-    if (recipe.removeCooldown && gameState.autoRoll && gameState.autoRoll.active && autoRollWorker) {
-        console.log('🚀 Updating autoroll delay - cooldown removed!');
-        autoRollWorker.postMessage({
-            type: 'updateDelay',
-            delay: 0
-        });
+
+    // NEW: Check if we just activated a cooldown removal potion
+    if (recipe.removeCooldown && gameState.autoRoll.active) {
+        // If a warp speed UI updater isn't already running, start one.
+        if (!warpSpeedUIUpdater) {
+            warpSpeedUIUpdater = setInterval(() => {
+                if (gameState.autoRoll.active && gameState.activeEffects.some(e => e.removeCooldown)) {
+                    updateUI();
+                    updateInventoryDisplay(true);
+                } else {
+                    clearInterval(warpSpeedUIUpdater);
+                    warpSpeedUIUpdater = null;
+                }
+            }, 250);
+        }
+
+        // And tell the worker to go to warp speed immediately
+        if (autoRollWorker) {
+            console.log('🚀 Potion used - updating autoroll delay to 0!');
+            autoRollWorker.postMessage({
+                type: 'updateDelay',
+                delay: 0
+            });
+        }
     }
     
     // Log for user feedback
