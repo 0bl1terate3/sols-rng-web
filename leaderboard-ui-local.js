@@ -217,7 +217,7 @@ async function loadGlobalsLeaderboard(container) {
                         return `
                             <div class="leaderboard-grid-row rank-${rank}">
                                 <div class="grid-cell col-rank">${medal}</div>
-                                <div class="grid-cell col-player">${escapeHtml(entry.playerName)}</div>
+                                <div class="grid-cell col-player">${formatPlayerName(entry.playerName)}</div>
                                 <div class="grid-cell col-aura">${escapeHtml(entry.auraName)}</div>
                                 <div class="grid-cell col-rarity">${formatRarity(entry.auraRarity)}</div>
                                 <div class="grid-cell col-rolls">${formatNumber(entry.rollCount)}</div>
@@ -286,7 +286,7 @@ async function loadCollectedStatsLeaderboard(container) {
                             return `
                                 <div class="leaderboard-grid-row rank-${rank}">
                                     <div class="grid-cell col-rank">${medal}</div>
-                                    <div class="grid-cell col-player">${escapeHtml(entry.playerName)}</div>
+                                    <div class="grid-cell col-player">${formatPlayerName(entry.playerName)}</div>
                                     <div class="grid-cell col-score">${formatNumber(entry.score || entry.totalScore || 0)}</div>
                                     <div class="grid-cell col-auras">${entry.uniqueAuras || 'N/A'}</div>
                                     <div class="grid-cell col-date">${date}</div>
@@ -359,7 +359,7 @@ async function loadGenericLeaderboard(container, categoryId, title, scoreField, 
                             return `
                                 <div class="leaderboard-grid-row rank-${rank}">
                                     <div class="grid-cell col-rank">${medal}</div>
-                                    <div class="grid-cell col-player">${escapeHtml(entry.playerName)}</div>
+                                    <div class="grid-cell col-player">${formatPlayerName(entry.playerName)}</div>
                                     <div class="grid-cell col-score">${formatScoreValue(scoreValue, scoreField)}</div>
                                     <div class="grid-cell col-date">${date}</div>
                                 </div>
@@ -402,6 +402,48 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Format player name with title and badge (for current player only)
+function formatPlayerName(playerName) {
+    const currentPlayer = localStorage.getItem('playerName') || (typeof gameState !== 'undefined' ? gameState.playerName : null);
+    
+    // Only show title/badge for current player
+    if (playerName === currentPlayer && typeof gameState !== 'undefined' && gameState.cosmetics) {
+        const activeTitle = gameState.cosmetics.activeTitle;
+        const activeBadge = gameState.cosmetics.activeBadge;
+        
+        let display = '';
+        
+        if (activeBadge) {
+            const badgeIcon = getBadgeIcon(activeBadge);
+            display += `<span class="lb-badge">${badgeIcon}</span> `;
+        }
+        
+        if (activeTitle) {
+            display += `<span class="lb-title">[${escapeHtml(activeTitle)}]</span> `;
+        }
+        
+        display += `<span class="lb-name">${escapeHtml(playerName)}</span>`;
+        return display;
+    }
+    
+    return `<span class="lb-name">${escapeHtml(playerName)}</span>`;
+}
+
+// Get badge icon
+function getBadgeIcon(badgeValue) {
+    const badgeIcons = {
+        'season1_bronze': '🥉',
+        'season1_silver': '🥈',
+        'season1_gold': '🥇',
+        'season1_platinum': '💿',
+        'season1_diamond': '💎',
+        'season1_master': '👑',
+        'season1_complete': '🏆',
+        'season1_ultimate': '👑'
+    };
+    return badgeIcons[badgeValue] || '⭐';
 }
 
 function formatNumber(num) {

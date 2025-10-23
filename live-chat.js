@@ -173,15 +173,48 @@ const liveChat = {
             minute: '2-digit' 
         });
         
+        // Get title and badge for own messages
+        let titleDisplay = '';
+        let badgeDisplay = '';
+        
+        if (isOwn && typeof gameState !== 'undefined' && gameState.cosmetics) {
+            const activeTitle = gameState.cosmetics.activeTitle;
+            const activeBadge = gameState.cosmetics.activeBadge;
+            
+            if (activeTitle) {
+                titleDisplay = `<span class="chat-title">[${this.escapeHtml(activeTitle)}]</span> `;
+            }
+            
+            if (activeBadge) {
+                const badgeIcon = this.getBadgeIcon(activeBadge);
+                badgeDisplay = `<span class="chat-badge">${badgeIcon}</span> `;
+            }
+        }
+        
         return `
             <div class="chat-message ${isOwn ? 'own-message' : ''}">
                 <div class="message-header">
-                    <span class="message-username">${this.escapeHtml(msg.username)}</span>
+                    ${badgeDisplay}${titleDisplay}<span class="message-username">${this.escapeHtml(msg.username)}</span>
                     <span class="message-time">${time}</span>
                 </div>
                 <div class="message-content">${this.escapeHtml(msg.message)}</div>
             </div>
         `;
+    },
+    
+    // Get badge icon by badge value
+    getBadgeIcon(badgeValue) {
+        const badgeIcons = {
+            'season1_bronze': '🥉',
+            'season1_silver': '🥈',
+            'season1_gold': '🥇',
+            'season1_platinum': '💿',
+            'season1_diamond': '💎',
+            'season1_master': '👑',
+            'season1_complete': '🏆',
+            'season1_ultimate': '👑'
+        };
+        return badgeIcons[badgeValue] || '⭐';
     },
     
     // Send a message

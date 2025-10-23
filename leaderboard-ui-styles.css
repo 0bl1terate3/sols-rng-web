@@ -243,6 +243,29 @@
     position: relative;
 }
 
+/* Leaderboard Title and Badge Styling */
+.lb-badge {
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+.lb-title {
+    font-size: 10px;
+    font-weight: 700;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-right: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.lb-name {
+    font-weight: 600;
+}
+
 .grid-cell {
     padding: 18px 16px;
     font-size: 15px;
