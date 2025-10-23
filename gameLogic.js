@@ -4193,94 +4193,101 @@ function drawStarShape(ctx, outerRadius, innerRadius, points, fillStyle, strokeW
 
 async function playRareCutscene(aura) {
     const cutsceneEl = document.getElementById('rareCutscene');
-    const canvas = document.getElementById('rareCutsceneCanvas');
-    if (!cutsceneEl || !canvas) return;
-    const ctx = canvas.getContext('2d');
+    if (!cutsceneEl) return;
 
-    // Save scroll position before cutscene
+    // Save scroll position
     const savedScrollX = window.scrollX || window.pageXOffset;
     const savedScrollY = window.scrollY || window.pageYOffset;
-    
-    // Store scroll position in a global variable for restoration
     window._savedScrollPosition = { x: savedScrollX, y: savedScrollY };
 
-    const audio = new Audio('1milplus.mp3');
+    // Get aura color for recoloring the video
+    const auraColor = getAuraColor(aura.name) || '#FF0000';
+    const hueRotation = getHueRotationFromColor(auraColor);
 
+    // Play audio
+    const audio = new Audio('1milplus.mp3');
+    audio.play();
+
+    // Create video element with color filters
+    const videoEl = document.createElement('video');
+    videoEl.src = 'starcutscene.mp4';
+    videoEl.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        z-index: 9998;
+        filter: sepia(100%) hue-rotate(${hueRotation}deg) saturate(300%) brightness(0.8);
+    `;
+    videoEl.autoplay = true;
+    videoEl.muted = false;
+
+    // Setup cutscene overlay
+    cutsceneEl.classList.add('active');
+    Object.assign(cutsceneEl.style, {
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        zIndex: '9999',
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        opacity: '1',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+    });
+
+    // Hide text initially
     document.getElementById('rareAuraName').style.opacity = 0;
     document.getElementById('rareAuraRarity').style.opacity = 0;
 
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    const auraColor = getAuraColor(aura.name) || '#FF0000';
-    const auraRgb = hexToRgb(auraColor);
+    // Add video to cutscene
+    cutsceneEl.appendChild(videoEl);
 
-    cutsceneEl.classList.add('active');
-    
-    Object.assign(cutsceneEl.style, {
-        position: 'fixed', top: '0', left: '0', width: '100%',
-        height: '100%', zIndex: '9999', backgroundColor: 'rgba(0, 0, 0, 1)',
-        opacity: '1'
+    // Auto-close after video ends or 9 seconds
+    const duration = 9000;
+    videoEl.addEventListener('ended', () => {
+        closeRareCutscene(cutsceneEl, null, savedScrollX, savedScrollY);
+        if (videoEl.parentNode) videoEl.parentNode.removeChild(videoEl);
     });
 
-    let star = {
-        x: canvas.width / 2, y: canvas.height / 2, size: 50,
-        rotation: Math.PI / 4, rotationSpeed: 0.005, glow: 0.3, opacity: 0,
-    };
-
-    let fogParticles = [];
-    const numFogParticles = 30;
-    for (let i = 0; i < numFogParticles; i++) {
-        fogParticles.push({
-            x: Math.random() * canvas.width, y: Math.random() * canvas.height,
-            radius: Math.random() * 200 + 150, opacity: Math.random() * 0.05 + 0.02,
-            vx: (Math.random() - 0.5) * 0.2, vy: (Math.random() - 0.5) * 0.2,
-            opacityV: (Math.random() - 0.5) * 0.0005
-        });
-    }
-
-    function updateAndDrawFog() {
-        fogParticles.forEach(p => {
-            p.x += p.vx; p.y += p.vy; p.opacity += p.opacityV;
-            if (p.x - p.radius > canvas.width) p.x = -p.radius;
-            if (p.x + p.radius < 0) p.x = canvas.width + p.radius;
-            if (p.y - p.radius > canvas.height) p.y = -p.radius;
-            if (p.y + p.radius < 0) p.y = canvas.height + p.radius;
-            if (p.opacity <= 0.01 || p.opacity >= 0.1) p.opacityV *= -1;
-            const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
-            gradient.addColorStop(0, `rgba(${auraRgb.r}, ${auraRgb.g}, ${auraRgb.b}, ${p.opacity})`);
-            gradient.addColorStop(1, `rgba(${auraRgb.r}, ${auraRgb.g}, ${auraRgb.b}, 0)`);
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-            ctx.fill();
-        });
-    }
-
-    let animationFrameId;
-    function drawLoop() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        updateAndDrawFog();
-        star.rotation += star.rotationSpeed;
-        drawGlowStar(ctx, star.x, star.y, star.size, star.rotation, auraColor, star.glow, star.opacity);
-        animationFrameId = requestAnimationFrame(drawLoop);
-    }
-    drawLoop();
-
-    const timeline = anime.timeline();
-    timeline.add({ targets: star, opacity: 1, duration: 1125, easing: 'linear' });
-    timeline.add({ targets: star, size: 300, glow: 2, duration: 6300, easing: 'easeInCubic' }, '+=225');
-    timeline.add({ targets: star, size: 4000, glow: 40, opacity: 0, duration: 788, easing: 'easeInExpo' })
-    .add({ targets: cutsceneEl, backgroundColor: auraColor, duration: 1013, direction: 'alternate', easing: 'easeOutQuad' }, '-=788');
-
     setTimeout(() => {
-        // Cancel animation frame properly
-        if (animationFrameId !== undefined) {
-            cancelAnimationFrame(animationFrameId);
+        if (cutsceneEl.classList.contains('active')) {
+            closeRareCutscene(cutsceneEl, null, savedScrollX, savedScrollY);
+            if (videoEl.parentNode) videoEl.parentNode.removeChild(videoEl);
         }
-        closeRareCutscene(cutsceneEl, canvas, savedScrollX, savedScrollY);
-    }, 9000);
+    }, duration);
+}
 
-    audio.play();
+// Helper function to convert hex color to hue rotation degrees
+function getHueRotationFromColor(hexColor) {
+    // Convert hex to RGB
+    const rgb = hexToRgb(hexColor);
+    if (!rgb) return 0;
+
+    // Convert RGB to HSL to get hue
+    const r = rgb.r / 255;
+    const g = rgb.g / 255;
+    const b = rgb.b / 255;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0;
+
+    if (max !== min) {
+        const d = max - min;
+        switch (max) {
+            case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+            case g: h = ((b - r) / d + 2) / 6; break;
+            case b: h = ((r - g) / d + 4) / 6; break;
+        }
+    }
+
+    // Convert hue (0-1) to degrees (0-360)
+    return Math.round(h * 360);
 }
 
 function closeRareCutscene(cutsceneEl, canvas, savedScrollX, savedScrollY) {
