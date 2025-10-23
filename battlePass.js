@@ -435,11 +435,11 @@ function updateRewardTracks() {
     
     container.innerHTML = html;
     
-    // Scroll to current level
-    const currentRow = container.querySelector(`.bp-level-row:nth-child(${BATTLE_PASS.playerData.level})`);
-    if (currentRow) {
-        currentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
+    // Auto-scroll disabled - let users scroll freely to claim missed rewards
+    // const currentRow = container.querySelector(`.bp-level-row:nth-child(${BATTLE_PASS.playerData.level})`);
+    // if (currentRow) {
+    //     currentRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // }
 }
 
 // Load reward tracks data
