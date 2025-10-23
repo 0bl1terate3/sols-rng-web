@@ -8622,6 +8622,15 @@ function instantRollAura() {
     // The batched updater will handle the rest.
     // If not in warp speed (e.g., background tab), do a full but less frequent update.
     completeRollWithAura(finalAura, true);
+
+    // Auto roll support for instant rolls
+    if (gameState.autoRoll.active && !cutsceneState.active) {
+        setTimeout(() => {
+            if (gameState.autoRoll.active && !gameState.isRolling && !cutsceneState.active) {
+                quickRollAura();
+            }
+        }, 0); // Roll as fast as possible
+    }
 }
 
 function updateAutoRollButton() {
