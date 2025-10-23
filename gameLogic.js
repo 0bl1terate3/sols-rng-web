@@ -47,6 +47,8 @@ const cutsceneState = {
     }
 };
 
+let wasAutoRolling = false;
+
 // Deep fried effect function for global auras after cutscenes
 // Deep fried effect function for global auras after cutscenes
 // Deep fried effect function for global auras after cutscenes
@@ -1309,6 +1311,13 @@ async function closeCutscene(cutscene) {
     // Ensure the canvas is re-enabled for the next non-video cutscene
     const canvas = document.getElementById('cutsceneCanvas');
     if (canvas) canvas.style.display = 'block';
+
+    if (wasAutoRolling) {
+        wasAutoRolling = false;
+        gameState.autoRoll.active = true;
+        updateAutoRollButton();
+        quickRollAura();
+    }
 }
 
 
@@ -7890,6 +7899,12 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
         : true; // Fallback to true if function not loaded
 
     if (shouldPlayCutscene) {
+        if (gameState.autoRoll.active) {
+            wasAutoRolling = true;
+            gameState.autoRoll.active = false;
+            updateAutoRollButton();
+        }
+
         if (videoFunction) {
             // 1. First, check for specific, named cutscenes (including MP4s)
             await videoFunction(aura);
@@ -8555,20 +8570,20 @@ function performAutoRoll() {
 
 function instantRollAura() {
     // Truly instant roll for catch-up and warp speed (no animation, no delay)
-    
+
     // Check for isRolling flag to prevent race conditions, but don't set it to true
     // as this function must be able to be called in rapid succession.
     if (gameState.isRolling) return;
-    
+
     // Get the final aura with all luck/effects applied
     const finalAura = getActualRolledAura();
-    
+
     // --- CORE LOGIC COPIED/ADAPTED FROM completeRollWithAura ---
     // This is the lightweight part of the roll completion process.
 
     gameState.totalRolls++;
     gameState.currentRollCount = (gameState.currentRollCount + 1) % 10;
-    
+
     // Store base rarity
     if (!finalAura.baseRarity) {
         finalAura.baseRarity = finalAura.rarity;
@@ -8592,7 +8607,7 @@ function instantRollAura() {
         breakthrough: !!finalAura.breakthrough,
         rarity: storedRarity
     });
-    
+
     // Handle one-roll potions
     const oneRollIndex = gameState.activeEffects.findIndex(effect => effect.oneRoll);
     if (oneRollIndex !== -1) {
@@ -8600,9 +8615,13 @@ function instantRollAura() {
     }
 
     // Decrement roll-based effects
+    let rollsLeft = 0;
     for (const effect of gameState.activeEffects) {
         if (effect.rollCount) {
             effect.rollsLeft = (effect.rollsLeft || effect.rollCount) - 1;
+            if (effect.name === 'Warp Potion' || effect.name === 'Transcendent Potion') {
+                rollsLeft = effect.rollsLeft;
+            }
         }
     }
     gameState.activeEffects = gameState.activeEffects.filter(effect => !effect.rollCount || effect.rollsLeft > 0);
@@ -8615,15 +8634,15 @@ function instantRollAura() {
     trackStreaks(finalAura);
     trackNewAchievements(finalAura);
     checkAchievements();
-    
+
     // --- END OF CORE LOGIC ---
 
-    // Display the aura, but without the rolling animation
-    displayAura(finalAura, false);
+    const display = document.getElementById('currentAuraDisplay');
+    display.innerHTML = `
+        <div class="aura-name">ROLLING AT WARP SPEED...</div>
+        <div class="aura-rarity">Rolls Left: ${rollsLeft}</div>
+    `;
 
-    // NEW: Instead of a full UI refresh, only update the lightweight roll counter.
-    // The batched updater will handle the rest.
-    // If not in warp speed (e.g., background tab), do a full but less frequent update.
     completeRollWithAura(finalAura, true);
 
     // Auto roll support for instant rolls
@@ -10630,82 +10649,82 @@ function getRandomAura() {
     return { ...fallback, effectiveRarity: fallbackEffectiveRarity, breakthrough: false, native: false };
 }
 
+const auraDisplay = {
+    container: document.getElementById('currentAuraDisplay'),
+    name: null,
+    rarity: null,
+    native: null,
+    newBest: null,
+    image: null,
+};
+
+function initDisplayAura() {
+    auraDisplay.container.innerHTML = `
+        <div class="aura-name"></div>
+        <div class="new-best-indicator">🌟 NEW BEST! 🌟</div>
+        <div class="aura-rarity"></div>
+        <div class="aura-native"></div>
+        <img class="withering-grace-image" style="display: none;">
+    `;
+    auraDisplay.name = auraDisplay.container.querySelector('.aura-name');
+    auraDisplay.rarity = auraDisplay.container.querySelector('.aura-rarity');
+    auraDisplay.native = auraDisplay.container.querySelector('.aura-native');
+    auraDisplay.newBest = auraDisplay.container.querySelector('.new-best-indicator');
+    auraDisplay.image = auraDisplay.container.querySelector('.withering-grace-image');
+}
+
 function displayAura(aura, isAnimating = false) {
-    const display = document.getElementById('currentAuraDisplay');
-    const rarityClass = `rarity-${aura.tier}`;
-    const showRarity = aura.rarity; // Always show actual aura rarity, not effective rarity
+    const showRarity = aura.rarity;
     const breakthroughLabel = aura.breakthrough ? ' (Breakthrough)' : '';
-    
-    // Use hardcoded native rarity if available, otherwise fallback to base rarity
     const nativeRarity = NATIVE_RARITIES[aura.name] || showRarity;
-    const nativeLabel = aura.native ? `<div class="aura-native" style="color: #4ade80; font-size: 0.85em; margin-top: 2px; padding-bottom: 4px;">Native, 1 in ${nativeRarity.toLocaleString()}</div>` : '';
     const auraFont = getAuraFont(aura.name);
-    const auraColor = getAuraColor(aura.name); // Use specific aura color
+    const auraColor = getAuraColor(aura.name);
     const auraGradient = getAuraGradient(aura.name);
-    
-    // Check if this is a new best aura
     const isNewBest = aura.rarity >= gameState.achievements.stats.highestRarity;
-    const newBestIndicator = isNewBest ? '<div class="new-best-indicator">🌟 NEW BEST! 🌟</div>' : '';
-    
-    // Special text effects for 98M+ auras
-    const specialTextEffects = {
-        'Mastermind': 'mastermind-text',
-        'Chromatic': 'chromatic-rainbow',
-        'Chromatic: Diva': 'chromatic-diva-text',
-        'Chromatic: Genesis': 'chromatic-genesis-text',
-        'Runic: Eternal': 'runic-eternal-text',
-        'M A R T Y R': 'martyr-text',
-        'Starscourge: Radiant': 'starscourge-radiant-text',
-        'Symphony': 'symphony-text',
-        'Overture': 'overture-text',
-        'Aviator: Fleet': 'aviator-fleet-text',
-        'Sovereign': 'sovereign-text',
-        'Abomination': 'abomination-text',
-        '『E Q U I N O X』': 'equinox-text',
-        'Luminosity': 'luminosity-text',
-        'Dreamscape': 'dreamscape-text',
-        'Aegis': 'aegis-text',
-        'Gargantua': 'gargantua-text',
-        'Apostolos': 'apostolos-text',
-        '▣ PIXELATION ▣': 'pixelation-text',
-        'Dreammetric': 'dreammetric-text'
-    };
-    
-    const specialTextClass = specialTextEffects[aura.name] || '';
-    const specialContainerClass = specialTextClass ? 'mastermind-container' : '';
-    
-    // Create dynamic glow effect using the aura's color
-    // Use both text-shadow and filter drop-shadow for maximum compatibility
-    const hexToRgba = (hex, alpha) => {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    };
-    const glowColor = hexToRgba(auraColor, 0.8);
-    const glowColorLight = hexToRgba(auraColor, 0.4);
-    const glowStyle = `text-shadow: 0 0 20px ${glowColor}, 0 0 40px ${glowColor}, 0 0 60px ${glowColorLight} !important; filter: drop-shadow(0 0 20px ${glowColor}) drop-shadow(0 0 40px ${glowColorLight}) !important;`;
-    
-    // Special case: Display image for Twilight: Withering Grace
+
     if (aura.name === 'Twilight: Withering Grace') {
-        display.innerHTML = `<div class="${specialContainerClass}">
-            <img src="twg.png" alt="Twilight: Withering Grace" class="withering-grace-image" style="filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 40px rgba(167, 139, 250, 0.5));">
-            ${newBestIndicator}
-            <div class="aura-rarity">1 in ${showRarity.toLocaleString()}${breakthroughLabel}</div>
-            ${nativeLabel}
-        </div>`;
+        auraDisplay.name.style.display = 'none';
+        auraDisplay.image.src = 'twg.png';
+        auraDisplay.image.alt = 'Twilight: Withering Grace';
+        auraDisplay.image.style.display = 'block';
+        auraDisplay.image.style.filter = 'drop-shadow(0 0 20px rgba(139, 92, 246, 0.8)) drop-shadow(0 0 40px rgba(167, 139, 250, 0.5))';
     } else {
-        display.innerHTML = `<div class="${specialContainerClass}"><div class="aura-name ${rarityClass} gradient-text ${specialTextClass}" style="font-family: ${auraFont}; color: ${auraColor} !important; --aura-gradient: ${auraGradient}; ${glowStyle}">${aura.name}</div>${newBestIndicator}<div class="aura-rarity">1 in ${showRarity.toLocaleString()}${breakthroughLabel}</div>${nativeLabel}</div>`;
+        auraDisplay.image.style.display = 'none';
+        auraDisplay.name.style.display = 'block';
+        auraDisplay.name.className = 'aura-name gradient-text';
+        auraDisplay.name.style.fontFamily = auraFont;
+        auraDisplay.name.style.color = auraColor;
+        auraDisplay.name.style.setProperty('--aura-gradient', auraGradient);
+        auraDisplay.name.textContent = aura.name;
     }
+
+    auraDisplay.rarity.textContent = `1 in ${showRarity.toLocaleString()}${breakthroughLabel}`;
+
+    if (aura.native) {
+        auraDisplay.native.textContent = `Native, 1 in ${nativeRarity.toLocaleString()}`;
+        auraDisplay.native.style.display = 'block';
+    } else {
+        auraDisplay.native.style.display = 'none';
+    }
+
+    if (isNewBest) {
+        auraDisplay.newBest.style.display = 'block';
+    } else {
+        auraDisplay.newBest.style.display = 'none';
+    }
+
     if (!isAnimating) {
-        anime({ targets: display, scale: [1.1, 1], duration: 300, easing: 'easeOutExpo' });
+        anime({ targets: auraDisplay.container, scale: [1.1, 1], duration: 300, easing: 'easeOutExpo' });
     }
-    
+
     // Special effect for Chromatic: Genesis - emanating words
     if (aura.name === 'Chromatic: Genesis') {
         createGenesisEmanatingWords();
     }
 }
+
+// Call initDisplayAura once at startup
+document.addEventListener('DOMContentLoaded', initDisplayAura);
 
 // Create emanating words for Chromatic: Genesis
 function createGenesisEmanatingWords() {
