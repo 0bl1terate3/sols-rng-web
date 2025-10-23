@@ -34,6 +34,7 @@
     <link rel="stylesheet" href="name-picker-styles.css?v=1.0">
     <link rel="stylesheet" href="global-notifications-styles.css?v=1.0">
     <link rel="stylesheet" href="live-chat-styles.css?v=3.0">
+    <link rel="stylesheet" href="battlePass.css?v=1.0">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -98,6 +99,7 @@
         <div class="nav-actions">
             <!-- ✅ Leaderboard enabled with local backend -->
             <button class="nav-btn" id="statsLeaderboardBtn" title="Stats Leaderboards - Global Auras" onclick="openLeaderboardModal('globals')">📊</button>
+            <button class="nav-btn" id="battlePassBtn" title="Battle Pass" onclick="openBattlePassModal()">⚔️</button>
             <button class="nav-btn" id="settingsBtn" title="Settings" onclick="openSettingsModal()">⚙️</button>
             <button class="nav-btn" id="helpBtn" title="Help (H)" onclick="openHelpModal()">❓</button>
         </div>
@@ -626,6 +628,9 @@
     <script src="leaderboard-stats.js?v=5.1"></script>
     <script src="leaderboard-ui-local.js?v=5.5"></script>
     <script src="leaderboard-auto-submit.js?v=1.3"></script>
+    
+    <!-- Battle Pass System -->
+    <script src="battlePass.js?v=1.0"></script>
     
     <!-- UI Initialization -->
     <script src="ui-init.js?v=1.0"></script>

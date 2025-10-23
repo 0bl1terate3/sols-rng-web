@@ -7991,6 +7991,11 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
             leaderboardStats.trackAutoRoll();
         }
     }
+    
+    // Award Battle Pass XP for roll
+    if (typeof awardXPForAura === 'function') {
+        awardXPForAura(aura);
+    }
 
     recalculateStats();
     updateUI();

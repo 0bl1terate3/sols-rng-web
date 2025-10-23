@@ -1,0 +1,381 @@
+/* ========================================
+   BATTLE PASS / SEASON PASS STYLES
+   ======================================== */
+
+.battle-pass-modal {
+    max-width: 1200px;
+    height: 85vh;
+    overflow: hidden;
+}
+
+.battle-pass-modal .modal-body {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Header Section */
+.bp-header {
+    padding: 24px;
+    background: linear-gradient(135deg, #1a1f2e 0%, #2d3748 100%);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+.bp-level-info {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bp-level-display {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.bp-level-label {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.bp-level-number {
+    font-size: 48px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+.bp-level-max {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.bp-xp-bar {
+    position: relative;
+    width: 100%;
+    height: 32px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.bp-xp-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+    border-radius: 16px;
+    transition: width 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.bp-xp-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.bp-xp-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 700;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    font-size: 14px;
+}
+
+.bp-season-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+.bp-season-label {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+}
+
+.bp-season-end {
+    font-size: 24px;
+    font-weight: 700;
+    color: #fbbf24;
+}
+
+.btn-premium {
+    margin-top: 12px;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border: none;
+    border-radius: 8px;
+    color: #1a1f2e;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 14px;
+}
+
+.btn-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4);
+}
+
+.btn-premium:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Tracks Container */
+.bp-tracks-container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+    gap: 0;
+    overflow: hidden;
+}
+
+.bp-track-header {
+    padding: 16px;
+    text-align: center;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.free-track-header {
+    background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+}
+
+.premium-track-header {
+    background: linear-gradient(135deg, #7e22ce 0%, #a855f7 100%);
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.track-icon {
+    font-size: 20px;
+}
+
+.track-name {
+    font-size: 14px;
+}
+
+/* Rewards Scroll */
+.bp-rewards-scroll {
+    grid-column: 1 / -1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0;
+}
+
+.bp-level-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 1fr;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    min-height: 100px;
+    transition: all 0.3s ease;
+}
+
+.bp-level-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.bp-level-row.locked {
+    opacity: 0.4;
+    filter: grayscale(0.8);
+}
+
+.bp-level-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: #fbbf24;
+    background: rgba(0, 0, 0, 0.3);
+    border-right: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.bp-reward-cell {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    text-align: center;
+}
+
+.free-reward {
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.premium-reward {
+    background: rgba(168, 85, 247, 0.05);
+    border-left: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.premium-reward.requires-premium {
+    position: relative;
+}
+
+.premium-lock {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    opacity: 0.3;
+    z-index: 2;
+}
+
+.reward-icon {
+    font-size: 32px;
+    margin-bottom: 4px;
+}
+
+.reward-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 200px;
+}
+
+.no-reward {
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 24px;
+}
+
+.btn-claim {
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    border: none;
+    border-radius: 6px;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+}
+
+.btn-claim:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.claimed-badge {
+    padding: 6px 12px;
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    border-radius: 4px;
+    color: #10b981;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.bp-reward-cell.claimed {
+    opacity: 0.5;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .bp-header {
+        grid-template-columns: 1fr;
+    }
+    
+    .bp-season-info {
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 768px) {
+    .battle-pass-modal {
+        max-width: 100%;
+        height: 100vh;
+        margin: 0;
+        border-radius: 0;
+    }
+    
+    .bp-level-row {
+        grid-template-columns: 50px 1fr 1fr;
+        min-height: 80px;
+    }
+    
+    .reward-icon {
+        font-size: 24px;
+    }
+    
+    .reward-name {
+        font-size: 10px;
+    }
+    
+    .bp-level-marker {
+        font-size: 16px;
+    }
+}
+
+/* Scrollbar Styling */
+.bp-rewards-scroll::-webkit-scrollbar {
+    width: 12px;
+}
+
+.bp-rewards-scroll::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.bp-rewards-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    border-radius: 6px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+}
+
+.bp-rewards-scroll::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+}
+
+/* Animations */
+@keyframes levelUpPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.bp-level-row.unlocked:not(.viewed) {
+    animation: levelUpPulse 1s ease-in-out;
+}
