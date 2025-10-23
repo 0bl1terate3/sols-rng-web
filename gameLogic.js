@@ -8618,6 +8618,9 @@ function instantRollAura() {
     
     // --- END OF CORE LOGIC ---
 
+    // Display the aura, but without the rolling animation
+    displayAura(finalAura, false);
+
     // NEW: Instead of a full UI refresh, only update the lightweight roll counter.
     // The batched updater will handle the rest.
     // If not in warp speed (e.g., background tab), do a full but less frequent update.
