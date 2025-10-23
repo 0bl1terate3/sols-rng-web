@@ -8064,7 +8064,12 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
     }
 }
 
-function rollAura() {
+    const isWarpOrTranscendentActive = gameState.activeEffects.some(effect => effect.name === 'Warp Potion' || effect.name === 'Transcendent Potion');
+    if (isWarpOrTranscendentActive) {
+        instantRollAura();
+        return;
+    }
+
     if (gameState.isRolling) return;
     
     // Anti-cheat: Check roll rate
@@ -8114,8 +8119,7 @@ function rollAura() {
         cooldownReduction += timeWarpPotion.cooldownReduction;
     }
 
-    const isWarpOrTranscendentActive = gameState.activeEffects.some(effect => effect.name === 'Warp Potion' || effect.name === 'Transcendent Potion');
-    const baseRollTime = isWarpOrTranscendentActive ? 100 : 1500; // 100ms for warp/transcendent, 1500ms otherwise
+    const baseRollTime = 1500; // Changed from 3000 to 1500 (half as long)
     const rollTime = (baseRollTime - (baseRollTime * cooldownReduction)) / gameState.currentSpeed;
     const display = document.getElementById('currentAuraDisplay');
     
@@ -8189,6 +8193,12 @@ function rollAura() {
 }
 
 function quickRollAura() {
+    const isWarpOrTranscendentActive = gameState.activeEffects.some(effect => effect.name === 'Warp Potion' || effect.name === 'Transcendent Potion');
+    if (isWarpOrTranscendentActive) {
+        instantRollAura();
+        return;
+    }
+
     if (gameState.isRolling) return;
     gameState.isRolling = true;
     document.getElementById('quickRollButton').disabled = true;
@@ -8226,8 +8236,7 @@ function quickRollAura() {
         cooldownReduction += timeWarpPotion.cooldownReduction;
     }
 
-    const isWarpOrTranscendentActive = gameState.activeEffects.some(effect => effect.name === 'Warp Potion' || effect.name === 'Transcendent Potion');
-    const quickRollTime = isWarpOrTranscendentActive ? 50 : 250; // 50ms for warp/transcendent, 250ms otherwise
+    const quickRollTime = 250; // Changed from 500 to 250 (half as long)
     const rollTime = (quickRollTime - (quickRollTime * cooldownReduction)) / gameState.currentSpeed;
     const display = document.getElementById('currentAuraDisplay');
     
