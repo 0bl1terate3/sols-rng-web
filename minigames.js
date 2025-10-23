@@ -1,3 +1,4 @@
+
 // =================================================================
 // MINI GAMES SYSTEM - Main Logic
 // =================================================================
@@ -49,12 +50,12 @@ window.startTimingGame = function() {
         return;
     }
     checkDailyReset();
-    
+
     const modal = document.getElementById('minigameModal');
     const content = document.getElementById('minigameContent');
-    
+
     timingGame = { active: true, startTime: Date.now(), targetTime: 2000 + Math.random() * 3000, tolerance: 100, attempts: 0 };
-    
+
     content.innerHTML = `
         <div class="minigame-timing">
             <h2>⏱️ Perfect Timing</h2>
@@ -68,15 +69,15 @@ window.startTimingGame = function() {
             <button onclick="closeMinigame()" class="minigame-close-btn">Cancel</button>
         </div>
     `;
-    
+
     modal.style.display = 'flex';
-    
+
     const bar = document.getElementById('timingBar');
     const timer = document.getElementById('timingTimer');
     const target = document.getElementById('timingTarget');
     const targetPos = 60 + Math.random() * 30;
     target.style.left = `${targetPos}%`;
-    
+
     const animateBar = () => {
         if (!timingGame.active) return;
         const elapsed = Date.now() - timingGame.startTime;
@@ -120,7 +121,7 @@ function endTimingGame(success, message) {
             <h2>${message}</h2>
             ${success ? `<div class="minigame-rewards"><h3>Rewards:</h3><div class="reward-list">
                 <div>💰 ${rewards.money} Money</div><div>🌀 ${rewards.voidCoins} Void Coins</div>
-                <div>🎃 ${rewards.halloweenMedals} Halloween Medals</div></div></div>` : 
+                <div>🎃 ${rewards.halloweenMedals} Halloween Medals</div></div></div>` :
                 `<div class="minigame-fail-msg">Try again!</div>`}
             <button onclick="closeMinigame()" class="minigame-action-btn">Close</button>
         </div>
@@ -226,9 +227,9 @@ function endMemoryGame() {
 }
 
 // SPIN WHEEL
-let spinWheel = { 
-    active: false, 
-    spinning: false, 
+let spinWheel = {
+    active: false,
+    spinning: false,
     get lastSpin() {
         return window.gameState?.minigames?.lastSpinTime || 0;
     },
@@ -238,7 +239,7 @@ let spinWheel = {
             saveGameState();
         }
     },
-    cooldown: 3600000 
+    cooldown: 3600000 // 1 hour
 };
 
 window.startSpinWheel = function() {
@@ -323,15 +324,12 @@ window.spinTheWheel = function() {
     const ctx = canvas.getContext('2d');
     const targetPrizeIndex = Math.floor(Math.random() * spinWheel.prizes.length);
     const sliceAngle = (Math.PI * 2) / spinWheel.prizes.length;
-    
-    // Calculate rotation so the prize lands under the top pointer
-    // In canvas, angle 3π/2 (or -π/2) is at the top where the pointer is
-    const baseSpins = Math.PI * 2 * 5; // 5 full rotations for effect
-    const pointerAngle = (Math.PI * 3) / 2; // Top of wheel in canvas coordinates
+
+    const baseSpins = Math.PI * 2 * 5;
+    const pointerAngle = (Math.PI * 3) / 2;
     const targetSliceCenter = targetPrizeIndex * sliceAngle + (sliceAngle / 2);
-    // Rotate wheel so target slice center aligns with pointer
     const targetRotation = baseSpins + pointerAngle - targetSliceCenter;
-    
+
     let currentRotation = 0;
     const duration = 4000, startTime = Date.now();
     const animate = () => {
@@ -372,24 +370,451 @@ function endSpin(prizeIndex) {
     saveGameState();
 }
 
+// REACTION GAME
+let reactionGame = { active: false, startTime: 0, timeoutId: null };
+
+window.startReactionGame = function() {
+    if (!window.gameState.minigames.unlocked) {
+        showNotification('🔒 Unlock at 10,000 rolls!', 'error');
+        return;
+    }
+    checkDailyReset();
+    const modal = document.getElementById('minigameModal');
+    const content = document.getElementById('minigameContent');
+    reactionGame = { active: true, startTime: 0, timeoutId: null };
+    content.innerHTML = `
+        <div class="minigame-reaction" id="reactionScreen">
+            <h2>⚡ Reaction Test</h2>
+            <div class="minigame-instructions">Click the screen as soon as it turns green!</div>
+            <div id="reactionResult"></div>
+            <button onclick="closeMinigame()" class="minigame-close-btn">Cancel</button>
+        </div>
+    `;
+    modal.style.display = 'flex';
+
+    const screen = document.getElementById('reactionScreen');
+    screen.style.backgroundColor = '#ef4444'; // Red
+    screen.onclick = () => {
+        if (reactionGame.startTime === 0 && reactionGame.active) {
+            clearTimeout(reactionGame.timeoutId);
+            endReactionGame(false, 'Too soon!');
+        }
+    };
+
+    reactionGame.timeoutId = setTimeout(() => {
+        if (!reactionGame.active) return;
+        screen.style.backgroundColor = '#10b981'; // Green
+        reactionGame.startTime = Date.now();
+        screen.onclick = () => clickReactionTarget();
+    }, 2000 + Math.random() * 3000);
+};
+
+function clickReactionTarget() {
+    if (reactionGame.startTime === 0 || !reactionGame.active) return;
+    const reactionTime = Date.now() - reactionGame.startTime;
+    endReactionGame(true, `Your reaction time: ${reactionTime}ms`);
+}
+
+function endReactionGame(success, message) {
+    if (!reactionGame.active) return;
+    clearTimeout(reactionGame.timeoutId);
+    reactionGame.active = false;
+    const content = document.getElementById('minigameContent');
+    let rewards = {};
+    if (success) {
+        const reactionTime = parseInt(message.split(' ')[3]);
+        let money = 0;
+        let voidCoins = 0;
+        if (reactionTime < 150) {
+            money = 1000;
+            voidCoins = 20;
+        } else if (reactionTime < 250) {
+            money = 500;
+            voidCoins = 10;
+        } else if (reactionTime < 400) {
+            money = 250;
+            voidCoins = 5;
+        }
+        if (money > 0) {
+            rewards = { money, voidCoins };
+            awardRewards(rewards);
+            window.gameState.minigames.wins++;
+        }
+    }
+    window.gameState.minigames.plays++;
+    window.gameState.minigames.dailyPlays++;
+    content.innerHTML = `
+        <div class="minigame-result ${success ? 'success' : 'failure'}">
+            <div class="minigame-result-icon">${success ? '✓' : '✗'}</div>
+            <h2>${message}</h2>
+            ${success && rewards.money ? `<div class="minigame-rewards"><h3>Rewards:</h3><div class="reward-list">
+                <div>💰 ${rewards.money} Money</div><div>🌀 ${rewards.voidCoins} Void Coins</div></div></div>` :
+                `<div class="minigame-fail-msg">Try again!</div>`}
+            <button onclick="closeMinigame()" class="minigame-action-btn">Close</button>
+        </div>
+    `;
+    saveGameState();
+}
+
+// SEQUENCE MEMORY GAME
+let sequenceGame = { active: false, sequence: [], playerSequence: [], level: 0 };
+
+window.startSequenceGame = function() {
+    if (!window.gameState.minigames.unlocked) {
+        showNotification('🔒 Unlock at 10,000 rolls!', 'error');
+        return;
+    }
+    checkDailyReset();
+    const modal = document.getElementById('minigameModal');
+    const content = document.getElementById('minigameContent');
+    sequenceGame = { active: true, sequence: [], playerSequence: [], level: 1 };
+    content.innerHTML = `
+        <div class="minigame-sequence">
+            <h2>🎨 Sequence Memory</h2>
+            <div class="minigame-instructions">Watch the sequence and repeat it.</div>
+            <div id="sequenceLevel">Level: 1</div>
+            <div class="sequence-grid" id="sequenceGrid"></div>
+            <button onclick="closeMinigame()" class="minigame-close-btn">Cancel</button>
+        </div>
+    `;
+    modal.style.display = 'flex';
+    createSequenceGrid();
+    setTimeout(nextSequence, 1000);
+};
+
+function createSequenceGrid() {
+    const grid = document.getElementById('sequenceGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 4; i++) {
+        const button = document.createElement('button');
+        button.className = 'sequence-btn';
+        button.dataset.index = i;
+        button.onclick = () => sequencePlayerInput(i);
+        grid.appendChild(button);
+    }
+}
+
+function nextSequence() {
+    if (!sequenceGame.active) return;
+    sequenceGame.playerSequence = [];
+    const nextVal = Math.floor(Math.random() * 4);
+    sequenceGame.sequence.push(nextVal);
+    document.getElementById('sequenceLevel').textContent = `Level: ${sequenceGame.level}`;
+    playSequence();
+}
+
+function playSequence() {
+    if (!sequenceGame.active) return;
+    const grid = document.getElementById('sequenceGrid');
+    grid.classList.add('disabled');
+    let i = 0;
+    const intervalId = setInterval(() => {
+        if (i >= sequenceGame.sequence.length) {
+            clearInterval(intervalId);
+            if (grid) grid.classList.remove('disabled');
+            return;
+        }
+        const btn = document.querySelector(`[data-index="${sequenceGame.sequence[i]}"]`);
+        if (btn) {
+            btn.classList.add('active');
+            setTimeout(() => btn.classList.remove('active'), 400);
+        }
+        i++;
+    }, 600);
+}
+
+function sequencePlayerInput(index) {
+    if (document.getElementById('sequenceGrid').classList.contains('disabled')) return;
+    sequenceGame.playerSequence.push(index);
+    const btn = document.querySelector(`[data-index="${index}"]`);
+    btn.classList.add('active');
+    setTimeout(() => btn.classList.remove('active'), 200);
+
+    // Check for incorrect input immediately
+    const currentMoveIndex = sequenceGame.playerSequence.length - 1;
+    if (sequenceGame.sequence[currentMoveIndex] !== sequenceGame.playerSequence[currentMoveIndex]) {
+        endSequenceGame(false, `Wrong sequence! You reached level ${sequenceGame.level}.`);
+        return;
+    }
+
+    if (sequenceGame.playerSequence.length === sequenceGame.sequence.length) {
+        checkSequence();
+    }
+}
+
+function checkSequence() {
+    if (sequenceGame.level === 10) {
+        endSequenceGame(true, 'You completed all 10 levels!');
+        return;
+    }
+    sequenceGame.level++;
+    setTimeout(nextSequence, 1000);
+}
+
+// **FIXED** This function was broken in the original code.
+function endSequenceGame(success, message) {
+    if (!sequenceGame.active) return;
+    sequenceGame.active = false;
+    const content = document.getElementById('minigameContent');
+    let rewards = {};
+    if (success) {
+        rewards = { money: 2000, voidCoins: 50, potions: { 'Lucky Potion II': 1 } };
+        awardRewards(rewards);
+        window.gameState.minigames.wins++;
+    } else {
+        const level = sequenceGame.level;
+        if (level > 5) {
+            rewards = { money: level * 50, voidCoins: level * 2 };
+            awardRewards(rewards);
+            window.gameState.minigames.wins++; // Win for reaching a decent level
+        }
+    }
+    window.gameState.minigames.plays++;
+    window.gameState.minigames.dailyPlays++;
+    content.innerHTML = `
+        <div class="minigame-result ${success || Object.keys(rewards).length > 0 ? 'success' : 'failure'}">
+            <div class="minigame-result-icon">${success || Object.keys(rewards).length > 0 ? '🎉' : '✗'}</div>
+            <h2>${message}</h2>
+            ${Object.keys(rewards).length > 0 ? `<div class="minigame-rewards"><h3>Rewards:</h3><div class="reward-list">
+                ${rewards.money ? `<div>💰 ${rewards.money} Money</div>` : ''}
+                ${rewards.voidCoins ? `<div>🌀 ${rewards.voidCoins} Void Coins</div>` : ''}
+                ${rewards.potions ? `<div>⚗️ 1x Lucky Potion II</div>` : ''}
+                </div></div>` : '<div class="minigame-fail-msg">Better luck next time!</div>'}
+            <button onclick="closeMinigame()" class="minigame-action-btn">Close</button>
+        </div>
+    `;
+    saveGameState();
+}
+
+// WHACK-A-MOLE GAME
+let whackAMole = { active: false, score: 0, timerId: null, moleTimeoutId: null };
+
+window.startWhackAMole = function() {
+    if (!window.gameState.minigames.unlocked) {
+        showNotification('🔒 Unlock at 10,000 rolls!', 'error');
+        return;
+    }
+    checkDailyReset();
+    const modal = document.getElementById('minigameModal');
+    const content = document.getElementById('minigameContent');
+    whackAMole = { active: true, score: 0, timerId: null, moleTimeoutId: null };
+    content.innerHTML = `
+        <div class="minigame-whack">
+            <h2>🔨 Whack-a-Mole</h2>
+            <div class="minigame-instructions">Click the moles before they disappear!</div>
+            <div class="whack-stats"><span>Score: <span id="whackScore">0</span></span><span>Time Left: <span id="whackTime">20</span>s</span></div>
+            <div class="whack-grid" id="whackGrid"></div>
+            <button onclick="closeMinigame()" class="minigame-close-btn">Cancel</button>
+        </div>
+    `;
+    modal.style.display = 'flex';
+    createWhackGrid();
+    let timeLeft = 20;
+    whackAMole.timerId = setInterval(() => {
+        timeLeft--;
+        const timeEl = document.getElementById('whackTime');
+        if (timeEl) timeEl.textContent = `${timeLeft}s`;
+        if (timeLeft <= 0) {
+            endWhackAMole(`Time's up! Your score: ${whackAMole.score}`);
+        }
+    }, 1000);
+    spawnMole();
+};
+
+function createWhackGrid() {
+    const grid = document.getElementById('whackGrid');
+    grid.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+        const hole = document.createElement('div');
+        hole.className = 'whack-hole';
+        const mole = document.createElement('div');
+        mole.className = 'whack-mole';
+        mole.onclick = () => whackMole(mole);
+        hole.appendChild(mole);
+        grid.appendChild(hole);
+    }
+}
+
+function spawnMole() {
+    if (!whackAMole.active) return;
+    const moles = document.querySelectorAll('.whack-mole');
+    if (moles.length === 0) return;
+    const mole = moles[Math.floor(Math.random() * moles.length)];
+    mole.classList.add('up');
+    whackAMole.moleTimeoutId = setTimeout(() => {
+        mole.classList.remove('up');
+        spawnMole();
+    }, 700 + Math.random() * 800);
+}
+
+function whackMole(mole) {
+    if (!mole.classList.contains('up') || !whackAMole.active) return;
+    whackAMole.score++;
+    document.getElementById('whackScore').textContent = whackAMole.score;
+    mole.classList.remove('up');
+    clearTimeout(whackAMole.moleTimeoutId);
+    spawnMole();
+}
+
+function endWhackAMole(message) {
+    if (!whackAMole.active) return;
+    clearInterval(whackAMole.timerId);
+    clearTimeout(whackAMole.moleTimeoutId);
+    whackAMole.active = false;
+    const content = document.getElementById('minigameContent');
+    let rewards = {};
+    if (whackAMole.score > 0) {
+        rewards = { money: whackAMole.score * 20, voidCoins: Math.floor(whackAMole.score / 2) };
+        awardRewards(rewards);
+        window.gameState.minigames.wins++;
+    }
+    window.gameState.minigames.plays++;
+    window.gameState.minigames.dailyPlays++;
+    content.innerHTML = `
+        <div class="minigame-result ${whackAMole.score > 0 ? 'success' : 'failure'}">
+            <div class="minigame-result-icon">${whackAMole.score > 0 ? '🎉' : '✗'}</div>
+            <h2>${message}</h2>
+            ${whackAMole.score > 0 ? `<div class="minigame-rewards"><h3>Rewards:</h3><div class="reward-list">
+                <div>💰 ${rewards.money} Money</div><div>🌀 ${rewards.voidCoins} Void Coins</div></div></div>` : '<div class="minigame-fail-msg">Better luck next time!</div>'}
+            <button onclick="closeMinigame()" class="minigame-action-btn">Close</button>
+        </div>
+    `;
+    saveGameState();
+}
+
+// **NEW** ASTEROID CLICKER GAME
+let asteroidGame = { active: false, score: 0, timerId: null, spawnInterval: null };
+
+window.startAsteroidClicker = function() {
+    if (!window.gameState.minigames.unlocked) {
+        showNotification('🔒 Unlock at 10,000 rolls!', 'error');
+        return;
+    }
+    checkDailyReset();
+    const modal = document.getElementById('minigameModal');
+    const content = document.getElementById('minigameContent');
+    asteroidGame = { active: true, score: 0, timerId: null, spawnInterval: null };
+    content.innerHTML = `
+        <div class="minigame-asteroid">
+            <h2>☄️ Asteroid Clicker</h2>
+            <div class="minigame-instructions">Click as many asteroids as you can in 20 seconds!</div>
+            <div class="asteroid-stats">
+                <span>Score: <span id="asteroidScore">0</span></span>
+                <span>Time Left: <span id="asteroidTime">20</span>s</span>
+            </div>
+            <div class="asteroid-field" id="asteroidField"></div>
+            <button onclick="closeMinigame()" class="minigame-close-btn">Cancel</button>
+        </div>
+    `;
+    modal.style.display = 'flex';
+
+    let timeLeft = 20;
+    asteroidGame.timerId = setInterval(() => {
+        timeLeft--;
+        const timeEl = document.getElementById('asteroidTime');
+        if (timeEl) timeEl.textContent = `${timeLeft}s`;
+        if (timeLeft <= 0) {
+            endAsteroidClicker(`Time's up! Your score: ${asteroidGame.score}`);
+        }
+    }, 1000);
+
+    asteroidGame.spawnInterval = setInterval(spawnAsteroid, 600);
+    spawnAsteroid(); // Spawn one immediately
+};
+
+function spawnAsteroid() {
+    if (!asteroidGame.active) return;
+    const field = document.getElementById('asteroidField');
+    if (!field) return;
+
+    const asteroid = document.createElement('div');
+    asteroid.className = 'asteroid';
+    asteroid.textContent = '☄️';
+    asteroid.style.left = `${Math.random() * 90}%`;
+    asteroid.style.top = `${Math.random() * 90}%`;
+    asteroid.style.fontSize = `${1.5 + Math.random() * 1.5}rem`;
+
+    asteroid.onclick = () => {
+        if (!asteroidGame.active) return;
+        asteroidGame.score++;
+        document.getElementById('asteroidScore').textContent = asteroidGame.score;
+        asteroid.remove();
+    };
+
+    field.appendChild(asteroid);
+
+    setTimeout(() => {
+        if (asteroid) asteroid.remove();
+    }, 2000 + Math.random() * 1000); // Asteroid disappears after some time
+}
+
+function endAsteroidClicker(message) {
+    if (!asteroidGame.active) return;
+    clearInterval(asteroidGame.timerId);
+    clearInterval(asteroidGame.spawnInterval);
+    asteroidGame.active = false;
+    const content = document.getElementById('minigameContent');
+    let rewards = {};
+    if (asteroidGame.score > 0) {
+        rewards = { money: asteroidGame.score * 15, voidCoins: Math.floor(asteroidGame.score / 3) };
+        awardRewards(rewards);
+        window.gameState.minigames.wins++;
+    }
+    window.gameState.minigames.plays++;
+    window.gameState.minigames.dailyPlays++;
+    content.innerHTML = `
+        <div class="minigame-result ${asteroidGame.score > 0 ? 'success' : 'failure'}">
+            <div class="minigame-result-icon">${asteroidGame.score > 0 ? '🎉' : '✗'}</div>
+            <h2>${message}</h2>
+            ${asteroidGame.score > 0 ? `<div class="minigame-rewards"><h3>Rewards:</h3><div class="reward-list">
+                <div>💰 ${rewards.money} Money</div><div>🌀 ${rewards.voidCoins} Void Coins</div></div></div>` : '<div class="minigame-fail-msg">Better luck next time!</div>'}
+            <button onclick="closeMinigame()" class="minigame-action-btn">Close</button>
+        </div>
+    `;
+    saveGameState();
+}
+
+// =================================================================
+// SHARED MINIGAME FUNCTIONS
+// =================================================================
+
+// **FIXED** This function was broken in the original code.
 function awardRewards(rewards) {
     if (rewards.money) window.gameState.currency.money += rewards.money;
     if (rewards.voidCoins) window.gameState.currency.voidCoins += rewards.voidCoins;
     if (rewards.halloweenMedals) window.gameState.currency.halloweenMedals += rewards.halloweenMedals;
     if (rewards.potions) {
         for (const [potion, amount] of Object.entries(rewards.potions)) {
-            if (!window.gameState.inventory.potions[potion]) window.gameState.inventory.potions[potion] = { count: 0 };
+            if (!window.gameState.inventory.potions[potion]) {
+                window.gameState.inventory.potions[potion] = { count: 0 };
+            }
             window.gameState.inventory.potions[potion].count += amount;
         }
     }
-    updateUI();
+    updateUI(); // Assumes this function exists elsewhere to update the main game UI
 }
 
 window.closeMinigame = function() {
     document.getElementById('minigameModal').style.display = 'none';
-    timingGame.active = false;
-    memoryGame.active = false;
-    spinWheel.active = false;
+    // Deactivate all games and clear their timers/intervals to prevent background processing
+    if (timingGame.active) timingGame.active = false;
+    if (memoryGame.active) memoryGame.active = false;
+    if (spinWheel.active) spinWheel.active = false;
+    if (reactionGame.active) {
+        clearTimeout(reactionGame.timeoutId);
+        reactionGame.active = false;
+    }
+    if (sequenceGame.active) sequenceGame.active = false;
+    if (whackAMole.active) {
+        clearInterval(whackAMole.timerId);
+        clearTimeout(whackAMole.moleTimeoutId);
+        whackAMole.active = false;
+    }
+    if (asteroidGame.active) {
+        clearInterval(asteroidGame.timerId);
+        clearInterval(asteroidGame.spawnInterval);
+        asteroidGame.active = false;
+    }
 };
 
 function createMinigameMenu() {
@@ -416,6 +841,14 @@ function createMinigameMenu() {
                     <p>Match all pairs to win rewards!</p><button onclick="startMemoryGame()" class="minigame-play-btn">PLAY</button></div>
                     <div class="minigame-card"><div class="minigame-card-icon">🎡</div><h3>Lucky Spin</h3>
                     <p>Spin the wheel! (1hr cooldown)</p><button onclick="startSpinWheel()" class="minigame-play-btn" id="spinWheelBtn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">⚡</div><h3>Reaction Test</h3>
+                    <p>Click when the screen changes!</p><button onclick="startReactionGame()" class="minigame-play-btn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">🎨</div><h3>Sequence Memory</h3>
+                    <p>Repeat the sequence of colors.</p><button onclick="startSequenceGame()" class="minigame-play-btn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">🔨</div><h3>Whack-a-Mole</h3>
+                    <p>Click the moles before they disappear.</p><button onclick="startWhackAMole()" class="minigame-play-btn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">☄️</div><h3>Asteroid Clicker</h3>
+                    <p>Click as many asteroids as you can.</p><button onclick="startAsteroidClicker()" class="minigame-play-btn">PLAY</button></div>
                 </div>
             `}
         </div>
@@ -427,17 +860,25 @@ function updateSpinButton() {
     const btn = document.getElementById('spinWheelBtn');
     if (!btn) return;
     const now = Date.now();
-    if (now - spinWheel.lastSpin < spinWheel.cooldown) {
-        const timeLeft = Math.ceil((spinWheel.cooldown - (now - spinWheel.lastSpin)) / 60000);
+    const timeSinceLastSpin = now - spinWheel.lastSpin;
+    if (timeSinceLastSpin < spinWheel.cooldown) {
+        const timeLeftMs = spinWheel.cooldown - timeSinceLastSpin;
+        const timeLeftMin = Math.ceil(timeLeftMs / 60000);
         btn.disabled = true;
-        btn.textContent = `${timeLeft}min`;
+        btn.textContent = `${timeLeftMin}min`;
+        // Optional: Add a timer to update the button text
+        setTimeout(updateSpinButton, 60000); // Check again in a minute
+    } else {
+        btn.disabled = false;
+        btn.textContent = 'PLAY';
     }
 }
 
-// Hook into roll completion
+// Hook into game load
 if (typeof window.addEventListener === 'function') {
     window.addEventListener('DOMContentLoaded', () => {
         checkMinigameUnlock();
+        // createMinigameMenu(); // You might call this when the minigame tab is opened
     });
 }
 

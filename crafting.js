@@ -657,7 +657,7 @@ function updateMultiCraftAmount() {
         // Refresh modal to update button text
         const modal = document.getElementById('craftingModal');
         if (modal.classList.contains('show')) {
-            const recipeName = document.getElementById('modalPotionName').textContent;
+            const recipeName = modal.dataset.recipeName;
             // Use the stored recipe type instead of hardcoding 'potion'
             openCraftingModal(recipeName, currentRecipeType);
         }

@@ -330,3 +330,100 @@
     font-size: 16px;
     margin-top: 16px;
 }
+
+/* Reaction Game */
+.minigame-reaction {
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: background-color 0.1s ease;
+}
+
+/* Sequence Memory Game */
+.sequence-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 24px auto;
+    width: 220px;
+}
+
+.sequence-btn {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    background-color: #333;
+    border: 2px solid #555;
+}
+
+.sequence-btn:nth-child(1) { background-color: #ef4444; }
+.sequence-btn:nth-child(2) { background-color: #3b82f6; }
+.sequence-btn:nth-child(3) { background-color: #f59e0b; }
+.sequence-btn:nth-child(4) { background-color: #10b981; }
+
+.sequence-btn.active {
+    transform: scale(0.95);
+    filter: brightness(1.5);
+}
+
+.sequence-grid.disabled {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+#sequenceLevel {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+/* Whack-a-Mole Game */
+.whack-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin: 24px auto;
+    width: 330px;
+}
+
+.whack-hole {
+    width: 100px;
+    height: 100px;
+    background-color: #634832;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    border: 5px solid #3a2a1d;
+}
+
+.whack-mole {
+    width: 80px;
+    height: 80px;
+    background-color: #c5a880;
+    border-radius: 50%;
+    position: absolute;
+    bottom: -80px;
+    left: 10px;
+    transition: bottom 0.2s ease-out;
+    cursor: pointer;
+}
+
+.whack-mole.up {
+    bottom: 10px;
+}
+
+.whack-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 24px;
+    padding: 12px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 8px;
+}
