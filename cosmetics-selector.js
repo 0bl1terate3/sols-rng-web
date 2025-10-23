@@ -22,14 +22,13 @@ function openCosmeticsSelector() {
     
     // Create modal
     const modalHTML = `
-        <div id="cosmeticsModal" class="bp-modal">
-            <div class="bp-modal-content" style="max-width: 600px;">
-                <div class="bp-header">
+        <div id="cosmeticsModal" class="modal" style="display: flex;">
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
                     <h2>👑 Cosmetics</h2>
-                    <button class="bp-close" onclick="closeCosmeticsSelector()">✕</button>
+                    <button class="modal-close" onclick="closeCosmeticsSelector()">✕</button>
                 </div>
-                
-                <div class="bp-body" style="padding: 20px;">
+                <div class="modal-body">
                     <!-- Titles Section -->
                     <div class="cosmetics-section">
                         <h3>🎖️ Titles</h3>
