@@ -761,9 +761,19 @@ function startBiomeRoller() {
             const chance = 1 / biome.rarity;
             if (Math.random() < chance) {
                 // Check if this biome can override the current one
-                if (biome.canOverride || biomeState.currentBiome === "NORMAL") {
+                const canOverrideByPermission = biome.canOverride || biomeState.currentBiome === "NORMAL";
+                
+                // Check multiplier - don't allow lower multipliers to override higher ones
+                const currentBiomeData = BIOMES.find(b => b.name === biomeState.currentBiome);
+                const currentMultiplier = currentBiomeData ? currentBiomeData.multiplier : 1;
+                const newMultiplier = biome.multiplier || 1;
+                const canOverrideByMultiplier = newMultiplier >= currentMultiplier;
+                
+                if (canOverrideByPermission && canOverrideByMultiplier) {
                     setBiome(biome.name);
                     break;
+                } else if (!canOverrideByMultiplier) {
+                    console.log(`🚫 ${biome.name} (${newMultiplier}x) cannot override ${biomeState.currentBiome} (${currentMultiplier}x) - lower multiplier`);
                 }
             }
         }
@@ -891,9 +901,17 @@ function checkHalloweenBiomeSpawn() {
         if (Math.random() < biomeCheck.chance) {
             const biome = BIOMES.find(b => b.name === biomeCheck.name);
             if (biome) {
-                setBiome(biome.name);
-                console.log(`🎃 ${biome.name} spawned at nightfall! (${Math.round(biomeCheck.chance * 100)}% chance)`);
-                return; // Only spawn one Halloween biome per night
+                // Check multiplier - don't allow lower multipliers to override higher ones
+                const currentMultiplier = currentBiome ? currentBiome.multiplier : 1;
+                const newMultiplier = biome.multiplier || 1;
+                
+                if (newMultiplier >= currentMultiplier) {
+                    setBiome(biome.name);
+                    console.log(`🎃 ${biome.name} spawned at nightfall! (${Math.round(biomeCheck.chance * 100)}% chance)`);
+                    return; // Only spawn one Halloween biome per night
+                } else {
+                    console.log(`🚫 ${biome.name} (${newMultiplier}x) cannot override ${biomeState.currentBiome} (${currentMultiplier}x) at nightfall`);
+                }
             }
         }
     }

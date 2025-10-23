@@ -323,7 +323,15 @@ window.spinTheWheel = function() {
     const ctx = canvas.getContext('2d');
     const targetPrizeIndex = Math.floor(Math.random() * spinWheel.prizes.length);
     const sliceAngle = (Math.PI * 2) / spinWheel.prizes.length;
-    const targetRotation = (Math.PI * 2 * 5) + (targetPrizeIndex * sliceAngle) + (sliceAngle / 2);
+    
+    // Calculate rotation so the prize lands under the top pointer
+    // In canvas, angle 3π/2 (or -π/2) is at the top where the pointer is
+    const baseSpins = Math.PI * 2 * 5; // 5 full rotations for effect
+    const pointerAngle = (Math.PI * 3) / 2; // Top of wheel in canvas coordinates
+    const targetSliceCenter = targetPrizeIndex * sliceAngle + (sliceAngle / 2);
+    // Rotate wheel so target slice center aligns with pointer
+    const targetRotation = baseSpins + pointerAngle - targetSliceCenter;
+    
     let currentRotation = 0;
     const duration = 4000, startTime = Date.now();
     const animate = () => {
