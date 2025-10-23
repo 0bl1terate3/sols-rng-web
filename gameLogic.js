@@ -8577,9 +8577,21 @@ function instantRollAura() {
 
     // Add to inventory
     if (!gameState.inventory.auras[finalAura.name]) {
-        gameState.inventory.auras[finalAura.name] = { count: 0, rarity: storedRarity, tier: finalAura.tier };
+        gameState.inventory.auras[finalAura.name] = { count: 0, rarity: storedRarity, tier: finalAura.tier, rollHistory: [] };
     }
     gameState.inventory.auras[finalAura.name].count++;
+
+    // Track roll history
+    if (!gameState.inventory.auras[finalAura.name].rollHistory) {
+        gameState.inventory.auras[finalAura.name].rollHistory = [];
+    }
+    gameState.inventory.auras[finalAura.name].rollHistory.push({
+        timestamp: Date.now(),
+        luck: gameState.currentLuck || 1.0,
+        finalLuck: gameState.currentLuck || 1.0,
+        breakthrough: !!finalAura.breakthrough,
+        rarity: storedRarity
+    });
     
     // Handle one-roll potions
     const oneRollIndex = gameState.activeEffects.findIndex(effect => effect.oneRoll);
