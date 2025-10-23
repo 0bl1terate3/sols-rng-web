@@ -7,14 +7,21 @@ class GiftSystem {
         this.db = null;
         this.playerId = null;
         this.initialized = false;
+        this.initRetries = 0;
+        this.maxRetries = 5;
     }
 
     // Initialize gift system
     async initialize() {
         // Wait for Firebase to be ready
         if (typeof firebase === 'undefined' || !firebase.apps.length) {
-            console.log('Waiting for Firebase to initialize gift system...');
-            setTimeout(() => this.initialize(), 1000);
+            this.initRetries++;
+            if (this.initRetries <= this.maxRetries) {
+                if (this.initRetries === 1) console.log('⏳ Waiting for Firebase to initialize gift system...');
+                setTimeout(() => this.initialize(), 2000);
+            } else {
+                console.log('❌ Firebase failed to initialize. Gift system disabled.');
+            }
             return;
         }
 

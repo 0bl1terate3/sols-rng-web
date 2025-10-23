@@ -10,6 +10,9 @@ const liveChat = {
     chatOpen: false,
     pollInterval: null,
     lastMessageId: 0,
+    backendAvailable: true,
+    consecutiveErrors: 0,
+    maxConsecutiveErrors: 3,
     
     // Initialize chat system
     initialize() {
@@ -122,12 +125,21 @@ const liveChat = {
     
     // Load messages from backend
     async loadMessages(isUpdate = false) {
+        // Skip if backend is unavailable
+        if (!this.backendAvailable) return;
+        
         try {
             const response = await fetch(`${this.backendUrl}/chat/messages?limit=${this.maxMessages}`, {
                 headers: { 'ngrok-skip-browser-warning': 'true' }
             });
             
-            if (!response.ok) return;
+            if (!response.ok) {
+                this.handleFetchError();
+                return;
+            }
+            
+            // Reset error counter on success
+            this.consecutiveErrors = 0;
             
             const data = await response.json();
             const messages = data.messages || [];
@@ -161,7 +173,28 @@ const liveChat = {
             }
             
         } catch (error) {
-            console.error('❌ Error loading messages:', error);
+            this.handleFetchError(error);
+        }
+    },
+    
+    // Handle fetch errors
+    handleFetchError(error) {
+        this.consecutiveErrors++;
+        
+        if (this.consecutiveErrors === 1) {
+            console.log('⚠️ Live chat backend unavailable. Retrying...');
+        }
+        
+        if (this.consecutiveErrors >= this.maxConsecutiveErrors) {
+            this.backendAvailable = false;
+            this.stopPolling();
+            console.log('❌ Live chat disabled: Backend unreachable after multiple attempts');
+            
+            // Show message in chat
+            const messagesContainer = document.getElementById('chatMessages');
+            if (messagesContainer) {
+                messagesContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #ff6b6b;">❌ Chat backend is currently unavailable</div>';
+            }
         }
     },
     
@@ -219,6 +252,12 @@ const liveChat = {
     
     // Send a message
     async sendMessage() {
+        // Check if backend is available
+        if (!this.backendAvailable) {
+            console.log('⚠️ Cannot send message: Chat backend is unavailable');
+            return;
+        }
+        
         const input = document.getElementById('chatInput');
         const message = input.value.trim();
         
@@ -243,15 +282,16 @@ const liveChat = {
             
             if (response.ok) {
                 input.value = '';
+                // Reset error counter on success
+                this.consecutiveErrors = 0;
                 // Immediately load messages to show sent message
                 await this.loadMessages();
             } else {
-                const errorText = await response.text();
-                console.error('❌ Failed to send message:', response.status, errorText);
+                this.handleFetchError();
             }
             
         } catch (error) {
-            console.error('❌ Error sending message:', error);
+            this.handleFetchError(error);
         }
     },
     

@@ -8,14 +8,21 @@ class GlobalNotifications {
         this.initialized = false;
         this.listener = null;
         this.playerId = null;
+        this.initRetries = 0;
+        this.maxRetries = 5;
     }
 
     // Initialize system
     async initialize() {
         // Wait for Firebase to be ready
         if (typeof firebase === 'undefined' || !firebase.apps.length) {
-            console.log('Waiting for Firebase to initialize global notifications...');
-            setTimeout(() => this.initialize(), 1000);
+            this.initRetries++;
+            if (this.initRetries <= this.maxRetries) {
+                if (this.initRetries === 1) console.log('⏳ Waiting for Firebase to initialize global notifications...');
+                setTimeout(() => this.initialize(), 2000);
+            } else {
+                console.log('❌ Firebase failed to initialize. Global notifications disabled.');
+            }
             return;
         }
 

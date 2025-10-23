@@ -8,14 +8,21 @@ class AdminActionsListener {
         this.playerId = null;
         this.initialized = false;
         this.listener = null;
+        this.initRetries = 0;
+        this.maxRetries = 5;
     }
 
     // Initialize listener
     async initialize() {
         // Wait for Firebase to be ready
         if (typeof firebase === 'undefined' || !firebase.apps.length) {
-            console.log('Waiting for Firebase to initialize admin actions...');
-            setTimeout(() => this.initialize(), 1000);
+            this.initRetries++;
+            if (this.initRetries <= this.maxRetries) {
+                if (this.initRetries === 1) console.log('⏳ Waiting for Firebase to initialize admin actions...');
+                setTimeout(() => this.initialize(), 2000);
+            } else {
+                console.log('❌ Firebase failed to initialize. Admin actions disabled.');
+            }
             return;
         }
 
@@ -23,8 +30,10 @@ class AdminActionsListener {
         this.playerId = localStorage.getItem('playerId');
         
         if (!this.playerId) {
-            console.log('No player ID yet, waiting...');
-            setTimeout(() => this.initialize(), 1000);
+            this.initRetries++;
+            if (this.initRetries <= this.maxRetries) {
+                setTimeout(() => this.initialize(), 2000);
+            }
             return;
         }
 
