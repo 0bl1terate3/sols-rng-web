@@ -7163,29 +7163,7 @@ function trackAuraRarity(rarity) {
     }
 }
 
-function showNotification(message, type = 'info') {
-    // FIX: Check if general notifications are enabled before showing any toast.
-    if (gameState.settings?.notifications?.general === false) {
-        return; // Exit immediately if general notifications are disabled
-    }
 
-    // Determine toast type based on message content for better feedback
-    let toastType = type;
-    if (message.includes('✅') || message.includes('Purchased') || message.includes('Unlocked')) {
-        toastType = 'success';
-    } else if (message.includes('❌') || message.includes('Cannot') || message.includes('Not enough')) {
-        toastType = 'error';
-    } else if (message.includes('⚠️')) {
-        toastType = 'warning';
-    } else if (message.includes('✨') || message.includes('Rare') || message.includes('Mythic') || message.includes('Divine')) {
-        toastType = 'rare';
-    } else if (message.includes('💊') || message.includes('Found')) {
-        // Use the default 'info' type for item drops
-        toastType = 'info';
-    }
-    
-    showToast(message, toastType);
-}
 
 function checkDailyReset() {
     const now = new Date();
@@ -8064,6 +8042,7 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
     }
 }
 
+async function rollAura() {
     const isWarpOrTranscendentActive = gameState.activeEffects.some(effect => effect.name === 'Warp Potion' || effect.name === 'Transcendent Potion');
     if (isWarpOrTranscendentActive) {
         instantRollAura();
@@ -8320,7 +8299,7 @@ function toggleAutoRoll() {
         const hasCooldownRemoval = gameState.activeEffects.some(effect => effect.removeCooldown);
         
         const baseDelay = gameState.autoRoll.delay || 600;
-        let effectiveDelay = hasCooldownRemoval ? 0 : Math.max(50, baseDelay / gameState.currentSpeed);
+        let effectiveDelay = hasCooldownRemoval ? 100 : Math.max(50, baseDelay / gameState.currentSpeed);
 
         expectedNextRollTime = lastRollTime + effectiveDelay;
         
@@ -8631,9 +8610,12 @@ function instantRollAura() {
     // The batched updater will handle the rest.
     const hasCooldownRemoval = gameState.activeEffects.some(effect => effect.removeCooldown);
     if (hasCooldownRemoval) {
-        updateRollCounter(); // This is fast enough to run every time
-        const totalRollsEl = document.getElementById('totalRolls');
-        if (totalRollsEl) totalRollsEl.textContent = gameState.totalRolls.toLocaleString();
+        displayAura(finalAura);
+        if (gameState.totalRolls % 10 === 0) {
+            updateRollCounter(); // This is fast enough to run every time
+            const totalRollsEl = document.getElementById('totalRolls');
+            if (totalRollsEl) totalRollsEl.textContent = gameState.totalRolls.toLocaleString();
+        }
     } else {
         // If not in warp speed (e.g., background tab), do a full but less frequent update.
         completeRollWithAura(finalAura, true);
@@ -13939,6 +13921,8 @@ function updateGearsInventory() {
     }).join('');
 }
 
+
+
 function updateAurasInventory() {
     const container = document.getElementById('aurasInventory');
     const auras = gameState.inventory.auras;
@@ -13950,24 +13934,24 @@ function updateAurasInventory() {
         const auraB = AURAS.find(aura => aura.name === b[0]);
         const rarityA = auraA ? auraA.rarity : a[1].rarity;
         const rarityB = auraB ? auraB.rarity : b[1].rarity;
-        return rarityB - rarityA; // Descending order (highest rarity first)
+        return rarityB - rarityA;
     });
     
     container.innerHTML = sortedAuras.map(([name, data]) => {
+        const badge = data.lastWasBreakthrough ? `<span class="breakthrough-badge">Breakthrough</span>` : '';
         const auraFont = getAuraFont(name);
         const auraColor = getAuraColor(name);
-        
-        // Get the base rarity from AURAS array, not the stored effective rarity
         const baseAura = AURAS.find(a => a.name === name);
         const displayRarity = baseAura ? baseAura.rarity : data.rarity;
         
-        // Create compact aura item with tooltip for breakthrough info
-        const breakthroughIndicator = data.lastWasBreakthrough ? ' ⚡' : '';
-        
-        return `<div class="aura-item" title="${data.lastWasBreakthrough ? 'Breakthrough obtained!' : ''}">
-            <div class="aura-item-name" style="font-family: ${auraFont}; color: ${auraColor};">${name}${breakthroughIndicator}</div>
-            <div class="aura-item-rarity">1 in ${displayRarity.toLocaleString()} • x${data.count}</div>
-            <button class="aura-delete-btn" onclick="deleteAuraPrompt('${name.replace(/'/g, "\\'")}')">🗑️</button>
+        return `<div class="aura-item" onclick="showAuraModal('${name.replace(/'/g, "\\'")}')">
+            <div>
+                <div class="aura-item-name rarity-${data.tier}" style="font-family: ${auraFont}; color: ${auraColor};">
+                    ${name}
+                </div>
+                ${badge}
+                <div class="aura-item-rarity">1 in ${displayRarity.toLocaleString()} - x${data.count}</div>
+            </div>
         </div>`;
     }).join('');
 }
@@ -14644,10 +14628,10 @@ function usePotion(name, amount = 1) {
 
         // And tell the worker to go to warp speed immediately
         if (autoRollWorker) {
-            console.log('🚀 Potion used - updating autoroll delay to 0!');
+            console.log('🚀 Potion used - updating autoroll delay to 100!');
             autoRollWorker.postMessage({
                 type: 'updateDelay',
-                delay: 0
+                delay: 100
             });
         }
     }
@@ -15525,8 +15509,7 @@ window.closeAuraModal = function() {
 };
 
 // Update aura inventory to be clickable
-const originalUpdateAurasInventory = updateAurasInventory;
-updateAurasInventory = function() {
+function updateAurasInventory() {
     const container = document.getElementById('aurasInventory');
     const auras = gameState.inventory.auras;
     if (Object.keys(auras).length === 0) { 
@@ -15568,8 +15551,7 @@ window.useQuickSlot = function(slot) {
 };
 
 // Enhanced showNotification to use toast system
-const originalShowNotification = showNotification;
-showNotification = function(message, type = 'info') {
+function showNotification(message, type = 'info') {
     // FIX: Check if general notifications are enabled before showing any toast.
     if (gameState.settings?.notifications?.general === false) {
         return; // Exit immediately if notifications are off
