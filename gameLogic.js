@@ -7711,8 +7711,8 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
     }
     gameState.inventory.auras[aura.name].rollHistory.push({
         timestamp: Date.now(),
-        luck: gameState.luck || 0,
-        finalLuck: gameState.finalLuck || 0,
+        luck: gameState.currentLuck || 1.0,
+        finalLuck: gameState.currentLuck || 1.0,
         breakthrough: !!aura.breakthrough,
         rarity: storedRarity
     });
@@ -8824,8 +8824,8 @@ function processSpecialGearEffects(aura) {
                             }
                             gameState.inventory.auras[aura.name].rollHistory.push({
                                 timestamp: Date.now(),
-                                luck: gameState.luck || 0,
-                                finalLuck: gameState.finalLuck || 0,
+                                luck: gameState.currentLuck || 1.0,
+                                finalLuck: gameState.currentLuck || 1.0,
                                 breakthrough: !!aura.breakthrough,
                                 rarity: aura.effectiveRarity || aura.rarity,
                                 duplicated: true,
@@ -9443,8 +9443,8 @@ function processSpecialPotionEffects(aura) {
                         }
                         gameState.inventory.auras[aura.name].rollHistory.push({
                             timestamp: Date.now(),
-                            luck: gameState.luck || 0,
-                            finalLuck: gameState.finalLuck || 0,
+                            luck: gameState.currentLuck || 1.0,
+                            finalLuck: gameState.currentLuck || 1.0,
                             breakthrough: !!aura.breakthrough,
                             rarity: aura.effectiveRarity || aura.rarity,
                             duplicated: true,
@@ -9786,8 +9786,8 @@ function processSpecialPotionEffects(aura) {
                 }
                 gameState.inventory.auras[aura.name].rollHistory.push({
                     timestamp: Date.now(),
-                    luck: gameState.luck || 0,
-                    finalLuck: gameState.finalLuck || 0,
+                    luck: gameState.currentLuck || 1.0,
+                    finalLuck: gameState.currentLuck || 1.0,
                     breakthrough: !!aura.breakthrough,
                     rarity: aura.effectiveRarity || aura.rarity,
                     duplicated: true,
@@ -9864,8 +9864,8 @@ async function completeRoll(isQuickRoll = false) {
     }
     gameState.inventory.auras[aura.name].rollHistory.push({
         timestamp: Date.now(),
-        luck: gameState.luck || 0,
-        finalLuck: gameState.finalLuck || 0,
+        luck: gameState.currentLuck || 1.0,
+        finalLuck: gameState.currentLuck || 1.0,
         breakthrough: !!aura.breakthrough,
         rarity: storedRarity
     });
