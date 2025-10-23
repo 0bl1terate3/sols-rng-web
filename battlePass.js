@@ -332,12 +332,7 @@ function openBattlePassModal() {
             <div class="modal-content modal-large battle-pass-modal">
                 <div class="modal-header">
                     <h2>⚔️ Battle Pass - ${BATTLE_PASS.seasonName}</h2>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="bp-settings-btn" onclick="openCosmeticsSelector()" title="Change Title & Badge">
-                            👑 Cosmetics
-                        </button>
-                        <button class="modal-close" onclick="closeBattlePassModal()">✕</button>
-                    </div>
+                    <button class="modal-close" onclick="closeBattlePassModal()">✕</button>
                 </div>
                 <div class="modal-body">
                     <div class="bp-header">
@@ -357,6 +352,9 @@ function openBattlePassModal() {
                             <div class="bp-season-end" id="bpSeasonEnd">90 days</div>
                             <button class="btn btn-premium" id="bpPremiumBtn" onclick="purchasePremiumPass()">
                                 👑 Get Premium (50,000 coins)
+                            </button>
+                            <button class="btn btn-cosmetics" onclick="openCosmeticsSelector()" style="margin-top: 8px;">
+                                👑 Change Title & Badge
                             </button>
                         </div>
                     </div>
