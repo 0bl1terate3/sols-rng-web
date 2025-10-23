@@ -1536,58 +1536,209 @@ function getBestCraftablePotion() {
     let bestPotion = null;
     let bestScore = -1;
     
-    // Potion priority tiers with cost-effectiveness consideration
-    // Priority list: BEST potions first, working down to basic
-    // Auto-craft will always try to craft the best available potion you can afford
-    const priorityList = [
-        // Tier 1: BEST - High-tier special potions (most powerful)
-        'Fortune Potion III', 'Haste Potion III',
-        'Fortune Potion II', 'Haste Potion II',
-        'Fortune Potion I', 'Haste Potion I',
-        'Forbidden Potion II', 'Forbidden Potion I',
-        'Godly Potion (Hades)', 'Godly Potion (Poseidon)', 'Godly Potion (Zeus)',
-        'Nightowl\'s Brew', 'Sunseeker\'s Tonic',
-        
-        // Tier 2: Great - Long-duration potions
-        'Rainbow Potion', 'Hwachae', 'Raid Potion',
-        'Jewelry Potion', 'Zombie Potion',
-        
-        // Tier 3: Good - XL and special potions
-        'Lucky Potion XL', 'Speed Potion XL',
-        'Gladiator Potion', 'Rage Potion', 'Diver Potion', 'Santa Potion',
-        
-        // Tier 4: Utility potions (situational but useful)
-        'Phoenix Potion', 'Quantum Potion', 'Chaos Potion',
-        'Potion of Momentum', 'Potion of Adaptation',
-        'Lucky Block Potion', 'Mirror Potion', 'Time Warp Potion',
-        'Aura Magnet Potion', 'Potion of Dupe',
-        
-        // Tier 5: Large potions (moderate)
-        'Lucky Potion L', 'Speed Potion L',
-        
-        // Tier 6: Basic potions (fallback)
-        'Mixed Potion', 'Lucky Potion', 'Speed Potion',
-        
-        // NEVER auto-craft these (too expensive or risky):
-        // - Potion of Bound, Heavenly Potion, Godlike Potion, Oblivion Potion
-        // - Pump Kings Blood, Voidheart, Transcendent Potion, Warp Potion
-        // - Forbidden Potion III, ???
-    ];
-    
     console.log(`🧪 Auto-potion: Searching for best craftable potion...`);
     
-    // Find the BEST potion we can craft (starts from top of priority list)
-    for (const potionName of priorityList) {
-        const recipe = POTION_RECIPES.find(r => r.name === potionName);
-        if (!recipe || recipe.isBase) continue;
+    // Get currently active effects to avoid wasting potions
+    const activeEffects = gameState.activeEffects || [];
+    const activePotionNames = new Set(activeEffects.map(e => e.name));
+    
+    // Check current time and biome for conditional potions
+    const currentTime = gameState.timeOfDay || 'day';
+    const currentBiome = gameState.currentBiome || 'grass';
+    const totalRolls = gameState.totalRolls || 0;
+    
+    // COMPREHENSIVE POTION SCORING SYSTEM
+    // Score each potion based on multiple factors
+    const potionScores = {
+        // ====== TIER S: ULTRA POWERFUL (Score: 1000+) ======
+        'Forbidden Potion III': 1500,  // +1350% luck, +75% speed, 3 hours
+        'Forbidden Potion II': 1400,   // +325% luck, +25% speed, 1 hour
+        'Godly Potion (Hades)': 1300,  // +300% luck, 4 hours
+        'Godly Potion (Zeus)': 1250,   // +200% luck, +30% speed, 4 hours
+        'Godly Potion (Poseidon)': 1200, // +75% speed, 4 hours
+        
+        // ====== TIER A: EXCELLENT (Score: 700-999) ======
+        'Zombie Potion': 950,          // +150% luck, 10 min
+        'Jewelry Potion': 900,         // +120% luck, 10 min
+        'Raid Potion': 850,            // +100% luck, 30 min
+        'Gladiator Potion': 825,       // +100% luck, 10 min
+        'Hwachae': 800,                // +100% luck, +25% speed, 1 hour
+        'Santa Potion': 775,           // +100% luck, +25% speed, 10 min
+        'Fortune Potion III': 750,     // +100% luck, 5 min
+        'Fortune Potion II': 725,      // +75% luck, 5 min
+        'Fortune Potion I': 700,       // +50% luck, 5 min
+        
+        // ====== TIER B: GREAT (Score: 400-699) ======
+        'Forbidden Potion I': 680,     // +70% luck, +10% speed, 30 min
+        'Nightowl\'s Brew': 650,       // +150% luck (night only)
+        'Sunseeker\'s Tonic': 650,     // +150% luck (day only)
+        'Diver Potion': 625,           // +40% speed, 10 min
+        'Rage Potion': 600,            // +35% speed, 10 min
+        'Haste Potion III': 575,       // +30% speed, 5 min
+        'Haste Potion II': 550,        // +25% speed, 5 min
+        'Haste Potion I': 525,         // +20% speed, 5 min
+        'Rainbow Potion': 500,         // +50% luck, +25% speed, guarantees Epic+
+        'Lucky Potion XL': 475,        // +45% luck, 3 min
+        'Speed Potion XL': 450,        // +18% speed, 3 min
+        'Potion of Deliberation': 425, // +50% luck, -50% speed, 1 min
+        'Mixed Potion': 400,           // +25% luck, +10% speed, 3 min
+        
+        // ====== TIER C: GOOD UTILITY (Score: 200-399) ======
+        'Quantum Potion': 380,         // 1% chain roll chance, 20 min
+        'Aura Magnet Potion': 370,     // +200% luck for Legendary+, 15 min
+        'Mirror Potion': 360,          // 50% dupe chance, 3 rolls
+        'Potion of Dupe': 350,         // 50% craft dupe, 10 min
+        'Phoenix Potion': 340,         // Safety net for bad rolls
+        'Lucky Block Potion': 330,     // 5% bonus spawn, 10 min
+        'Potion of Adaptation': 320,   // +100% luck in biome, 3 min
+        'Potion of Focus (Mythic)': 310, // +200% luck for Mythic
+        'Potion of Focus (Legendary)': 300, // +200% luck for Legendary
+        'Time Warp Potion': 290,       // 75% cooldown reduction
+        'Potion of Momentum': 280,     // Stacking luck bonus
+        'Potion of Collector': 270,    // +5% per unique aura
+        'Potion of Mastery': 260,      // +1% per 1000 rolls
+        'Potion of the Hour': 250,     // +10% per minute played
+        'Potion of Patience': 240,     // 2x luck after 30s wait
+        'Potion of Exploration': 230,  // +200% on biome change
+        'Potion of Haste': 220,        // +50% speed, -25% luck
+        'Breakthrough Catalyst': 210,  // 2x breakthrough chance
+        'Chaos Potion': 200,           // Random effects
+        
+        // ====== TIER D: SITUATIONAL (Score: 100-199) ======
+        'Potion of Variety': 190,      // +300% after 5 different auras
+        'Potion of Consistency': 180,  // +50% luck on tier repeat
+        'Potion of Extremes': 170,     // Removes commons, -50% luck
+        'Gambler\'s Elixir': 160,      // 50/50 double or halve
+        'All-or-Nothing Brew': 150,    // Guaranteed Epic+ but risky
+        'Potion of Sacrifice': 140,    // Consume 5 auras
+        'Potion of Efficiency': 130,   // 20% save materials
+        'Alchemist\'s Insight': 120,   // Preview next 5 rolls
+        'Potion of Clarity': 110,      // See next rarity value
+        'Potion of Hindsight': 100,    // Reroll last aura
+        
+        // ====== TIER E: BASIC (Score: 50-99) ======
+        'Lucky Potion L': 90,          // +35% luck, 2 min
+        'Speed Potion L': 80,          // +15% speed, 2 min
+        'Lucky Potion': 70,            // +25% luck, 1 min
+        'Speed Potion': 60,            // +10% speed, 1 min
+        
+        // ====== TIER F: BEGINNER ONLY (Score: 50) ======
+        'Potion of the Beginner': 50,  // Only <100 rolls
+        
+        // BLACKLIST: Never auto-craft (too expensive or end-game)
+        'Potion of Bound': -1,
+        'Heavenly Potion': -1,
+        'Godlike Potion': -1,
+        'Oblivion Potion': -1,
+        'Pump Kings Blood': -1,
+        'Voidheart': -1,
+        'Transcendent Potion': -1,
+        'Warp Potion': -1,
+        '???': -1,
+        'Curse Breaker Potion': -1,
+        'Jackpot Potion': -1
+    };
+    
+    // Evaluate all craftable potions
+    for (const recipe of POTION_RECIPES) {
+        // Skip base potions
+        if (recipe.isBase) continue;
+        
+        // Skip blacklisted potions
+        if (potionScores[recipe.name] === -1) continue;
         
         // Check if we can craft it
         if (!checkCanCraft(recipe)) continue;
         
-        // Found the best craftable potion!
-        bestPotion = recipe;
-        console.log(`✅ Auto-potion: Found best craftable: ${potionName}`);
-        break; // Take the first one we can craft (highest priority)
+        // Get base score
+        let score = potionScores[recipe.name] || 50;
+        
+        // === PENALTY: Already active ===
+        if (activePotionNames.has(recipe.name)) {
+            // If it's a duration potion, allow extension but lower priority
+            if (recipe.duration && !recipe.oneRoll) {
+                score *= 0.3; // 70% penalty for extension
+            } else {
+                score = 0; // Don't use one-time potions that are active
+                continue;
+            }
+        }
+        
+        // === PENALTY: Time-conditional potions ===
+        if (recipe.nightMode && currentTime !== 'night') {
+            score = 0; // Can't use
+            continue;
+        }
+        if (recipe.dayMode && currentTime !== 'day') {
+            score = 0; // Can't use
+            continue;
+        }
+        
+        // === PENALTY: Beginner potion ===
+        if (recipe.beginnerMode && totalRolls >= 100) {
+            score = 0; // Can't use
+            continue;
+        }
+        
+        // === BONUS: Similar effect not active ===
+        // Bonus for luck potions when no luck buff active
+        const hasLuckBuff = activeEffects.some(e => e.luckBoost && e.luckBoost > 0);
+        const hasSpeedBuff = activeEffects.some(e => e.speedBoost && e.speedBoost > 0);
+        
+        if (recipe.luckBoost > 0 && !hasLuckBuff) {
+            score *= 1.3; // 30% bonus
+        }
+        if (recipe.speedBoost > 0 && !hasSpeedBuff) {
+            score *= 1.2; // 20% bonus
+        }
+        
+        // === BONUS: Special effects ===
+        if (recipe.removeCooldown) {
+            const hasRemovalActive = activeEffects.some(e => e.removeCooldown);
+            if (!hasRemovalActive) {
+                score *= 1.5; // Cooldown removal is valuable
+            } else {
+                score = 0; // Already have one
+                continue;
+            }
+        }
+        
+        // === BONUS: Time-appropriate potions ===
+        if ((recipe.nightMode && currentTime === 'night') || 
+            (recipe.dayMode && currentTime === 'day')) {
+            score *= 1.4; // Use time-specific potions when appropriate
+        }
+        
+        // === BONUS: Utility potions with no active version ===
+        if (recipe.dupeChance || recipe.mirrorChance || recipe.quantumChance || 
+            recipe.bonusSpawnChance || recipe.breakthroughMode) {
+            const hasUtilityActive = activeEffects.some(e => 
+                e.dupeChance || e.mirrorChance || e.quantumChance || 
+                e.bonusSpawnChance || e.breakthroughMode
+            );
+            if (!hasUtilityActive) {
+                score *= 1.25; // Utility potions are valuable
+            }
+        }
+        
+        // Track best potion
+        if (score > bestScore) {
+            bestScore = score;
+            bestPotion = recipe;
+        }
+    }
+    
+    if (bestPotion) {
+        console.log(`✅ Auto-potion: Best craftable is ${bestPotion.name} (score: ${bestScore.toFixed(1)})`);
+        
+        // Log why this potion was chosen
+        if (bestScore > 1000) {
+            console.log(`   → Ultra powerful potion selected!`);
+        } else if (!activePotionNames.has(bestPotion.name)) {
+            console.log(`   → Fresh effect, not currently active`);
+        }
+    } else {
+        console.log('🧪 Auto-potion: No suitable potion to craft');
     }
     
     return bestPotion;

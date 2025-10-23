@@ -7699,11 +7699,23 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
     const storedRarity = aura.effectiveRarity || aura.rarity;
     const isNewAura = !gameState.inventory.auras[aura.name];
     if (isNewAura) {
-        gameState.inventory.auras[aura.name] = { count: 0, rarity: storedRarity, tier: aura.tier };
+        gameState.inventory.auras[aura.name] = { count: 0, rarity: storedRarity, tier: aura.tier, rollHistory: [] };
     }
     gameState.inventory.auras[aura.name].rarity = Math.min(gameState.inventory.auras[aura.name].rarity, storedRarity);
     gameState.inventory.auras[aura.name].count++;
     gameState.inventory.auras[aura.name].lastWasBreakthrough = !!aura.breakthrough;
+    
+    // Track roll history (timestamp, luck, breakthrough)
+    if (!gameState.inventory.auras[aura.name].rollHistory) {
+        gameState.inventory.auras[aura.name].rollHistory = [];
+    }
+    gameState.inventory.auras[aura.name].rollHistory.push({
+        timestamp: Date.now(),
+        luck: gameState.luck || 0,
+        finalLuck: gameState.finalLuck || 0,
+        breakthrough: !!aura.breakthrough,
+        rarity: storedRarity
+    });
     
     // Auto-submit collected stats when a new unique aura is collected
     if (isNewAura && typeof window.globalLeaderboard !== 'undefined' && 
@@ -8806,6 +8818,19 @@ function processSpecialGearEffects(aura) {
                         // Add an extra count of the rolled aura
                         if (gameState.inventory.auras[aura.name]) {
                             gameState.inventory.auras[aura.name].count++;
+                            // Track duplication in roll history
+                            if (!gameState.inventory.auras[aura.name].rollHistory) {
+                                gameState.inventory.auras[aura.name].rollHistory = [];
+                            }
+                            gameState.inventory.auras[aura.name].rollHistory.push({
+                                timestamp: Date.now(),
+                                luck: gameState.luck || 0,
+                                finalLuck: gameState.finalLuck || 0,
+                                breakthrough: !!aura.breakthrough,
+                                rarity: aura.effectiveRarity || aura.rarity,
+                                duplicated: true,
+                                source: 'gear'
+                            });
                         }
                     }
                     break;
@@ -9412,6 +9437,19 @@ function processSpecialPotionEffects(aura) {
                     // Add an extra count of the rolled aura
                     if (gameState.inventory.auras[aura.name]) {
                         gameState.inventory.auras[aura.name].count++;
+                        // Track duplication in roll history
+                        if (!gameState.inventory.auras[aura.name].rollHistory) {
+                            gameState.inventory.auras[aura.name].rollHistory = [];
+                        }
+                        gameState.inventory.auras[aura.name].rollHistory.push({
+                            timestamp: Date.now(),
+                            luck: gameState.luck || 0,
+                            finalLuck: gameState.finalLuck || 0,
+                            breakthrough: !!aura.breakthrough,
+                            rarity: aura.effectiveRarity || aura.rarity,
+                            duplicated: true,
+                            source: 'Mirror Potion'
+                        });
                         
                         // Show notification
                         showNotification(`Mirror Potion activated! ${aura.name} duplicated!`);
@@ -9742,6 +9780,19 @@ function processSpecialPotionEffects(aura) {
             // Add an extra count of the rolled aura
             if (gameState.inventory.auras[aura.name]) {
                 gameState.inventory.auras[aura.name].count++;
+                // Track duplication in roll history
+                if (!gameState.inventory.auras[aura.name].rollHistory) {
+                    gameState.inventory.auras[aura.name].rollHistory = [];
+                }
+                gameState.inventory.auras[aura.name].rollHistory.push({
+                    timestamp: Date.now(),
+                    luck: gameState.luck || 0,
+                    finalLuck: gameState.finalLuck || 0,
+                    breakthrough: !!aura.breakthrough,
+                    rarity: aura.effectiveRarity || aura.rarity,
+                    duplicated: true,
+                    source: 'Potion of Dupe'
+                });
                 showNotification(`🎲 Potion of Dupe: ${aura.name} duplicated!`, 'success');
                 
                 // Visual feedback
@@ -9801,11 +9852,23 @@ async function completeRoll(isQuickRoll = false) {
 
     const storedRarity = aura.effectiveRarity || aura.rarity;
     if (!gameState.inventory.auras[aura.name]) {
-        gameState.inventory.auras[aura.name] = { count: 0, rarity: storedRarity, tier: aura.tier };
+        gameState.inventory.auras[aura.name] = { count: 0, rarity: storedRarity, tier: aura.tier, rollHistory: [] };
     }
     gameState.inventory.auras[aura.name].rarity = Math.min(gameState.inventory.auras[aura.name].rarity, storedRarity);
     gameState.inventory.auras[aura.name].count++;
     gameState.inventory.auras[aura.name].lastWasBreakthrough = !!aura.breakthrough;
+    
+    // Track roll history (timestamp, luck, breakthrough)
+    if (!gameState.inventory.auras[aura.name].rollHistory) {
+        gameState.inventory.auras[aura.name].rollHistory = [];
+    }
+    gameState.inventory.auras[aura.name].rollHistory.push({
+        timestamp: Date.now(),
+        luck: gameState.luck || 0,
+        finalLuck: gameState.finalLuck || 0,
+        breakthrough: !!aura.breakthrough,
+        rarity: storedRarity
+    });
 
     // =================================================================
     // NEW AND IMPROVED CUTSCENE LOGIC

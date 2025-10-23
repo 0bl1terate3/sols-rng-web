@@ -125,16 +125,231 @@ function updateAurasInventoryEnhanced() {
         
         const breakthroughIndicator = data.lastWasBreakthrough ? ' ⚡' : '';
         
-        return `<div class="aura-item" title="${data.lastWasBreakthrough ? 'Breakthrough obtained!' : ''}">
+        // Get last roll info
+        const lastRoll = data.rollHistory && data.rollHistory.length > 0 
+            ? data.rollHistory[data.rollHistory.length - 1] 
+            : null;
+        const lastRollText = lastRoll 
+            ? `Last rolled at ${(lastRoll.finalLuck * 100).toFixed(1)}% luck` 
+            : 'No roll history';
+        
+        return `<div class="aura-item" onclick="showAuraRollHistory('${name.replace(/'/g, "\\'")}')" style="cursor: pointer;" title="Click to view roll history • ${lastRollText}">
             <div class="aura-item-name" style="font-family: ${auraFont}; color: ${auraColor};">${name}${breakthroughIndicator}</div>
             <div class="aura-item-rarity">1 in ${displayRarity.toLocaleString()} • x${data.count}</div>
-            <button class="aura-delete-btn" onclick="deleteAuraPrompt('${name.replace(/'/g, "\\'")}')">🗑️</button>
+            <button class="aura-delete-btn" onclick="event.stopPropagation(); deleteAuraPrompt('${name.replace(/'/g, "\\'")}')">🗑️</button>
         </div>`;
     }).join('');
 }
 
 function filterAurasSearch(searchTerm) {
     updateAurasInventoryEnhanced();
+}
+
+// Show detailed roll history for an aura
+function showAuraRollHistory(auraName) {
+    const auraData = gameState.inventory.auras[auraName];
+    if (!auraData) return;
+    
+    const rollHistory = auraData.rollHistory || [];
+    const baseAura = AURAS.find(a => a.name === auraName);
+    const displayRarity = baseAura ? baseAura.rarity : auraData.rarity;
+    
+    // Get aura styling
+    const auraFont = getAuraFont(auraName);
+    const auraColor = getAuraColor(auraName);
+    
+    // Format roll history
+    let historyHTML = '';
+    if (rollHistory.length === 0) {
+        historyHTML = '<div style="text-align: center; padding: 20px; color: #888;">No roll history available for this aura.</div>';
+    } else {
+        // Reverse to show most recent first
+        const reversedHistory = [...rollHistory].reverse();
+        
+        historyHTML = `
+            <div style="max-height: 400px; overflow-y: auto; padding: 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="position: sticky; top: 0; background: #1a1a2e; z-index: 1;">
+                        <tr style="border-bottom: 2px solid #fbbf24;">
+                            <th style="padding: 10px; text-align: left; color: #fbbf24;">#</th>
+                            <th style="padding: 10px; text-align: left; color: #fbbf24;">Date & Time</th>
+                            <th style="padding: 10px; text-align: right; color: #fbbf24;">Base Luck</th>
+                            <th style="padding: 10px; text-align: right; color: #fbbf24;">Final Luck</th>
+                            <th style="padding: 10px; text-align: center; color: #fbbf24;">Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        reversedHistory.forEach((roll, index) => {
+            const rollNumber = rollHistory.length - index;
+            const date = new Date(roll.timestamp);
+            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            
+            const baseLuck = (roll.luck * 100).toFixed(2) + '%';
+            const finalLuck = (roll.finalLuck * 100).toFixed(2) + '%';
+            
+            // Determine badge based on roll type
+            let typeBadge;
+            if (roll.duplicated) {
+                const source = roll.source || 'unknown';
+                typeBadge = `<span style="background: linear-gradient(135deg, #a855f7, #8b5cf6); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;">📋 DUPLICATED (${source})</span>`;
+            } else if (roll.breakthrough) {
+                typeBadge = '<span style="background: linear-gradient(135deg, #fbbf24, #f59e0b); padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold;">⚡ BREAKTHROUGH</span>';
+            } else {
+                typeBadge = '<span style="color: #888;">Normal Roll</span>';
+            }
+            
+            // Alternate row colors
+            const rowBg = index % 2 === 0 ? 'rgba(255,255,255,0.05)' : 'transparent';
+            
+            historyHTML += `
+                <tr style="background: ${rowBg}; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <td style="padding: 8px; color: #aaa;">${rollNumber}</td>
+                    <td style="padding: 8px; color: #ddd;">
+                        <div>${dateStr}</div>
+                        <div style="font-size: 11px; color: #888;">${timeStr}</div>
+                    </td>
+                    <td style="padding: 8px; text-align: right; color: #667eea; font-weight: bold;">${baseLuck}</td>
+                    <td style="padding: 8px; text-align: right; color: #10b981; font-weight: bold;">${finalLuck}</td>
+                    <td style="padding: 8px; text-align: center;">${typeBadge}</td>
+                </tr>
+            `;
+        });
+        
+        historyHTML += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+    
+    // Calculate statistics
+    const avgBaseLuck = rollHistory.length > 0 
+        ? (rollHistory.reduce((sum, r) => sum + r.luck, 0) / rollHistory.length * 100).toFixed(2) + '%'
+        : 'N/A';
+    const avgFinalLuck = rollHistory.length > 0 
+        ? (rollHistory.reduce((sum, r) => sum + r.finalLuck, 0) / rollHistory.length * 100).toFixed(2) + '%'
+        : 'N/A';
+    const breakthroughCount = rollHistory.filter(r => r.breakthrough).length;
+    const breakthroughRate = rollHistory.length > 0 
+        ? ((breakthroughCount / rollHistory.length) * 100).toFixed(1) + '%'
+        : '0%';
+    const duplicatedCount = rollHistory.filter(r => r.duplicated).length;
+    const duplicatedRate = rollHistory.length > 0 
+        ? ((duplicatedCount / rollHistory.length) * 100).toFixed(1) + '%'
+        : '0%';
+    
+    // Find best and worst luck rolls
+    const bestLuckRoll = rollHistory.length > 0 
+        ? rollHistory.reduce((best, r) => r.finalLuck > best.finalLuck ? r : best, rollHistory[0])
+        : null;
+    const worstLuckRoll = rollHistory.length > 0 
+        ? rollHistory.reduce((worst, r) => r.finalLuck < worst.finalLuck ? r : worst, rollHistory[0])
+        : null;
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.id = 'auraRollHistoryModal';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+        backdrop-filter: blur(5px);
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); 
+                    border: 3px solid #fbbf24; 
+                    border-radius: 16px; 
+                    padding: 30px; 
+                    max-width: 800px; 
+                    width: 90%; 
+                    max-height: 80vh; 
+                    overflow-y: auto;
+                    box-shadow: 0 10px 50px rgba(251, 191, 36, 0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #fbbf24; font-size: 24px;">
+                    📊 Roll History
+                </h2>
+                <button onclick="closeAuraRollHistoryModal()" style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold;">✕</button>
+            </div>
+            
+            <div style="text-align: center; margin-bottom: 25px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 2px solid rgba(251, 191, 36, 0.3);">
+                <div style="font-family: ${auraFont}; color: ${auraColor}; font-size: 32px; font-weight: bold; margin-bottom: 10px;">
+                    ${auraName}
+                </div>
+                <div style="color: #ddd; font-size: 16px; margin-bottom: 5px;">
+                    Rarity: <span style="color: #fbbf24; font-weight: bold;">1 in ${displayRarity.toLocaleString()}</span>
+                </div>
+                <div style="color: #ddd; font-size: 16px;">
+                    Total Rolls: <span style="color: #10b981; font-weight: bold;">${rollHistory.length}</span>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                <div style="background: rgba(102, 126, 234, 0.2); padding: 15px; border-radius: 10px; border: 2px solid #667eea;">
+                    <div style="color: #667eea; font-size: 12px; font-weight: bold; margin-bottom: 5px;">AVG BASE LUCK</div>
+                    <div style="color: white; font-size: 20px; font-weight: bold;">${avgBaseLuck}</div>
+                </div>
+                <div style="background: rgba(16, 185, 129, 0.2); padding: 15px; border-radius: 10px; border: 2px solid #10b981;">
+                    <div style="color: #10b981; font-size: 12px; font-weight: bold; margin-bottom: 5px;">AVG FINAL LUCK</div>
+                    <div style="color: white; font-size: 20px; font-weight: bold;">${avgFinalLuck}</div>
+                </div>
+                <div style="background: rgba(251, 191, 36, 0.2); padding: 15px; border-radius: 10px; border: 2px solid #fbbf24;">
+                    <div style="color: #fbbf24; font-size: 12px; font-weight: bold; margin-bottom: 5px;">BREAKTHROUGHS</div>
+                    <div style="color: white; font-size: 20px; font-weight: bold;">${breakthroughCount} (${breakthroughRate})</div>
+                </div>
+                ${duplicatedCount > 0 ? `
+                <div style="background: rgba(168, 85, 247, 0.2); padding: 15px; border-radius: 10px; border: 2px solid #a855f7;">
+                    <div style="color: #a855f7; font-size: 12px; font-weight: bold; margin-bottom: 5px;">DUPLICATED</div>
+                    <div style="color: white; font-size: 20px; font-weight: bold;">${duplicatedCount} (${duplicatedRate})</div>
+                </div>
+                ` : ''}
+                ${bestLuckRoll ? `
+                <div style="background: rgba(34, 197, 94, 0.2); padding: 15px; border-radius: 10px; border: 2px solid #22c55e;">
+                    <div style="color: #22c55e; font-size: 12px; font-weight: bold; margin-bottom: 5px;">BEST LUCK</div>
+                    <div style="color: white; font-size: 20px; font-weight: bold;">${(bestLuckRoll.finalLuck * 100).toFixed(2)}%</div>
+                </div>
+                ` : ''}
+                ${worstLuckRoll ? `
+                <div style="background: rgba(239, 68, 68, 0.2); padding: 15px; border-radius: 10px; border: 2px solid #ef4444;">
+                    <div style="color: #ef4444; font-size: 12px; font-weight: bold; margin-bottom: 5px;">WORST LUCK</div>
+                    <div style="color: white; font-size: 20px; font-weight: bold;">${(worstLuckRoll.finalLuck * 100).toFixed(2)}%</div>
+                </div>
+                ` : ''}
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.4); border-radius: 12px; padding: 15px; border: 2px solid rgba(251, 191, 36, 0.3);">
+                <h3 style="color: #fbbf24; margin-top: 0; margin-bottom: 15px;">📜 Detailed Roll Log</h3>
+                ${historyHTML}
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeAuraRollHistoryModal();
+        }
+    });
+}
+
+function closeAuraRollHistoryModal() {
+    const modal = document.getElementById('auraRollHistoryModal');
+    if (modal) {
+        modal.remove();
+    }
 }
 
 // Enhanced Potions Inventory with Filtering
@@ -343,6 +558,8 @@ if (typeof window !== 'undefined') {
     window.updatePotionsInventoryEnhanced = updatePotionsInventoryEnhanced;
     window.updateAchievementsInventoryEnhanced = updateAchievementsInventoryEnhanced;
     window.filterAurasSearch = filterAurasSearch;
+    window.showAuraRollHistory = showAuraRollHistory;
+    window.closeAuraRollHistoryModal = closeAuraRollHistoryModal;
     
     console.log('QoL inventory functions attached to window object');
 }
