@@ -8620,18 +8620,8 @@ function instantRollAura() {
 
     // NEW: Instead of a full UI refresh, only update the lightweight roll counter.
     // The batched updater will handle the rest.
-    const hasCooldownRemoval = gameState.activeEffects.some(effect => effect.removeCooldown);
-    if (hasCooldownRemoval) {
-        displayAura(finalAura);
-        if (gameState.totalRolls % 10 === 0) {
-            updateRollCounter(); // This is fast enough to run every time
-            const totalRollsEl = document.getElementById('totalRolls');
-            if (totalRollsEl) totalRollsEl.textContent = gameState.totalRolls.toLocaleString();
-        }
-    } else {
-        // If not in warp speed (e.g., background tab), do a full but less frequent update.
-        completeRollWithAura(finalAura, true);
-    }
+    // If not in warp speed (e.g., background tab), do a full but less frequent update.
+    completeRollWithAura(finalAura, true);
 }
 
 function updateAutoRollButton() {
