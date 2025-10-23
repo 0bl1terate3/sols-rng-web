@@ -447,7 +447,7 @@ function updateAvailableAuras() {
                     <span class="expedition-aura-count">x${data.count}</span>
                 </div>
             </div>
-            <button onclick="startExpedition('${name}')" class="expedition-send-btn">
+            <button onclick="startExpedition('${name.replace(/'/g, "\\'")}' )" class="expedition-send-btn">
                 SEND
             </button>
         `;

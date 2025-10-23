@@ -13482,8 +13482,10 @@ function updatePotionsInventory() {
         const isSelected = gameState.bulkMode.selectedPotions.includes(name);
         const selectionClass = isSelected ? ' potion-selected' : '';
         
-        const clickHandler = (isUsable && !isBeginnerDisabled && !isNightDisabled && !isDayDisabled) ? `onclick="usePotionPrompt('${name}', event)"` : '';
-        const rightClickHandler = `oncontextmenu="openSellPotionModal('${name}', event); return false;"`;
+        // Escape apostrophes in potion names for onclick handlers
+        const escapedName = name.replace(/'/g, "\\'");
+        const clickHandler = (isUsable && !isBeginnerDisabled && !isNightDisabled && !isDayDisabled) ? `onclick="usePotionPrompt('${escapedName}', event)"` : '';
+        const rightClickHandler = `oncontextmenu="openSellPotionModal('${escapedName}', event); return false;"`;
         
         // No special styling in inventory - keep it clean and simple
         return `<div class="inventory-item ${categoryClass}${selectionClass}${disabledClass}" ${clickHandler} ${rightClickHandler} title="${tooltip}\n\nRight-click to sell"><div class="inventory-item-icon">⚗️</div><div class="inventory-item-name">${name}${disabledText}</div><div class="inventory-item-count">x${data.count}</div></div>`;
@@ -13669,7 +13671,7 @@ window.openSellPotionModal = function(potionName, event) {
                                font-weight: bold;">
                     Cancel
                 </button>
-                <button onclick="confirmSellPotion('${potionName}', ${sellPrice})" 
+                <button onclick="confirmSellPotion('${potionName.replace(/'/g, "\\'")}', ${sellPrice})" 
                         style="flex: 1;
                                padding: 12px;
                                background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
