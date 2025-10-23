@@ -13,8 +13,12 @@ if (!window.gameState.minigames) {
         highScores: {},
         dailyPlays: 0,
         lastPlayDate: new Date().toDateString(),
+        lastSpinTime: 0,
         rewards: {}
     };
+} else if (!window.gameState.minigames.hasOwnProperty('lastSpinTime')) {
+    // Add lastSpinTime to existing saves
+    window.gameState.minigames.lastSpinTime = 0;
 }
 
 // Unlock at 10,000 rolls
@@ -222,7 +226,20 @@ function endMemoryGame() {
 }
 
 // SPIN WHEEL
-let spinWheel = { active: false, spinning: false, lastSpin: 0, cooldown: 3600000 };
+let spinWheel = { 
+    active: false, 
+    spinning: false, 
+    get lastSpin() {
+        return window.gameState?.minigames?.lastSpinTime || 0;
+    },
+    set lastSpin(value) {
+        if (window.gameState && window.gameState.minigames) {
+            window.gameState.minigames.lastSpinTime = value;
+            saveGameState();
+        }
+    },
+    cooldown: 3600000 
+};
 
 window.startSpinWheel = function() {
     if (!window.gameState.minigames.unlocked) {

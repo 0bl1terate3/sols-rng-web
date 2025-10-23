@@ -43,15 +43,31 @@ function initBattlePass() {
 function loadBattlePassData() {
     const saved = localStorage.getItem('battlePassData');
     if (saved) {
-        const data = JSON.parse(saved);
-        BATTLE_PASS.playerData = data;
+        try {
+            const data = JSON.parse(saved);
+            // Merge saved data with defaults to preserve new properties
+            BATTLE_PASS.playerData = {
+                ...BATTLE_PASS.playerData,
+                ...data
+            };
+            console.log(`✅ Loaded Battle Pass: Level ${BATTLE_PASS.playerData.level}, XP ${BATTLE_PASS.playerData.xp}`);
+        } catch (e) {
+            console.error('❌ Failed to load battle pass data:', e);
+        }
+    } else {
+        console.log('📝 No saved Battle Pass data, starting fresh');
     }
     loadRewardTracks();
 }
 
 // Save data to localStorage
 function saveBattlePassData() {
-    localStorage.setItem('battlePassData', JSON.stringify(BATTLE_PASS.playerData));
+    try {
+        localStorage.setItem('battlePassData', JSON.stringify(BATTLE_PASS.playerData));
+        console.log(`💾 Battle Pass saved: Level ${BATTLE_PASS.playerData.level}, XP ${BATTLE_PASS.playerData.xp}`);
+    } catch (e) {
+        console.error('❌ Failed to save battle pass data:', e);
+    }
 }
 
 // Award XP to player
@@ -585,4 +601,16 @@ if (typeof window !== 'undefined') {
             initBattlePass();
         }, 1000);
     });
+    
+    // Save battle pass data before page unloads
+    window.addEventListener('beforeunload', () => {
+        saveBattlePassData();
+    });
+    
+    // Save battle pass data periodically (every 30 seconds)
+    setInterval(() => {
+        if (BATTLE_PASS && BATTLE_PASS.playerData) {
+            saveBattlePassData();
+        }
+    }, 30000);
 }
