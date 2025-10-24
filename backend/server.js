@@ -266,6 +266,64 @@ app.delete('/chat/clear', (req, res) => {
 // Admin password - Change this to your own secure password
 const ADMIN_PASSWORD = 'admin123';
 
+// Player data storage
+const PLAYER_DATA_FILE = path.join(__dirname, 'players.json');
+const BANS_FILE = path.join(__dirname, 'bans.json');
+
+// Initialize player data files
+function initializePlayerDataFiles() {
+  if (!fs.existsSync(PLAYER_DATA_FILE)) {
+    fs.writeFileSync(PLAYER_DATA_FILE, JSON.stringify({}), 'utf8');
+    console.log('Created players.json');
+  }
+  if (!fs.existsSync(BANS_FILE)) {
+    fs.writeFileSync(BANS_FILE, JSON.stringify([]), 'utf8');
+    console.log('Created bans.json');
+  }
+}
+
+// Read/write player data
+function readPlayerData() {
+  try {
+    const data = fs.readFileSync(PLAYER_DATA_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading player data:', error);
+    return {};
+  }
+}
+
+function writePlayerData(data) {
+  try {
+    fs.writeFileSync(PLAYER_DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
+    return true;
+  } catch (error) {
+    console.error('Error writing player data:', error);
+    return false;
+  }
+}
+
+// Read/write bans
+function readBans() {
+  try {
+    const data = fs.readFileSync(BANS_FILE, 'utf8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading bans:', error);
+    return [];
+  }
+}
+
+function writeBans(data) {
+  try {
+    fs.writeFileSync(BANS_FILE, JSON.stringify(data, null, 2), 'utf8');
+    return true;
+  } catch (error) {
+    console.error('Error writing bans:', error);
+    return false;
+  }
+}
+
 // Admin authentication
 app.post('/admin/auth', (req, res) => {
   const { password } = req.body;
@@ -343,15 +401,211 @@ app.get('/admin/players', (req, res) => {
   res.json({ players, total: players.length });
 });
 
+// Get player data by ID
+app.get('/admin/player/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  const playerData = readPlayerData();
+  
+  if (playerData[playerId]) {
+    res.json({ success: true, data: playerData[playerId] });
+  } else {
+    res.status(404).json({ success: false, message: 'Player not found' });
+  }
+});
+
+// Save/update player data
+app.post('/admin/player/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  const playerData = readPlayerData();
+  
+  playerData[playerId] = {
+    ...req.body,
+    lastModified: Date.now(),
+    playerId
+  };
+  
+  if (writePlayerData(playerData)) {
+    res.json({ success: true, message: 'Player data saved' });
+  } else {
+    res.status(500).json({ success: false, message: 'Failed to save player data' });
+  }
+});
+
+// Delete player data
+app.delete('/admin/player/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  const playerData = readPlayerData();
+  
+  if (playerData[playerId]) {
+    delete playerData[playerId];
+    if (writePlayerData(playerData)) {
+      res.json({ success: true, message: 'Player data deleted' });
+    } else {
+      res.status(500).json({ success: false, message: 'Failed to delete player data' });
+    }
+  } else {
+    res.status(404).json({ success: false, message: 'Player not found' });
+  }
+});
+
+// Get all player data
+app.get('/admin/allplayers', (req, res) => {
+  const playerData = readPlayerData();
+  res.json({ players: playerData, total: Object.keys(playerData).length });
+});
+
+// Reset all player data
+app.delete('/admin/allplayers', (req, res) => {
+  try {
+    writePlayerData({});
+    res.json({ success: true, message: 'All player data reset' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Failed to reset player data' });
+  }
+});
+
+// Ban management
+app.get('/admin/bans', (req, res) => {
+  const bans = readBans();
+  res.json({ bans, total: bans.length });
+});
+
+app.post('/admin/ban', (req, res) => {
+  const { playerId, playerName, reason, duration } = req.body;
+  
+  if (!playerId || !playerName) {
+    return res.status(400).json({ error: 'playerId and playerName required' });
+  }
+  
+  const bans = readBans();
+  const existingIndex = bans.findIndex(b => b.playerId === playerId);
+  
+  const ban = {
+    playerId,
+    playerName,
+    reason: reason || 'No reason provided',
+    bannedAt: Date.now(),
+    expiresAt: duration ? Date.now() + duration : null,
+    permanent: !duration
+  };
+  
+  if (existingIndex >= 0) {
+    bans[existingIndex] = ban;
+  } else {
+    bans.push(ban);
+  }
+  
+  if (writeBans(bans)) {
+    res.json({ success: true, message: 'Player banned', ban });
+  } else {
+    res.status(500).json({ error: 'Failed to save ban' });
+  }
+});
+
+app.delete('/admin/ban/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  const bans = readBans();
+  const filtered = bans.filter(b => b.playerId !== playerId);
+  
+  if (writeBans(filtered)) {
+    res.json({ success: true, message: 'Ban removed' });
+  } else {
+    res.status(500).json({ error: 'Failed to remove ban' });
+  }
+});
+
+// Check if player is banned
+app.get('/admin/checkban/:playerId', (req, res) => {
+  const { playerId } = req.params;
+  const bans = readBans();
+  const ban = bans.find(b => b.playerId === playerId);
+  
+  if (ban) {
+    if (ban.permanent || (ban.expiresAt && ban.expiresAt > Date.now())) {
+      res.json({ banned: true, ban });
+    } else {
+      // Ban expired, remove it
+      const filtered = bans.filter(b => b.playerId !== playerId);
+      writeBans(filtered);
+      res.json({ banned: false });
+    }
+  } else {
+    res.json({ banned: false });
+  }
+});
+
+// Export database (backup)
+app.get('/admin/export', (req, res) => {
+  const data = {
+    leaderboards: readLeaderboards(),
+    players: readPlayerData(),
+    bans: readBans(),
+    exportedAt: new Date().toISOString()
+  };
+  
+  res.setHeader('Content-Type', 'application/json');
+  res.setHeader('Content-Disposition', `attachment; filename="backup-${Date.now()}.json"`);
+  res.send(JSON.stringify(data, null, 2));
+});
+
+// Import database (restore)
+app.post('/admin/import', (req, res) => {
+  try {
+    const { leaderboards, players, bans } = req.body;
+    
+    if (leaderboards) writeLeaderboards(leaderboards);
+    if (players) writePlayerData(players);
+    if (bans) writeBans(bans);
+    
+    res.json({ success: true, message: 'Data imported successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to import data: ' + error.message });
+  }
+});
+
+// Analytics endpoint
+app.get('/admin/analytics', (req, res) => {
+  const leaderboards = readLeaderboards();
+  const playerData = readPlayerData();
+  const bans = readBans();
+  
+  // Calculate analytics
+  let totalEntries = 0;
+  let totalPlayers = new Set();
+  let totalRolls = 0;
+  
+  for (const entries of Object.values(leaderboards)) {
+    totalEntries += entries.length;
+    entries.forEach(entry => {
+      if (entry.playerId) totalPlayers.add(entry.playerId);
+      if (entry.rollCount) totalRolls += entry.rollCount;
+    });
+  }
+  
+  res.json({
+    totalLeaderboards: Object.keys(leaderboards).length,
+    totalEntries,
+    uniquePlayers: totalPlayers.size,
+    totalPlayerData: Object.keys(playerData).length,
+    totalBans: bans.length,
+    activeBans: bans.filter(b => b.permanent || (b.expiresAt && b.expiresAt > Date.now())).length,
+    totalRolls
+  });
+});
+
 // =================================================================
 // START SERVER
 // =================================================================
 
 // Start server
 initializeDataFile();
+initializePlayerDataFiles();
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Leaderboards stored in: ${DATA_FILE}`);
+  console.log(`👥 Player data stored in: ${PLAYER_DATA_FILE}`);
+  console.log(`🚫 Bans stored in: ${BANS_FILE}`);
   console.log(`💬 Live Chat enabled`);
   console.log(`🔐 Admin password: ${ADMIN_PASSWORD}`);
+  console.log(`\n📋 Admin Panel: Press Ctrl+Shift+A in the game`);
 });
