@@ -11,6 +11,16 @@ let autoCraftEnabled = false;
 const AUTO_CRAFT_UNLOCK_ROLLS = 5000;
 let autoCraftInterval = null;
 
+// Advanced auto-craft settings
+let autoCraftSettings = {
+    maxGearsPerCycle: 10,
+    prioritizeTier: true,
+    balanceSlots: true,
+    craftMultiple: true,
+    upgradeOnly: false,
+    efficientMode: false
+};
+
 // Auto-potion system
 let autoPotionEnabled = false;
 const AUTO_POTION_UNLOCK_ROLLS = 3000;
@@ -1323,125 +1333,176 @@ function checkAutoCraftUnlock() {
     }
 }
 
-function getBestCraftableGear() {
+function getStrategicGearQueue() {
     if (!gearData) {
         console.log('🔧 Auto-craft: gearData not loaded');
-        return null;
+        return [];
     }
     
-    let bestGear = null;
-    let bestScore = -1;
-    let checkedCount = 0;
-    let craftableCount = 0;
+    const queue = [];
+    const tierValues = {
+        1: 100, 2: 1000, 3: 10000, 4: 50000, 5: 100000,
+        6: 200000, 7: 400000, 8: 800000, 9: 1600000, 10: 3200000,
+        'Special': 2000000
+    };
+    
+    console.log('🎯 Building strategic gear queue...');
+    console.log(`⚙️ Settings: tier=${autoCraftSettings.prioritizeTier}, balance=${autoCraftSettings.balanceSlots}, multi=${autoCraftSettings.craftMultiple}`);
+    
+    const slotGears = { left: [], right: [], head: [], body: [], legs: [], feet: [], accessory: [] };
     
     for (const [gearName, gearInfo] of Object.entries(gearData)) {
         if (!gearInfo.recipe) continue;
-        checkedCount++;
         
-        // Check if we can craft it
         const recipe = { name: gearName, ingredients: gearInfo.recipe };
         if (!checkCanCraft(recipe)) continue;
-        craftableCount++;
         
-        // Calculate gear score - TIER is the most important factor!
-        // Tier bonus (heavily weighted so highest tier always wins)
-        const tierValues = {
-            1: 100, 2: 1000, 3: 10000, 4: 50000, 5: 100000,
-            6: 200000, 7: 400000, 8: 800000, 9: 1600000, 10: 3200000,
-            'Special': 2000000
-        };
         let score = tierValues[gearInfo.tier] || 0;
         
-        // Add stats as minor tie-breakers (same tier = compare stats)
         if (gearInfo.effects) {
-            score += (gearInfo.effects.luck || 0) * 1.5; // Luck weighted higher
+            score += (gearInfo.effects.luck || 0) * 1.5;
             score += (gearInfo.effects.rollSpeed || 0) * 1.0;
-            if (gearInfo.effects.special) score += 500; // Special effects are valuable
+            if (gearInfo.effects.special) score += 500;
         }
         
-        // Check if better than current equipped
-        const slot = gearInfo.hand;
+        const slot = gearInfo.hand || 'accessory';
         const currentGear = gameState.equipped[slot];
-        if (currentGear && gearData[currentGear]) {
-            const currentInfo = gearData[currentGear];
-            let currentScore = tierValues[currentInfo.tier] || 0;
-            if (currentInfo.effects) {
-                currentScore += (currentInfo.effects.luck || 0) * 1.5;
-                currentScore += (currentInfo.effects.rollSpeed || 0) * 1.0;
-                if (currentInfo.effects.special) currentScore += 500;
-            }
-            
-            // Only craft if better than current
-            if (score <= currentScore) continue;
-        }
+        const isUpgrade = !currentGear || (gearData[currentGear] && (tierValues[gearInfo.tier] || 0) > (tierValues[gearData[currentGear].tier] || 0));
         
-        if (score > bestScore) {
-            bestScore = score;
-            bestGear = { name: gearName, info: gearInfo, score: score };
+        if (autoCraftSettings.upgradeOnly && !isUpgrade) continue;
+        
+        const gearData_obj = {
+            name: gearName,
+            info: gearInfo,
+            score: score,
+            slot: slot,
+            isUpgrade: isUpgrade,
+            ingredientCount: Object.keys(recipe.ingredients).length
+        };
+        
+        if (slotGears[slot]) {
+            slotGears[slot].push(gearData_obj);
         }
     }
     
-    console.log(`🔧 Auto-craft scan: Checked ${checkedCount} gears, ${craftableCount} craftable, best: ${bestGear ? `${bestGear.name} (Tier ${bestGear.info.tier}, score: ${bestGear.score})` : 'none'}`);
-    return bestGear;
+    for (const slot in slotGears) {
+        slotGears[slot].sort((a, b) => b.score - a.score);
+    }
+    
+    if (autoCraftSettings.balanceSlots) {
+        const slotsArray = Object.keys(slotGears);
+        let slotIndex = 0;
+        let added = 0;
+        
+        while (added < autoCraftSettings.maxGearsPerCycle) {
+            let foundGear = false;
+            for (let i = 0; i < slotsArray.length; i++) {
+                const slot = slotsArray[slotIndex % slotsArray.length];
+                slotIndex++;
+                
+                if (slotGears[slot].length > 0) {
+                    queue.push(slotGears[slot].shift());
+                    added++;
+                    foundGear = true;
+                    if (added >= autoCraftSettings.maxGearsPerCycle) break;
+                }
+            }
+            if (!foundGear) break;
+        }
+    } else {
+        const allGears = Object.values(slotGears).flat();
+        allGears.sort((a, b) => b.score - a.score);
+        queue.push(...allGears.slice(0, autoCraftSettings.maxGearsPerCycle));
+    }
+    
+    if (autoCraftSettings.efficientMode) {
+        queue.sort((a, b) => {
+            const aScore = a.score - (a.ingredientCount * 50);
+            const bScore = b.score - (b.ingredientCount * 50);
+            return bScore - aScore;
+        });
+    }
+    
+    console.log(`✅ Final queue size: ${queue.length} gears`);
+    if (queue.length > 0) {
+        console.log(`📋 Top 5: ${queue.slice(0, 5).map(g => `${g.name} (T${g.info.tier})`).join(', ')}`);
+    }
+    
+    return queue;
+}
+
+function getBestCraftableGear() {
+    const queue = getStrategicGearQueue();
+    return queue.length > 0 ? queue[0] : null;
 }
 
 function autoCraftAndEquip() {
     if (!autoCraftEnabled || !gameState.autoCraft.unlocked) return;
     
-    const bestGear = getBestCraftableGear();
-    if (!bestGear) {
-        console.log('🔧 Auto-craft: No better craftable gear available');
+    console.log('🔧 ==================== AUTO-CRAFT CYCLE START ====================');
+    
+    const gearQueue = getStrategicGearQueue();
+    if (gearQueue.length === 0) {
+        console.log('🔧 Auto-craft: No craftable gear available');
         return;
     }
     
-    console.log(`🔧 Auto-craft: Crafting ${bestGear.name} (Tier ${bestGear.info.tier}, score: ${bestGear.score})`);
+    const maxCraft = autoCraftSettings.craftMultiple ? autoCraftSettings.maxGearsPerCycle : 1;
+    let craftedCount = 0;
+    const craftedGears = [];
     
-    // Craft the gear
-    const recipe = {
-        name: bestGear.name,
-        ingredients: bestGear.info.recipe
-    };
-    
-    // Consume ingredients
-    for (let [item, amount] of Object.entries(recipe.ingredients)) {
-        consumeItem(item, amount);
-    }
-    
-    // Add gear to inventory
-    if (!gameState.inventory.gears) {
-        gameState.inventory.gears = {};
-    }
-    if (!gameState.inventory.gears[bestGear.name]) {
-        gameState.inventory.gears[bestGear.name] = { count: 0, tier: bestGear.info.tier };
-    }
-    gameState.inventory.gears[bestGear.name].count += 1;
-    
-    // Auto-equip
-    const slot = bestGear.info.hand;
-    if (gameState.equipped[slot]) {
-        // Unequip current gear
-        const oldGear = gameState.equipped[slot];
-        if (!gameState.inventory.gears[oldGear]) {
-            gameState.inventory.gears[oldGear] = { count: 0 };
+    for (let i = 0; i < Math.min(maxCraft, gearQueue.length); i++) {
+        const gear = gearQueue[i];
+        
+        if (!checkCanCraft({ name: gear.name, ingredients: gear.info.recipe })) {
+            console.log(`⚠️ Can no longer craft ${gear.name}, skipping...`);
+            continue;
         }
-        gameState.inventory.gears[oldGear].count++;
+        
+        console.log(`🔧 [${i+1}/${maxCraft}] Crafting ${gear.name} (Tier ${gear.info.tier}, ${gear.slot})`);
+        
+        for (let [item, amount] of Object.entries(gear.info.recipe)) {
+            consumeItem(item, amount);
+        }
+        
+        if (!gameState.inventory.gears) gameState.inventory.gears = {};
+        if (!gameState.inventory.gears[gear.name]) {
+            gameState.inventory.gears[gear.name] = { count: 0, tier: gear.info.tier };
+        }
+        gameState.inventory.gears[gear.name].count++;
+        
+        const slot = gear.info.hand;
+        if (gameState.equipped[slot]) {
+            const oldGear = gameState.equipped[slot];
+            if (!gameState.inventory.gears[oldGear]) {
+                gameState.inventory.gears[oldGear] = { count: 0 };
+            }
+            gameState.inventory.gears[oldGear].count++;
+        }
+        
+        gameState.equipped[slot] = gear.name;
+        gameState.inventory.gears[gear.name].count--;
+        
+        if (typeof discoverCodexEntry === 'function') {
+            discoverCodexEntry('gears', gear.name);
+        }
+        
+        craftedCount++;
+        craftedGears.push(`${gear.name} (T${gear.info.tier})`);
     }
     
-    gameState.equipped[slot] = bestGear.name;
-    gameState.inventory.gears[bestGear.name].count--;
-    
-    // Track in codex
-    if (typeof discoverCodexEntry === 'function') {
-        discoverCodexEntry('gears', bestGear.name);
-    }
-    
-    // Update UI
     if (typeof updateEquipmentDisplay === 'function') updateEquipmentDisplay();
     if (typeof recalculateStats === 'function') recalculateStats();
     updateInventoryDisplay();
     saveGameState();
     
-    showNotification(`🔧 AUTO-CRAFT: Crafted and equipped ${bestGear.name}!`);
+    console.log(`✅ AUTO-CRAFT: Crafted ${craftedCount} gear(s)`);
+    console.log(`📦 Gears: ${craftedGears.join(', ')}`);
+    console.log('🔧 ==================== AUTO-CRAFT CYCLE END ====================');
+    
+    if (craftedCount > 0) {
+        showNotification(`🔧 AUTO-CRAFT: Crafted ${craftedCount} gear(s)!`);
+    }
 }
 
 function toggleAutoCraft() {
@@ -2292,8 +2353,180 @@ function resetAutoPotionSettings() {
     setTimeout(() => openAutoPotionSettings(), 100);
 }
 
+function loadAutoCraftSettings() {
+    const saved = localStorage.getItem('autoCraftSettings');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            autoCraftSettings = { ...autoCraftSettings, ...parsed };
+            console.log('✅ Loaded auto-craft settings:', autoCraftSettings);
+        } catch (e) {
+            console.error('Failed to load auto-craft settings:', e);
+        }
+    }
+}
+
+function saveAutoCraftSettings() {
+    localStorage.setItem('autoCraftSettings', JSON.stringify(autoCraftSettings));
+    console.log('💾 Saved auto-craft settings');
+}
+
+function openAutoCraftSettings() {
+    let modal = document.getElementById('autoCraftSettingsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'autoCraftSettingsModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <style>
+                .settings-section { margin: 15px 0; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+                .settings-label { display: flex; flex-direction: column; gap: 8px; }
+                .setting-title { font-weight: bold; color: #e5e7eb; font-size: 1em; }
+                .setting-hint { color: #9ca3af; font-size: 0.85em; margin-top: 5px; }
+                .settings-checkbox { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+                .settings-checkbox input[type="checkbox"] { margin-top: 4px; width: 20px; height: 20px; cursor: pointer; }
+                .checkbox-content { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+                .setting-description { color: #9ca3af; font-size: 0.9em; line-height: 1.4; }
+            </style>
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2>🔧 Auto-Craft Settings</h2>
+                    <button class="close-btn" onclick="closeAutoCraftSettings()">✖</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <div style="background: rgba(59, 130, 246, 0.1); border: 2px solid #3b82f6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                        <h3 style="color: #93c5fd; margin-top: 0;">⚡ Strategic Gear Crafting</h3>
+                        <p style="color: #bfdbfe; font-size: 0.9em;">
+                            Configure how the auto-craft system selects and crafts gear. 
+                            Can now craft up to <strong>10 gears per cycle</strong> with smart slot balancing!
+                        </p>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-label">
+                            <span class="setting-title">🔢 Max Gears Per Cycle</span>
+                            <input type="number" id="maxGearsInput" min="1" max="20" value="${autoCraftSettings.maxGearsPerCycle}" 
+                                   style="width: 80px; padding: 8px; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
+                            <span class="setting-hint">Default: 10 (crafts multiple gears each cycle)</span>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="prioritizeTierCheck" ${autoCraftSettings.prioritizeTier ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">⭐ Prioritize Tier</span>
+                                <span class="setting-description">Always craft highest tier gear first</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="balanceSlotsCheck" ${autoCraftSettings.balanceSlots ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">⚖️ Balance Slots</span>
+                                <span class="setting-description">Distribute crafting across all equipment slots evenly</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="craftMultipleCheck" ${autoCraftSettings.craftMultiple ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">🔨 Craft Multiple</span>
+                                <span class="setting-description">Craft multiple gears per cycle (if disabled, only crafts 1)</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="upgradeOnlyCheck" ${autoCraftSettings.upgradeOnly ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">⬆️ Upgrade Only</span>
+                                <span class="setting-description">Only craft gear that's better than currently equipped</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="efficientCraftCheck" ${autoCraftSettings.efficientMode ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">💎 Efficient Mode</span>
+                                <span class="setting-description">Prioritize gear that uses fewer rare ingredients</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <button onclick="saveAndCloseAutoCraftSettings()" 
+                                style="width: 100%; padding: 15px; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); 
+                                       color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
+                            💾 Save Settings
+                        </button>
+                        <button onclick="resetAutoCraftSettings()" 
+                                style="width: 100%; padding: 12px; margin-top: 10px; background: #374151; 
+                                       color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            🔄 Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    modal.classList.add('show');
+}
+
+function closeAutoCraftSettings() {
+    const modal = document.getElementById('autoCraftSettingsModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+function saveAndCloseAutoCraftSettings() {
+    autoCraftSettings.maxGearsPerCycle = parseInt(document.getElementById('maxGearsInput').value) || 10;
+    autoCraftSettings.prioritizeTier = document.getElementById('prioritizeTierCheck').checked;
+    autoCraftSettings.balanceSlots = document.getElementById('balanceSlotsCheck').checked;
+    autoCraftSettings.craftMultiple = document.getElementById('craftMultipleCheck').checked;
+    autoCraftSettings.upgradeOnly = document.getElementById('upgradeOnlyCheck').checked;
+    autoCraftSettings.efficientMode = document.getElementById('efficientCraftCheck').checked;
+    
+    saveAutoCraftSettings();
+    closeAutoCraftSettings();
+    
+    showNotification('✅ Auto-craft settings saved!');
+    console.log('Updated auto-craft settings:', autoCraftSettings);
+}
+
+function resetAutoCraftSettings() {
+    if (!confirm('Reset all auto-craft settings to defaults?')) return;
+    
+    autoCraftSettings = {
+        maxGearsPerCycle: 10,
+        prioritizeTier: true,
+        balanceSlots: true,
+        craftMultiple: true,
+        upgradeOnly: false,
+        efficientMode: false
+    };
+    
+    saveAutoCraftSettings();
+    closeAutoCraftSettings();
+    
+    showNotification('🔄 Auto-craft settings reset to defaults!');
+    
+    setTimeout(() => openAutoCraftSettings(), 100);
+}
+
 // Load settings on startup
 loadAutoPotionSettings();
+loadAutoCraftSettings();
 
 // Make functions global
 window.toggleAutoPotion = toggleAutoPotion;
@@ -2304,3 +2537,7 @@ window.openAutoPotionSettings = openAutoPotionSettings;
 window.closeAutoPotionSettings = closeAutoPotionSettings;
 window.saveAndCloseAutoPotionSettings = saveAndCloseAutoPotionSettings;
 window.resetAutoPotionSettings = resetAutoPotionSettings;
+window.openAutoCraftSettings = openAutoCraftSettings;
+window.closeAutoCraftSettings = closeAutoCraftSettings;
+window.saveAndCloseAutoCraftSettings = saveAndCloseAutoCraftSettings;
+window.resetAutoCraftSettings = resetAutoCraftSettings;
