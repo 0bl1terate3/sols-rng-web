@@ -849,6 +849,18 @@ function createMinigameMenu() {
                     <p>Click the moles before they disappear.</p><button onclick="startWhackAMole()" class="minigame-play-btn">PLAY</button></div>
                     <div class="minigame-card"><div class="minigame-card-icon">☄️</div><h3>Asteroid Clicker</h3>
                     <p>Click as many asteroids as you can.</p><button onclick="startAsteroidClicker()" class="minigame-play-btn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">🔢</div><h3>Number Guesser</h3>
+                    <p>Guess the number 1-100!</p><button onclick="startNumberGuesser()" class="minigame-play-btn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">⌨️</div><h3>Typing Challenge</h3>
+                    <p>Type fast and accurately!</p><button onclick="startTypingChallenge()" class="minigame-play-btn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">🔐</div><h3>Pattern Lock</h3>
+                    <p>Memorize the pattern!</p><button onclick="startPatternLock()" class="minigame-play-btn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">🎨</div><h3>Color Match</h3>
+                    <p>Match the actual color!</p><button onclick="startColorMatch()" class="minigame-play-btn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">🧮</div><h3>Math Blitz</h3>
+                    <p>Solve math problems fast!</p><button onclick="startMathBlitz()" class="minigame-play-btn">PLAY</button></div>
+                    <div class="minigame-card"><div class="minigame-card-icon">💥</div><h3>Rapid Clicker</h3>
+                    <p>Click as fast as possible!</p><button onclick="startRapidClicker()" class="minigame-play-btn">PLAY</button></div>
                 </div>
             `}
         </div>
