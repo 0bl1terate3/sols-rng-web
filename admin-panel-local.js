@@ -197,7 +197,7 @@ class AdminPanelLocal {
                 document.getElementById('adminAuthLocal').style.display = 'none';
                 document.getElementById('adminControlsLocal').style.display = 'block';
                 document.getElementById('adminPasswordInputLocal').value = '';
-                this.refreshStats();
+                this.refreshAnalytics();
                 this.checkBackendStatus();
             } else {
                 alert('❌ Incorrect password');
@@ -334,7 +334,7 @@ class AdminPanelLocal {
 
             if (response.ok) {
                 alert(`✅ ${name} leaderboard cleared!`);
-                this.refreshStats();
+                this.refreshAnalytics();
             } else {
                 alert('❌ Failed to clear leaderboard');
             }
@@ -375,7 +375,7 @@ class AdminPanelLocal {
 
             if (response.ok) {
                 alert('✅ All leaderboards cleared!');
-                this.refreshStats();
+                this.refreshAnalytics();
             } else {
                 alert('❌ Failed to clear leaderboards');
             }
