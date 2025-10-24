@@ -623,5 +623,66 @@ const POTION_RECIPES = [
         oneRoll: true,
         duration: 5,
         voidheartMode: true
+    },
+    
+    // =================================================================
+    // TARGETING/HUNTING POTIONS
+    // =================================================================
+    {
+        name: "Bounty Hunter's Brew",
+        ingredients: { 
+            "Terror": 3, 
+            "Player": 5, 
+            "Lucky Potion": 200 
+        },
+        effect: "Choose 1 specific aura - next 100 rolls have 5x chance to get it",
+        bountyHunterMode: true,
+        bountyMultiplier: 5.0,
+        bountyRolls: 100,
+        duration: 600
+    },
+    {
+        name: "Collection Completion Serum",
+        ingredients: { 
+            "Bookshelf": 20, 
+            "Exotic": 50, 
+            "Origin": 5, 
+            "Lucky Potion": 500 
+        },
+        effect: "+1000% luck for auras you DON'T own yet for 10 minutes",
+        collectionCompletionMode: true,
+        luckBoost: 10.0,
+        duration: 600
+    },
+    {
+        name: "Native Hunter Potion",
+        ingredients: { 
+            "Flora": 10, 
+            "Wind": 10, 
+            "Lucky Potion": 150 
+        },
+        effect: "All native auras have 3x spawn rate in their home biome for 20 minutes",
+        nativeHunterMode: true,
+        nativeMultiplier: 3.0,
+        duration: 1200
+    },
+    
+    // =================================================================
+    // ULTIMATE POTIONS
+    // =================================================================
+    {
+        name: "Global Guarantee",
+        ingredients: { 
+            "Godly Potion (Zeus)": 1,
+            "Godly Potion (Poseidon)": 1,
+            "Godly Potion (Hades)": 1,
+            "Origin": 10,
+            "Undefined": 5,
+            "Lucky Potion": 2000
+        },
+        effect: "Next roll is GUARANTEED to be a Global aura (100M+ rarity)",
+        globalGuaranteeMode: true,
+        oneRoll: true,
+        duration: 5
     }
 ];

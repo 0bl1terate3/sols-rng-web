@@ -10534,6 +10534,93 @@ function getRandomAura() {
         }
     }
 
+    // Global Guarantee: Guarantee a global aura (100M+ rarity)
+    const globalGuaranteeEffect = gameState.activeEffects.find(effect => effect.globalGuaranteeMode);
+    if (globalGuaranteeEffect) {
+        const globalAuras = sortedAuras.filter(aura => aura.rarity >= 100000000);
+        if (globalAuras.length > 0) {
+            const selectedAura = globalAuras[Math.floor(Math.random() * globalAuras.length)];
+            return { ...selectedAura, effectiveRarity: selectedAura.rarity, breakthrough: false, native: false };
+        }
+    }
+
+    // Bounty Hunter's Brew: Target specific aura with multiplied chance
+    const bountyHunterEffect = gameState.activeEffects.find(effect => effect.bountyHunterMode);
+    if (bountyHunterEffect && bountyHunterEffect.targetAura) {
+        // Decrement rolls counter
+        if (!bountyHunterEffect.rollsRemaining) {
+            bountyHunterEffect.rollsRemaining = bountyHunterEffect.bountyRolls || 100;
+        }
+        bountyHunterEffect.rollsRemaining--;
+        
+        if (bountyHunterEffect.rollsRemaining <= 0) {
+            // Remove effect when rolls are exhausted
+            gameState.activeEffects = gameState.activeEffects.filter(e => e !== bountyHunterEffect);
+        }
+        
+        // Apply multiplied chance for target aura
+        const targetAura = sortedAuras.find(aura => aura.name === bountyHunterEffect.targetAura);
+        if (targetAura) {
+            let auraBiomeMult = 1;
+            if (typeof getAuraBiomeMultiplier === 'function') {
+                auraBiomeMult = getAuraBiomeMultiplier(targetAura.name) || 1;
+            }
+            
+            const bountyMultiplier = bountyHunterEffect.bountyMultiplier || 5;
+            const chance = (1 / targetAura.rarity) * luckFactor * auraBiomeMult * bountyMultiplier;
+            
+            if (Math.random() < chance) {
+                const effectiveRarity = Math.max(1, Math.round(targetAura.rarity / (luckFactor * auraBiomeMult * bountyMultiplier)));
+                return { ...targetAura, effectiveRarity, breakthrough: false, native: false };
+            }
+        }
+    }
+
+    // Collection Completion Serum: Boost luck for unowned auras
+    const collectionCompletionEffect = gameState.activeEffects.find(effect => effect.collectionCompletionMode);
+    if (collectionCompletionEffect) {
+        const unownedAuras = sortedAuras.filter(aura => !gameState.inventory.auras[aura.name]);
+        
+        for (const aura of unownedAuras) {
+            let auraBiomeMult = 1;
+            if (typeof getAuraBiomeMultiplier === 'function') {
+                auraBiomeMult = getAuraBiomeMultiplier(aura.name) || 1;
+            }
+            
+            const completionBoost = collectionCompletionEffect.luckBoost || 10;
+            const chance = (1 / aura.rarity) * luckFactor * auraBiomeMult * (1 + completionBoost);
+            
+            if (Math.random() < chance) {
+                const effectiveRarity = Math.max(1, Math.round(aura.rarity / (luckFactor * auraBiomeMult * (1 + completionBoost))));
+                const isNative = auraBiomeMult > 1;
+                return { ...aura, effectiveRarity, breakthrough: false, native: isNative, biomeMult: auraBiomeMult };
+            }
+        }
+    }
+
+    // Native Hunter Potion: Boost native aura spawn rates
+    const nativeHunterEffect = gameState.activeEffects.find(effect => effect.nativeHunterMode);
+    if (nativeHunterEffect) {
+        for (const aura of sortedAuras) {
+            let auraBiomeMult = 1;
+            if (typeof getAuraBiomeMultiplier === 'function') {
+                auraBiomeMult = getAuraBiomeMultiplier(aura.name) || 1;
+            }
+            
+            // Only boost if it's a native aura (biomeMult > 1)
+            if (auraBiomeMult > 1) {
+                const nativeBoost = nativeHunterEffect.nativeMultiplier || 3;
+                const boostedBiomeMult = auraBiomeMult * nativeBoost;
+                const chance = (1 / aura.rarity) * luckFactor * boostedBiomeMult;
+                
+                if (Math.random() < chance) {
+                    const effectiveRarity = Math.max(1, Math.round(aura.rarity / (luckFactor * boostedBiomeMult)));
+                    return { ...aura, effectiveRarity, breakthrough: false, native: true, biomeMult: boostedBiomeMult };
+                }
+            }
+        }
+    }
+
     // Rainbow Potion: Guarantee Epic-Exotic tier ONLY (capped, no Divine+)
     if (rainbowPotion && !rainbowPotion.guaranteeUsed) {
         const tierOrder = { 'common': 1, 'uncommon': 2, 'rare': 3, 'epic': 4, 'legendary': 5, 'mythic': 6, 'exotic': 7, 'divine': 8, 'celestial': 9, 'transcendent': 10 };
@@ -10718,11 +10805,11 @@ function displayAura(aura, isAnimating = false) {
 
     if (!isAnimating) {
         anime({ targets: auraDisplay.container, scale: [1.1, 1], duration: 300, easing: 'easeOutExpo' });
-    }
-
-    // Special effect for Chromatic: Genesis - emanating words
-    if (aura.name === 'Chromatic: Genesis') {
-        createGenesisEmanatingWords();
+        
+        // Special effect for Chromatic: Genesis - emanating words (only when actually rolled, not during animation)
+        if (aura.name === 'Chromatic: Genesis') {
+            createGenesisEmanatingWords();
+        }
     }
 }
 
@@ -13525,7 +13612,11 @@ function updatePotionsInventory() {
             recipe.collectorMode !== undefined ||
             recipe.beginnerMode !== undefined ||
             recipe.masteryMode !== undefined ||
-            recipe.voidheartMode !== undefined
+            recipe.voidheartMode !== undefined ||
+            recipe.globalGuaranteeMode !== undefined ||
+            recipe.bountyHunterMode !== undefined ||
+            recipe.collectionCompletionMode !== undefined ||
+            recipe.nativeHunterMode !== undefined
         );
         
         const categoryClass = getPotionCategory(recipe);
@@ -14622,7 +14713,16 @@ function usePotion(name, amount = 1) {
         beginnerMode: recipe.beginnerMode,
         masteryMode: recipe.masteryMode,
         voidheartMode: recipe.voidheartMode,
-        removeCooldown: recipe.removeCooldown
+        removeCooldown: recipe.removeCooldown,
+        // NEW TARGETING POTIONS
+        globalGuaranteeMode: recipe.globalGuaranteeMode,
+        bountyHunterMode: recipe.bountyHunterMode,
+        bountyMultiplier: recipe.bountyMultiplier,
+        bountyRolls: recipe.bountyRolls,
+        targetAura: null, // Will be set by user selection
+        collectionCompletionMode: recipe.collectionCompletionMode,
+        nativeHunterMode: recipe.nativeHunterMode,
+        nativeMultiplier: recipe.nativeMultiplier
     });
 
     if (shouldConsumePotion) {
@@ -14646,6 +14746,11 @@ function usePotion(name, amount = 1) {
     updateInventoryDisplay();
     updateActiveEffects();
     saveGameState();
+
+    // NEW: Prompt for aura selection if Bounty Hunter's Brew was used
+    if (recipe.bountyHunterMode) {
+        promptBountyHunterAuraSelection();
+    }
 
     // NEW: Check if we just activated a cooldown removal potion
     if (recipe.removeCooldown && gameState.autoRoll.active) {
@@ -15809,6 +15914,92 @@ window.forceCleanupOverlays = function() {
     
     console.log('✅ Forced cleanup of all overlays');
 }
+
+// =================================================================
+// BOUNTY HUNTER'S BREW - AURA SELECTION
+// =================================================================
+function promptBountyHunterAuraSelection() {
+    const bountyEffect = gameState.activeEffects.find(e => e.bountyHunterMode);
+    if (!bountyEffect) return;
+    
+    // Create modal for aura selection
+    const modalHTML = `
+        <div class="modal" id="bountyHunterModal" style="display: flex;">
+            <div class="modal-content modal-large">
+                <div class="modal-header">
+                    <h2>🎯 Select Target Aura</h2>
+                    <button class="modal-close" onclick="closeBountyHunterModal()">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 20px;">Choose which aura you want to hunt. The next 100 rolls will have <strong>5x chance</strong> to get it!</p>
+                    <input type="text" id="bountyAuraSearch" placeholder="🔍 Search auras..." class="search-input" style="margin-bottom: 15px; width: 100%;">
+                    <div id="bountyAuraList" style="max-height: 400px; overflow-y: auto;">
+                        <!-- Aura list will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('bountyHunterModal');
+    if (existingModal) existingModal.remove();
+    
+    // Add modal to page
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // Populate aura list
+    populateBountyAuraList();
+    
+    // Add search functionality
+    document.getElementById('bountyAuraSearch').addEventListener('input', (e) => {
+        populateBountyAuraList(e.target.value.toLowerCase());
+    });
+}
+
+function populateBountyAuraList(searchTerm = '') {
+    const listContainer = document.getElementById('bountyAuraList');
+    if (!listContainer) return;
+    
+    // Get all auras sorted by rarity
+    const allAuras = Object.values(auraPool).sort((a, b) => b.rarity - a.rarity);
+    
+    // Filter by search term
+    const filteredAuras = allAuras.filter(aura => 
+        aura.name.toLowerCase().includes(searchTerm)
+    );
+    
+    // Create aura buttons
+    listContainer.innerHTML = filteredAuras.map(aura => `
+        <button class="bounty-aura-btn" onclick="selectBountyTarget('${aura.name.replace(/'/g, "\\'")}')">
+            <span class="bounty-aura-name" style="color: ${getAuraColor(aura.name)}; font-family: ${getAuraFont(aura.name)};">
+                ${aura.name}
+            </span>
+            <span class="bounty-aura-rarity">1 in ${aura.rarity.toLocaleString()}</span>
+        </button>
+    `).join('');
+}
+
+window.selectBountyTarget = function(auraName) {
+    const bountyEffect = gameState.activeEffects.find(e => e.bountyHunterMode);
+    if (!bountyEffect) return;
+    
+    // Set the target aura
+    bountyEffect.targetAura = auraName;
+    
+    // Close modal
+    closeBountyHunterModal();
+    
+    // Show confirmation
+    showNotification(`🎯 Now hunting: ${auraName}! (5x chance for next 100 rolls)`, 'success');
+    
+    saveGameState();
+};
+
+window.closeBountyHunterModal = function() {
+    const modal = document.getElementById('bountyHunterModal');
+    if (modal) modal.remove();
+};
 
 // Add emergency cleanup on ESC key (double-tap ESC within 500ms)
 let lastEscTime = 0;
