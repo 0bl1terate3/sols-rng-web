@@ -8637,11 +8637,14 @@ function instantRollAura() {
 
     // --- END OF CORE LOGIC ---
 
-    const display = document.getElementById('currentAuraDisplay');
-    display.innerHTML = `
-        <div class="aura-name">ROLLING AT WARP SPEED...</div>
-        <div class="aura-rarity">Rolls Left: ${rollsLeft}</div>
-    `;
+    // Only show warp speed message if we actually have a warp effect active
+    if (rollsLeft > 0) {
+        const display = document.getElementById('currentAuraDisplay');
+        display.innerHTML = `
+            <div class="aura-name">ROLLING AT WARP SPEED...</div>
+            <div class="aura-rarity">Rolls Left: ${rollsLeft}</div>
+        `;
+    }
 
     completeRollWithAura(finalAura, true);
 
