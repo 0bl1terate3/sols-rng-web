@@ -16,6 +16,16 @@ let autoPotionEnabled = false;
 const AUTO_POTION_UNLOCK_ROLLS = 3000;
 let autoPotionInterval = null;
 
+// Advanced auto-potion settings
+let autoPotionSettings = {
+    maxPotionsPerCycle: 15,  // Craft up to 15 potions per cycle (way more aggressive!)
+    diversityMode: true,      // Craft different types instead of just best
+    stackSimilar: true,       // Allow stacking similar effects
+    useUtility: true,         // Include utility potions (mirror, quantum, etc)
+    saveForRare: false,       // Save ingredients for rare potions
+    efficientMode: false      // Prioritize ingredient efficiency
+};
+
 // Filter recipes based on search term
 function filterRecipes(searchTerm) {
     updateRecipesList(searchTerm);
@@ -1744,26 +1754,241 @@ function getBestCraftablePotion() {
     return bestPotion;
 }
 
+// ========================================================================================
+// STRATEGIC POTION QUEUE SYSTEM
+// ========================================================================================
+// This builds an intelligent queue of potions to craft based on multiple strategies
+function getStrategicPotionQueue() {
+    if (!POTION_RECIPES) return [];
+    
+    const queue = [];
+    const activeEffects = gameState.activeEffects || [];
+    const activePotionNames = new Set(activeEffects.map(e => e.name));
+    const currentTime = gameState.timeOfDay || 'day';
+    const currentBiome = gameState.currentBiome || 'grass';
+    const totalRolls = gameState.totalRolls || 0;
+    
+    console.log('🎯 Building strategic potion queue...');
+    console.log(`⚙️ Settings: diversity=${autoPotionSettings.diversityMode}, utility=${autoPotionSettings.useUtility}, efficient=${autoPotionSettings.efficientMode}`);
+    
+    // Categorize all craftable potions
+    const potions = {
+        luck: [],
+        speed: [],
+        hybrid: [],
+        utility: [],
+        special: []
+    };
+    
+    // Comprehensive potion scores (same as getBestCraftablePotion but used differently)
+    const potionScores = {
+        // TIER S: ULTRA POWERFUL
+        'Forbidden Potion III': 1500,
+        'Forbidden Potion II': 1400,
+        'Godly Potion (Hades)': 1300,
+        'Godly Potion (Zeus)': 1250,
+        'Godly Potion (Poseidon)': 1200,
+        
+        // TIER A: EXCELLENT
+        'Zombie Potion': 950,
+        'Jewelry Potion': 900,
+        'Raid Potion': 850,
+        'Gladiator Potion': 825,
+        'Hwachae': 800,
+        'Santa Potion': 775,
+        'Fortune Potion III': 750,
+        'Fortune Potion II': 725,
+        'Fortune Potion I': 700,
+        
+        // TIER B: GREAT
+        'Forbidden Potion I': 680,
+        'Nightowl\'s Brew': 650,
+        'Sunseeker\'s Tonic': 650,
+        'Diver Potion': 625,
+        'Rage Potion': 600,
+        'Haste Potion III': 575,
+        'Haste Potion II': 550,
+        'Haste Potion I': 525,
+        'Rainbow Potion': 500,
+        'Lucky Potion XL': 475,
+        'Speed Potion XL': 450,
+        'Potion of Deliberation': 425,
+        'Mixed Potion': 400,
+        
+        // TIER C: UTILITY
+        'Quantum Potion': 380,
+        'Aura Magnet Potion': 370,
+        'Mirror Potion': 360,
+        'Potion of Dupe': 350,
+        'Phoenix Potion': 340,
+        'Lucky Block Potion': 330,
+        'Potion of Adaptation': 320,
+        'Potion of Focus (Mythic)': 310,
+        'Potion of Focus (Legendary)': 300,
+        'Time Warp Potion': 290,
+        'Potion of Momentum': 280,
+        'Potion of Collector': 270,
+        'Potion of Mastery': 260,
+        'Potion of the Hour': 250,
+        'Potion of Patience': 240,
+        'Potion of Exploration': 230,
+        'Potion of Haste': 220,
+        'Breakthrough Catalyst': 210,
+        'Chaos Potion': 200
+    };
+    
+    // Blacklist (never auto-craft unless manually enabled)
+    const blacklist = ['Potion of Bound', 'Heavenly Potion', 'Godlike Potion', 'Oblivion Potion', 
+                       'Pump Kings Blood', 'Voidheart', 'Transcendent Potion', 'Warp Potion', 
+                       '???', 'Curse Breaker Potion', 'Jackpot Potion'];
+    
+    // Categorize all craftable potions
+    for (const recipe of POTION_RECIPES) {
+        if (recipe.isBase) continue;
+        if (blacklist.includes(recipe.name)) continue;
+        if (!checkCanCraft(recipe)) continue;
+        
+        // Time restrictions
+        if (recipe.nightMode && currentTime !== 'night') continue;
+        if (recipe.dayMode && currentTime !== 'day') continue;
+        if (recipe.beginnerMode && totalRolls >= 100) continue;
+        
+        // Skip if already active (unless stacking is allowed)
+        if (activePotionNames.has(recipe.name) && !autoPotionSettings.stackSimilar) continue;
+        
+        // Get base score
+        const score = potionScores[recipe.name] || 50;
+        
+        // Categorize
+        const hasLuck = recipe.luckBoost > 0;
+        const hasSpeed = recipe.speedBoost > 0;
+        const hasUtility = recipe.dupeChance || recipe.mirrorChance || recipe.quantumChance || 
+                          recipe.bonusSpawnChance || recipe.breakthroughMode || recipe.removeCooldown;
+        
+        const potionData = { ...recipe, score, category: '' };
+        
+        if (hasUtility && autoPotionSettings.useUtility) {
+            potionData.category = 'utility';
+            potions.utility.push(potionData);
+        } else if (hasLuck && hasSpeed) {
+            potionData.category = 'hybrid';
+            potions.hybrid.push(potionData);
+        } else if (hasLuck) {
+            potionData.category = 'luck';
+            potions.luck.push(potionData);
+        } else if (hasSpeed) {
+            potionData.category = 'speed';
+            potions.speed.push(potionData);
+        } else {
+            potionData.category = 'special';
+            potions.special.push(potionData);
+        }
+    }
+    
+    // Sort each category by score
+    for (const cat in potions) {
+        potions[cat].sort((a, b) => b.score - a.score);
+    }
+    
+    console.log(`📦 Categorized potions: luck=${potions.luck.length}, speed=${potions.speed.length}, hybrid=${potions.hybrid.length}, utility=${potions.utility.length}, special=${potions.special.length}`);
+    
+    // ========================================================================================
+    // STRATEGIC BUILDING LOGIC
+    // ========================================================================================
+    
+    if (autoPotionSettings.diversityMode) {
+        // === DIVERSITY MODE: Craft different types for balanced buffs ===
+        console.log('🌈 Using diversity mode - balanced approach');
+        
+        // Priority: Hybrid > Luck > Speed > Utility > Special
+        // Take top 2-3 from each category
+        if (potions.hybrid.length > 0) {
+            queue.push(...potions.hybrid.slice(0, 3));
+            console.log(`  ✓ Added ${Math.min(3, potions.hybrid.length)} hybrid potions`);
+        }
+        
+        if (potions.luck.length > 0) {
+            queue.push(...potions.luck.slice(0, 4));
+            console.log(`  ✓ Added ${Math.min(4, potions.luck.length)} luck potions`);
+        }
+        
+        if (potions.speed.length > 0) {
+            queue.push(...potions.speed.slice(0, 3));
+            console.log(`  ✓ Added ${Math.min(3, potions.speed.length)} speed potions`);
+        }
+        
+        if (potions.utility.length > 0 && autoPotionSettings.useUtility) {
+            queue.push(...potions.utility.slice(0, 3));
+            console.log(`  ✓ Added ${Math.min(3, potions.utility.length)} utility potions`);
+        }
+        
+        if (potions.special.length > 0) {
+            queue.push(...potions.special.slice(0, 2));
+            console.log(`  ✓ Added ${Math.min(2, potions.special.length)} special potions`);
+        }
+        
+    } else {
+        // === POWER MODE: Just craft best available ===
+        console.log('⚡ Using power mode - best first');
+        
+        const allPotions = [...potions.hybrid, ...potions.luck, ...potions.speed, ...potions.utility, ...potions.special];
+        allPotions.sort((a, b) => b.score - a.score);
+        queue.push(...allPotions.slice(0, autoPotionSettings.maxPotionsPerCycle));
+    }
+    
+    // ========================================================================================
+    // EFFICIENCY MODE: Prefer potions that use fewer rare ingredients
+    // ========================================================================================
+    if (autoPotionSettings.efficientMode) {
+        console.log('💎 Applying efficiency filter...');
+        queue.sort((a, b) => {
+            const aIngredients = Object.keys(a.ingredients).length;
+            const bIngredients = Object.keys(b.ingredients).length;
+            
+            // Prefer fewer ingredients, but still respect score
+            const aScore = a.score - (aIngredients * 50);
+            const bScore = b.score - (bIngredients * 50);
+            return bScore - aScore;
+        });
+    }
+    
+    console.log(`✅ Final queue size: ${queue.length} potions`);
+    if (queue.length > 0) {
+        console.log(`📋 Top 5: ${queue.slice(0, 5).map(p => p.name).join(', ')}`);
+    }
+    
+    return queue;
+}
+
 function autoCraftAndUsePotion() {
     if (!autoPotionEnabled || !gameState.autoPotion.unlocked) return;
     
-    // Try to craft and use up to 3 potions per cycle (more aggressive!)
-    let craftedCount = 0;
-    const maxPotionsPerCycle = 3;
+    console.log('🧪 ==================== AUTO-POTION CYCLE START ====================');
     
-    for (let i = 0; i < maxPotionsPerCycle; i++) {
-        const bestPotion = getBestCraftablePotion();
-        if (!bestPotion) {
-            if (craftedCount === 0) {
-                console.log('🧪 Auto-potion: No suitable potion to craft (low resources)');
-            }
-            break;
+    let craftedCount = 0;
+    const maxPotions = autoPotionSettings.maxPotionsPerCycle;
+    const craftedTypes = { luck: 0, speed: 0, utility: 0 };
+    const craftedNames = new Set();
+    
+    // Get all craftable potions strategically
+    const potionQueue = getStrategicPotionQueue();
+    
+    console.log(`🎯 Strategic queue: ${potionQueue.length} potions available`);
+    
+    for (let i = 0; i < maxPotions && potionQueue.length > 0; i++) {
+        const potion = potionQueue.shift();
+        if (!potion) break;
+        
+        // Double-check we can still craft it
+        if (!checkCanCraft(potion)) {
+            console.log(`⚠️ Can no longer craft ${potion.name}, skipping...`);
+            continue;
         }
         
-        console.log(`🧪 Auto-potion: Crafting ${bestPotion.name} (${i+1}/${maxPotionsPerCycle})`);
+        console.log(`🧪 [${i+1}/${maxPotions}] Crafting ${potion.name} [${potion.category}]`);
         
         // Craft the potion
-        const recipe = bestPotion;
+        const recipe = potion;
         
         // Consume ingredients
         for (let [item, amount] of Object.entries(recipe.ingredients)) {
@@ -1790,10 +2015,19 @@ function autoCraftAndUsePotion() {
         }
         
         craftedCount++;
+        craftedNames.add(recipe.name);
+        craftedTypes[potion.category] = (craftedTypes[potion.category] || 0) + 1;
     }
     
+    console.log('🧪 ==================== AUTO-POTION CYCLE END ====================');
+    
     if (craftedCount > 0) {
-        showNotification(`🧪 AUTO-POTION: Crafted and used ${craftedCount} potion${craftedCount > 1 ? 's' : ''}!`);
+        const summary = `🧪 AUTO-POTION: Crafted ${craftedCount} potions! 💪 Luck: ${craftedTypes.luck} | ⚡ Speed: ${craftedTypes.speed} | 🎲 Utility: ${craftedTypes.utility}`;
+        showNotification(summary);
+        console.log(summary);
+        console.log(`   Crafted: ${Array.from(craftedNames).join(', ')}`);
+    } else {
+        console.log('🧪 Auto-potion: No potions crafted this cycle (low resources)');
     }
     
     // Update UI
@@ -1840,8 +2074,233 @@ function updateAutoPotionButton() {
     }
 }
 
+// ========================================================================================
+// AUTO-POTION SETTINGS UI
+// ========================================================================================
+
+function loadAutoPotionSettings() {
+    const saved = localStorage.getItem('autoPotionSettings');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            autoPotionSettings = { ...autoPotionSettings, ...parsed };
+            console.log('✅ Loaded auto-potion settings:', autoPotionSettings);
+        } catch (e) {
+            console.error('Failed to load auto-potion settings:', e);
+        }
+    }
+}
+
+function saveAutoPotionSettings() {
+    localStorage.setItem('autoPotionSettings', JSON.stringify(autoPotionSettings));
+    console.log('💾 Saved auto-potion settings');
+}
+
+function openAutoPotionSettings() {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('autoPotionSettingsModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'autoPotionSettingsModal';
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <style>
+                .settings-section {
+                    margin: 15px 0;
+                    padding: 15px;
+                    background: rgba(255,255,255,0.03);
+                    border-radius: 8px;
+                    border: 1px solid rgba(255,255,255,0.1);
+                }
+                .settings-label {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+                .setting-title {
+                    font-weight: bold;
+                    color: #e5e7eb;
+                    font-size: 1em;
+                }
+                .setting-hint {
+                    color: #9ca3af;
+                    font-size: 0.85em;
+                    margin-top: 5px;
+                }
+                .settings-checkbox {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    cursor: pointer;
+                }
+                .settings-checkbox input[type="checkbox"] {
+                    margin-top: 4px;
+                    width: 20px;
+                    height: 20px;
+                    cursor: pointer;
+                }
+                .checkbox-content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                    flex: 1;
+                }
+                .setting-description {
+                    color: #9ca3af;
+                    font-size: 0.9em;
+                    line-height: 1.4;
+                }
+            </style>
+            <div class="modal-content" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2>🧪 Auto-Potion Settings</h2>
+                    <button class="close-btn" onclick="closeAutoPotionSettings()">✖</button>
+                </div>
+                <div class="modal-body" style="padding: 20px;">
+                    <div style="background: rgba(139, 92, 246, 0.1); border: 2px solid #8b5cf6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                        <h3 style="color: #a78bfa; margin-top: 0;">⚡ Strategic Crafting System</h3>
+                        <p style="color: #c4b5fd; font-size: 0.9em;">
+                            Configure how the auto-potion system selects and crafts potions. 
+                            The system can now craft up to <strong>15 potions per cycle</strong> with intelligent prioritization!
+                        </p>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-label">
+                            <span class="setting-title">📊 Max Potions Per Cycle</span>
+                            <input type="number" id="maxPotionsInput" min="1" max="30" value="${autoPotionSettings.maxPotionsPerCycle}" 
+                                   style="width: 80px; padding: 8px; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
+                            <span class="setting-hint">Default: 15 (crafts more potions each cycle)</span>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="diversityModeCheck" ${autoPotionSettings.diversityMode ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">🌈 Diversity Mode</span>
+                                <span class="setting-description">Craft different types (luck, speed, utility) instead of just the best potions</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="stackSimilarCheck" ${autoPotionSettings.stackSimilar ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">📚 Stack Similar Effects</span>
+                                <span class="setting-description">Allow crafting potions even if similar effect is already active</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="useUtilityCheck" ${autoPotionSettings.useUtility ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">🎯 Include Utility Potions</span>
+                                <span class="setting-description">Craft utility potions (Mirror, Quantum, Phoenix, etc.)</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="efficientModeCheck" ${autoPotionSettings.efficientMode ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">💎 Efficient Mode</span>
+                                <span class="setting-description">Prioritize potions that use fewer rare ingredients</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="settings-section">
+                        <label class="settings-checkbox">
+                            <input type="checkbox" id="saveForRareCheck" ${autoPotionSettings.saveForRare ? 'checked' : ''}>
+                            <div class="checkbox-content">
+                                <span class="setting-title">🔒 Save for Rare Potions</span>
+                                <span class="setting-description">Reserve ingredients for high-tier potions (less aggressive)</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <button onclick="saveAndCloseAutoPotionSettings()" 
+                                style="width: 100%; padding: 15px; background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); 
+                                       color: white; border: none; border-radius: 8px; font-size: 1.1em; font-weight: bold; cursor: pointer;">
+                            💾 Save Settings
+                        </button>
+                        <button onclick="resetAutoPotionSettings()" 
+                                style="width: 100%; padding: 12px; margin-top: 10px; background: #374151; 
+                                       color: white; border: none; border-radius: 8px; cursor: pointer;">
+                            🔄 Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    modal.classList.add('show');
+}
+
+function closeAutoPotionSettings() {
+    const modal = document.getElementById('autoPotionSettingsModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+function saveAndCloseAutoPotionSettings() {
+    // Get values from inputs
+    autoPotionSettings.maxPotionsPerCycle = parseInt(document.getElementById('maxPotionsInput').value) || 15;
+    autoPotionSettings.diversityMode = document.getElementById('diversityModeCheck').checked;
+    autoPotionSettings.stackSimilar = document.getElementById('stackSimilarCheck').checked;
+    autoPotionSettings.useUtility = document.getElementById('useUtilityCheck').checked;
+    autoPotionSettings.efficientMode = document.getElementById('efficientModeCheck').checked;
+    autoPotionSettings.saveForRare = document.getElementById('saveForRareCheck').checked;
+    
+    // Save to localStorage
+    saveAutoPotionSettings();
+    
+    // Close modal
+    closeAutoPotionSettings();
+    
+    showNotification('✅ Auto-potion settings saved!');
+    console.log('Updated auto-potion settings:', autoPotionSettings);
+}
+
+function resetAutoPotionSettings() {
+    if (!confirm('Reset all auto-potion settings to defaults?')) return;
+    
+    autoPotionSettings = {
+        maxPotionsPerCycle: 15,
+        diversityMode: true,
+        stackSimilar: true,
+        useUtility: true,
+        saveForRare: false,
+        efficientMode: false
+    };
+    
+    saveAutoPotionSettings();
+    closeAutoPotionSettings();
+    
+    showNotification('🔄 Auto-potion settings reset to defaults!');
+    
+    // Reopen to show updated values
+    setTimeout(() => openAutoPotionSettings(), 100);
+}
+
+// Load settings on startup
+loadAutoPotionSettings();
+
 // Make functions global
 window.toggleAutoPotion = toggleAutoPotion;
 window.autoCraftAndUsePotion = autoCraftAndUsePotion;
 window.checkAutoPotionUnlock = checkAutoPotionUnlock;
 window.updateAutoPotionButton = updateAutoPotionButton;
+window.openAutoPotionSettings = openAutoPotionSettings;
+window.closeAutoPotionSettings = closeAutoPotionSettings;
+window.saveAndCloseAutoPotionSettings = saveAndCloseAutoPotionSettings;
+window.resetAutoPotionSettings = resetAutoPotionSettings;
