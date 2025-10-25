@@ -1935,6 +1935,430 @@ async function playEdenCutscene(aura) {
     });
 }
 
+async function playHadesDeveliumCutscene(aura) {
+    if (cutsceneState.active) return;
+    cutsceneState.active = true;
+    cutsceneState.currentAuraRarity = aura.rarity;
+
+    // Hide video elements and use canvas
+    document.getElementById('cutsceneCanvas').style.display = 'block';
+    await fadeToBlackIntro();
+
+    const cutscene = document.getElementById('ultraRareCutscene');
+    const canvas = document.getElementById('cutsceneCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    // Hide default text elements
+    document.getElementById('cutsceneTitle').style.display = 'none';
+    document.getElementById('cutsceneAuraName').style.display = 'none';
+    document.getElementById('cutsceneRarity').style.display = 'none';
+    
+    cutsceneState.ctx = ctx;
+    cutsceneState.canvas = canvas;
+    
+    // Load and play audio dialogue
+    const audioElement = document.getElementById('develiumAudio');
+    audioElement.innerHTML = `<source src="develium.m4a" type="audio/mp4">`;
+    audioElement.load();
+    audioElement.play().catch(e => console.log('Audio playback failed:', e));
+    
+    return new Promise(async (resolve) => {
+        let animationFrame;
+        let time = 0;
+        let phase = 0; // 0: intro, 1: main, 2: outro
+        let phaseTime = 0;
+        let voidParticles = [];
+        let lightningBolts = [];
+        let shadowTendrils = [];
+        let energyRings = [];
+        let voidRifts = [];
+        
+        // Audio analyzer for reactive effects
+        let audioContext, analyser, dataArray, bufferLength;
+        try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioContext.createMediaElementSource(audioElement);
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 256;
+            bufferLength = analyser.frequencyBinCount;
+            dataArray = new Uint8Array(bufferLength);
+            source.connect(analyser);
+            analyser.connect(audioContext.destination);
+        } catch (e) {
+            console.log('Audio context setup failed:', e);
+        }
+        
+        // Initialize dark purple void particles
+        for (let i = 0; i < 300; i++) {
+            voidParticles.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                z: Math.random() * 1000,
+                size: Math.random() * 4 + 1,
+                speedX: (Math.random() - 0.5) * 2,
+                speedY: (Math.random() - 0.5) * 2,
+                speedZ: Math.random() * 3 + 1,
+                opacity: Math.random() * 0.8 + 0.2,
+                pulseSpeed: Math.random() * 0.03 + 0.01,
+                hue: Math.random() * 20 + 270 // Purple hues
+            });
+        }
+        
+        // Initialize lightning bolts
+        for (let i = 0; i < 12; i++) {
+            lightningBolts.push({
+                startX: Math.random() * canvas.width,
+                startY: 0,
+                segments: [],
+                active: false,
+                timer: Math.random() * 60
+            });
+        }
+        
+        // Initialize shadow tendrils
+        for (let i = 0; i < 8; i++) {
+            const angle = (Math.PI * 2 * i) / 8;
+            shadowTendrils.push({
+                angle: angle,
+                length: 0,
+                maxLength: Math.min(canvas.width, canvas.height) * 0.6,
+                segments: 20,
+                sway: Math.random() * Math.PI,
+                swaySpeed: Math.random() * 0.02 + 0.01
+            });
+        }
+        
+        // Initialize energy rings
+        for (let i = 0; i < 5; i++) {
+            energyRings.push({
+                radius: 100 + i * 80,
+                opacity: 0.6 - i * 0.1,
+                speed: 0.02 + i * 0.005,
+                rotation: Math.random() * Math.PI * 2
+            });
+        }
+        
+        // Initialize void rifts
+        for (let i = 0; i < 3; i++) {
+            voidRifts.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                size: 0,
+                maxSize: Math.random() * 150 + 100,
+                rotation: Math.random() * Math.PI * 2,
+                rotSpeed: (Math.random() - 0.5) * 0.02
+            });
+        }
+        
+        const generateLightning = (bolt) => {
+            bolt.segments = [];
+            let x = bolt.startX;
+            let y = bolt.startY;
+            const endY = canvas.height;
+            
+            while (y < endY) {
+                const nextX = x + (Math.random() - 0.5) * 60;
+                const nextY = y + Math.random() * 40 + 30;
+                bolt.segments.push({ x1: x, y1: y, x2: nextX, y2: nextY });
+                x = nextX;
+                y = nextY;
+            }
+        };
+        
+        const animate = () => {
+            time += 0.016;
+            phaseTime += 0.016;
+            
+            // Get audio data for reactive effects
+            let audioAverage = 0;
+            if (analyser && dataArray) {
+                analyser.getByteFrequencyData(dataArray);
+                const sum = dataArray.reduce((a, b) => a + b, 0);
+                audioAverage = sum / bufferLength / 255;
+            }
+            
+            // Phase progression
+            if (phaseTime > 3 && phase === 0) {
+                phase = 1;
+                phaseTime = 0;
+            }
+            
+            // Deep purple gradient background
+            const bgGradient = ctx.createRadialGradient(
+                canvas.width / 2, canvas.height / 2, 0,
+                canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height) / 2
+            );
+            bgGradient.addColorStop(0, '#2d0a33');
+            bgGradient.addColorStop(0.5, '#1a0520');
+            bgGradient.addColorStop(1, '#0a0010');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw pulsing darkness waves
+            for (let i = 0; i < 5; i++) {
+                const waveRadius = 150 + i * 100 + Math.sin(time * 2 + i) * 30;
+                const gradient = ctx.createRadialGradient(
+                    canvas.width / 2, canvas.height / 2, waveRadius - 50,
+                    canvas.width / 2, canvas.height / 2, waveRadius
+                );
+                gradient.addColorStop(0, `rgba(74, 4, 78, ${0.3 - i * 0.05})`);
+                gradient.addColorStop(1, 'rgba(74, 4, 78, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, waveRadius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Draw void particles with depth
+            voidParticles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                p.z -= p.speedZ;
+                
+                // Reset particle if it goes out of bounds
+                if (p.z < 1) {
+                    p.z = 1000;
+                    p.x = Math.random() * canvas.width;
+                    p.y = Math.random() * canvas.height;
+                }
+                if (p.x < 0) p.x = canvas.width;
+                if (p.x > canvas.width) p.x = 0;
+                if (p.y < 0) p.y = canvas.height;
+                if (p.y > canvas.height) p.y = 0;
+                
+                // 3D projection
+                const scale = 1000 / p.z;
+                const projX = (p.x - canvas.width / 2) * scale + canvas.width / 2;
+                const projY = (p.y - canvas.height / 2) * scale + canvas.height / 2;
+                
+                // Pulse effect with audio reactivity
+                p.opacity += Math.sin(time * p.pulseSpeed) * 0.02 + audioAverage * 0.3;
+                p.opacity = Math.max(0.1, Math.min(1, p.opacity));
+                
+                const size = p.size * scale * (1 + audioAverage * 0.5);
+                const alpha = p.opacity * (scale / 2);
+                
+                // Draw with glow
+                ctx.shadowBlur = 15 + audioAverage * 20;
+                ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
+                ctx.fillStyle = `hsla(${p.hue}, 100%, 50%, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(projX, projY, size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+            
+            // Draw shadow tendrils
+            if (phase >= 1) {
+                shadowTendrils.forEach(tendril => {
+                    tendril.sway += tendril.swaySpeed;
+                    tendril.length = Math.min(tendril.length + 3, tendril.maxLength);
+                    
+                    const centerX = canvas.width / 2;
+                    const centerY = canvas.height / 2;
+                    
+                    ctx.strokeStyle = 'rgba(74, 4, 78, 0.6)';
+                    ctx.lineWidth = 8 + audioAverage * 10;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#4a044e';
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, centerY);
+                    
+                    for (let i = 0; i <= tendril.segments; i++) {
+                        const progress = i / tendril.segments;
+                        const distance = tendril.length * progress;
+                        const swayAmount = Math.sin(tendril.sway + progress * Math.PI * 2) * 50;
+                        const angle = tendril.angle + swayAmount * 0.01;
+                        
+                        const x = centerX + Math.cos(angle) * distance;
+                        const y = centerY + Math.sin(angle) * distance;
+                        
+                        if (i === 0) {
+                            ctx.moveTo(x, y);
+                        } else {
+                            ctx.lineTo(x, y);
+                        }
+                    }
+                    
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                });
+            }
+            
+            // Draw energy rings
+            energyRings.forEach(ring => {
+                ring.rotation += ring.speed;
+                
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(ring.rotation);
+                
+                ctx.strokeStyle = `rgba(138, 43, 226, ${ring.opacity * (1 + audioAverage * 0.5)})`;
+                ctx.lineWidth = 3 + audioAverage * 5;
+                ctx.shadowBlur = 15 + audioAverage * 25;
+                ctx.shadowColor = '#8a2be2';
+                
+                ctx.beginPath();
+                ctx.arc(0, 0, ring.radius * (1 + audioAverage * 0.2), 0, Math.PI * 2);
+                ctx.stroke();
+                
+                ctx.restore();
+                ctx.shadowBlur = 0;
+            });
+            
+            // Draw lightning bolts
+            lightningBolts.forEach(bolt => {
+                bolt.timer--;
+                
+                if (bolt.timer <= 0 && !bolt.active && phase >= 1) {
+                    bolt.active = true;
+                    bolt.startX = Math.random() * canvas.width;
+                    generateLightning(bolt);
+                    bolt.timer = Math.random() * 120 + 60;
+                }
+                
+                if (bolt.active) {
+                    ctx.strokeStyle = 'rgba(186, 85, 211, 0.9)';
+                    ctx.lineWidth = 2 + audioAverage * 3;
+                    ctx.shadowBlur = 20;
+                    ctx.shadowColor = '#ba55d3';
+                    
+                    bolt.segments.forEach(seg => {
+                        ctx.beginPath();
+                        ctx.moveTo(seg.x1, seg.y1);
+                        ctx.lineTo(seg.x2, seg.y2);
+                        ctx.stroke();
+                    });
+                    
+                    ctx.shadowBlur = 0;
+                    bolt.active = false;
+                }
+            });
+            
+            // Draw void rifts
+            if (phase >= 1) {
+                voidRifts.forEach(rift => {
+                    rift.size = Math.min(rift.size + 2, rift.maxSize);
+                    rift.rotation += rift.rotSpeed;
+                    
+                    ctx.save();
+                    ctx.translate(rift.x, rift.y);
+                    ctx.rotate(rift.rotation);
+                    
+                    const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, rift.size);
+                    gradient.addColorStop(0, 'rgba(0, 0, 0, 0.9)');
+                    gradient.addColorStop(0.3, 'rgba(74, 4, 78, 0.8)');
+                    gradient.addColorStop(0.7, 'rgba(74, 4, 78, 0.3)');
+                    gradient.addColorStop(1, 'rgba(74, 4, 78, 0)');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.ellipse(0, 0, rift.size, rift.size * 0.3, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Rift edge glow
+                    ctx.strokeStyle = `rgba(138, 43, 226, ${0.8 + audioAverage * 0.2})`;
+                    ctx.lineWidth = 3 + audioAverage * 4;
+                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = '#8a2be2';
+                    ctx.stroke();
+                    
+                    ctx.restore();
+                    ctx.shadowBlur = 0;
+                });
+            }
+            
+            // Draw central void core
+            if (phase >= 1) {
+                const coreRadius = 80 + Math.sin(time * 3) * 20 + audioAverage * 50;
+                const coreGradient = ctx.createRadialGradient(
+                    canvas.width / 2, canvas.height / 2, 0,
+                    canvas.width / 2, canvas.height / 2, coreRadius
+                );
+                coreGradient.addColorStop(0, 'rgba(74, 4, 78, 1)');
+                coreGradient.addColorStop(0.4, 'rgba(138, 43, 226, 0.8)');
+                coreGradient.addColorStop(0.7, 'rgba(138, 43, 226, 0.4)');
+                coreGradient.addColorStop(1, 'rgba(138, 43, 226, 0)');
+                
+                ctx.fillStyle = coreGradient;
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, coreRadius, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Core ring
+                ctx.strokeStyle = `rgba(186, 85, 211, ${0.9 + audioAverage * 0.1})`;
+                ctx.lineWidth = 4 + audioAverage * 6;
+                ctx.shadowBlur = 30 + audioAverage * 30;
+                ctx.shadowColor = '#ba55d3';
+                ctx.beginPath();
+                ctx.arc(canvas.width / 2, canvas.height / 2, coreRadius, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw title text with glow
+            if (phase >= 1 && phaseTime > 1) {
+                const titleOpacity = Math.min((phaseTime - 1) / 2, 1);
+                
+                ctx.font = 'bold 72px Griffy';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                
+                const titleY = canvas.height / 2 - 100;
+                
+                // Outer glow
+                ctx.shadowBlur = 40 + audioAverage * 40;
+                ctx.shadowColor = '#8a2be2';
+                ctx.fillStyle = `rgba(186, 85, 211, ${titleOpacity * (0.9 + audioAverage * 0.1)})`;
+                ctx.fillText('HADES: DEVELIUM', canvas.width / 2, titleY);
+                
+                // Inner glow
+                ctx.shadowBlur = 20;
+                ctx.fillStyle = `rgba(255, 255, 255, ${titleOpacity})`;
+                ctx.fillText('HADES: DEVELIUM', canvas.width / 2, titleY);
+                
+                ctx.shadowBlur = 0;
+                
+                // Subtitle
+                ctx.font = 'bold 24px Griffy';
+                ctx.fillStyle = `rgba(186, 85, 211, ${titleOpacity * 0.8})`;
+                ctx.fillText(`1 in ${aura.rarity.toLocaleString()}`, canvas.width / 2, titleY + 60);
+            }
+            
+            // Check if audio ended
+            if (audioElement.ended || audioElement.currentTime >= audioElement.duration - 0.1) {
+                if (!ended) {
+                    ended = true;
+                    setTimeout(async () => {
+                        cancelAnimationFrame(animationFrame);
+                        
+                        await closeCutscene(cutscene);
+                        
+                        if (shouldTriggerDeepFriedEffect(aura)) {
+                            await triggerDeepFriedEffect();
+                        }
+                        
+                        cutsceneState.active = false;
+                        resolve();
+                    }, 1000);
+                    return;
+                }
+            }
+            
+            animationFrame = requestAnimationFrame(animate);
+        };
+        
+        let ended = false;
+        cutscene.classList.add('active');
+        animate();
+    });
+}
+
 async function playMantaCutscene(aura) {
     if (cutsceneState.active) return;
     cutsceneState.active = true;
@@ -7871,6 +8295,7 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
         "Abomination": playAbominationCutscene,
         "Memory: The Fallen": playMemoryCutscene,
         "Eden": playEdenCutscene,
+        "Hades: Develium": playHadesDeveliumCutscene,
         "Oppression": playOppressionCutscene,
         "Symphony": playSymphonyCutscene,
         "Kyawthuite: Remembrance": playKyawthuiteCutscene,
@@ -10270,6 +10695,7 @@ async function completeRoll(isQuickRoll = false) {
         "Oblivion": playOblivionCutscene,
         "Abomination": playAbominationCutscene,
         "Memory: The Fallen": playMemoryCutscene,
+        "Hades: Develium": playHadesDeveliumCutscene,
         "Oppression": playOppressionCutscene,
         "Symphony": playSymphonyCutscene,
         "Kyawthuite: Remembrance": playKyawthuiteCutscene,
