@@ -8317,6 +8317,13 @@ async function completeRollWithAura(aura, isQuickRoll = false) {
     };
 
     const videoFunction = specificCutscenes[aura.name];
+    
+    // Debug logging for Hades: Develium
+    if (aura.name === "Hades: Develium") {
+        console.log('🎬 Hades: Develium detected!');
+        console.log('🎬 videoFunction found:', !!videoFunction);
+        console.log('🎬 Function name:', videoFunction?.name);
+    }
 
     // Check cutscene settings using new comprehensive system
     const shouldPlayCutscene = typeof shouldPlayCutsceneForAura === 'function' 
